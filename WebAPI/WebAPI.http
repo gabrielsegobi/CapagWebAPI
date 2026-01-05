@@ -1,0 +1,220 @@
+### Variables
+@baseUrl = http://localhost:5174
+@token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhbmFsaXN0YUBjbGllbnRlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJBbmFsaXN0YSBGaW5hbmNlaXJvIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJ0ZW5hbnRJZCI6IjIiLCJleHAiOjE3NjM1NjE5MTgsImlzcyI6IkNhcGFnQXBpIiwiYXVkIjoiQXVkaWVuY2lhIn0.qk4xvk36MUko68_dHaDmTysa6dQyqsVsaz9h06t5_iI
+
+### ========== AUTH ==========
+
+### Login
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "email": "analista@cliente.com",
+  "senha": "hash_de_senha_segura"
+}
+
+### Refresh Token
+POST {{baseUrl}}/api/Auth/refresh-token
+Content-Type: application/json
+
+{
+  "token": "refresh_token_here",
+  "deviceId": "device_id_here"
+}
+
+### ========== VIEWS ==========
+
+### Get Balanço Patrimonial
+GET {{baseUrl}}/api/Views/balanco-patrimonial?IdEmpresa=1&Ano=2024&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get DRE
+GET {{baseUrl}}/api/Views/dre?IdEmpresa=1&Ano=2024&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### ========== EMPRESAS ==========
+
+### Get All Empresas
+GET {{baseUrl}}/api/Empresas?Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Empresa by ID
+GET {{baseUrl}}/api/Empresas/2
+Authorization: Bearer {{token}}
+
+### Get Empresa by CNPJ
+GET {{baseUrl}}/api/Empresas?Cnpj=12345678000190
+Authorization: Bearer {{token}}
+
+### Create Empresa
+POST {{baseUrl}}/api/Empresas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id_tenant": 1,
+  "cnpj": "12345678000190",
+  "razao_social": "Empresa Exemplo LTDA",
+  "nome_fantasia": "Empresa Exemplo",
+  "matriz_filial": "M",
+  "id_empresa_matriz": null,
+  "ativa": true,
+  "cnae": "1234-5/00",
+  "municipio_estado": "São Paulo/SP",
+  "data_abertura": "2020-01-01",
+  "capital_social": "100000.00",
+  "segmento": "Tecnologia",
+  "porte": "Médio"
+}
+
+### Update Empresa
+PUT {{baseUrl}}/api/Empresas/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id_tenant": 1,
+  "cnpj": "12345678000190",
+  "razao_social": "Empresa Exemplo LTDA",
+  "nome_fantasia": "Empresa Exemplo Atualizada",
+  "matriz_filial": "M",
+  "id_empresa_matriz": null,
+  "ativa": true,
+  "cnae": "1234-5/00",
+  "municipio_estado": "São Paulo/SP",
+  "data_abertura": "2020-01-01",
+  "capital_social": "150000.00",
+  "segmento": "Tecnologia",
+  "porte": "Médio"
+}
+
+### Delete Empresa
+DELETE {{baseUrl}}/api/Empresas/1
+Authorization: Bearer {{token}}
+
+### Get Demonstrativos Contábeis
+GET {{baseUrl}}/api/Empresas/demonstrativos-contabeis?idEmpresa=1&ano=true
+Authorization: Bearer {{token}}
+
+### ========== USUARIOS ==========
+
+### Get All Usuarios
+GET {{baseUrl}}/api/Usuarios?Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Usuario by ID
+GET {{baseUrl}}/api/Usuarios/1
+Authorization: Bearer {{token}}
+
+### Get Usuario by Email
+GET {{baseUrl}}/api/Usuarios?Email=usuario@example.com
+Authorization: Bearer {{token}}
+
+### Create Usuario
+POST {{baseUrl}}/api/Usuarios
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "novousuario@example.com",
+  "nome": "Novo Usuario",
+  "senha_hash": "senha_hash_aqui"
+}
+
+### Update Usuario
+PUT {{baseUrl}}/api/Usuarios/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "usuario@example.com",
+  "nome": "Usuario Atualizado",
+  "ativo": true
+}
+
+### Delete Usuario
+DELETE {{baseUrl}}/api/Usuarios/1
+Authorization: Bearer {{token}}
+
+### Change Password
+PUT {{baseUrl}}/api/Usuarios/trocar-senha/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "senha_atual": "senha_antiga",
+  "nova_senha": "senha_nova"
+}
+
+### ========== INDICADORES ==========
+
+### Get All Indicadores
+GET {{baseUrl}}/api/Indicadores?IdEmpresa=1&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Indicadores by Nome
+GET {{baseUrl}}/api/Indicadores?Nome=Liquidez&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Indicadores by Grupo
+GET {{baseUrl}}/api/Indicadores?Grupo=Financeiro&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Indicador by ID
+GET {{baseUrl}}/api/Indicadores/1
+Authorization: Bearer {{token}}
+
+### ========== INDICADORES TESTE ==========
+
+### Calcular Indicadores
+GET {{baseUrl}}/api/IndicadoresTeste/calcular?idEmpresa=1
+Authorization: Bearer {{token}}
+
+### ========== ANALISES ICP ==========
+
+### Get All Analises ICP
+GET {{baseUrl}}/api/AnalisesICP?IdEmpresa=1&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Analise ICP by ID
+GET {{baseUrl}}/api/AnalisesICP/1
+Authorization: Bearer {{token}}
+
+### ========== MODELOS INDICES ICP ==========
+
+### Get All Modelos Indices ICP
+GET {{baseUrl}}/api/ModelosIndicesICP?IdEmpresa=1&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Modelos by Nome
+GET {{baseUrl}}/api/ModelosIndicesICP?Nome=Modelo1
+Authorization: Bearer {{token}}
+
+### Get Modelo Indice ICP by ID
+GET {{baseUrl}}/api/ModelosIndicesICP/1
+Authorization: Bearer {{token}}
+
+### ========== REGIMES TRIBUTARIOS ==========
+
+### Get All Regimes Tributarios
+GET {{baseUrl}}/api/RegimesTributarios?IdEmpresa=1&Ano=2024&Page=1&PageSize=10
+Authorization: Bearer {{token}}
+
+### Get Regime Tributario by ID
+GET {{baseUrl}}/api/RegimesTributarios/1
+Authorization: Bearer {{token}}
+
+### Create Regime Tributario
+POST {{baseUrl}}/api/RegimesTributarios
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id_tenant": 1,
+  "id_empresa": 1,
+  "dt_ini": "2024-01-01",
+  "ano": 2024,
+  "raiz_cnpj": "12345678",
+  "forma_trib_completa": "Lucro Real",
+  "forma_apur_completa": "Trimestral"
+}
