@@ -29,9 +29,9 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("relatorio")]
-        public async Task<IActionResult> GetRelatorio()
+        public async Task<IActionResult> GetRelatorio([FromQuery] AnaliseIcpRelatorioFilter filter)
         {
-            var response = await mediator.Send(new GetAnaliseIcpRelatorioQuery());
+            var response = await mediator.Send(new GetAnaliseIcpRelatorioQuery(filter));
             return Ok(response);
         }
 

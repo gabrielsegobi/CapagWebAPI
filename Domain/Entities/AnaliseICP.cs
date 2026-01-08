@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities
 {
-    public class AnaliseICP
+    public class AnaliseICP :ITenantEntity
     {
         public long IdAnalise { get; set; }
         public long IdTenant { get; set; }
