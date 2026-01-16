@@ -28,6 +28,29 @@ namespace Application.Helpers
 
         }
 
+        //public static double AvaliarExpressao(string expressao)
+        //{
+        //    if (string.IsNullOrWhiteSpace(expressao))
+        //        return 0;
+
+        //    try
+        //    {
+        //        if (expressao.Contains("/ 0") || expressao.Contains("/0"))
+        //        {
+        //            Console.WriteLine("[DEBUG] Detectado denominador zero → valorCalculado = 0");
+        //            return 0;
+        //        }
+        //        var e = new Expression(expressao);
+        //        return Convert.ToDouble(e.Evaluate());
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"[Erro NCalc] Expressão inválida: {expressao}");
+        //        Console.WriteLine($"Mensagem: {ex.Message}");
+        //        return double.NaN;
+        //    }
+        //}
+
         public static double AvaliarExpressao(string expressao)
         {
             if (string.IsNullOrWhiteSpace(expressao))
@@ -35,19 +58,22 @@ namespace Application.Helpers
 
             try
             {
-                if (expressao.Contains("/ 0") || expressao.Contains("/0"))
+                var e = new Expression(expressao);
+                var resultado = Convert.ToDouble(e.Evaluate());
+
+                if (double.IsNaN(resultado) || double.IsInfinity(resultado))
                 {
-                    Console.WriteLine("[DEBUG] Detectado denominador zero → valorCalculado = 0");
+                    Console.WriteLine("[DEBUG] Resultado inválido (NaN ou Infinity)");
                     return 0;
                 }
-                var e = new Expression(expressao);
-                return Convert.ToDouble(e.Evaluate());
+
+                return resultado;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[Erro NCalc] Expressão inválida: {expressao}");
                 Console.WriteLine($"Mensagem: {ex.Message}");
-                return double.NaN;
+                return 0;
             }
         }
 
