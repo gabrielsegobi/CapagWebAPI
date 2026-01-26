@@ -31,7 +31,7 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpPost("{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Update([FromBody] UpdateValorCalcVariavelRequest request, long id)
         {
             var response = await mediator.Send(new UpdateValorCalcVariavelCommand(id, request));

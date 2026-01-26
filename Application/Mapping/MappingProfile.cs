@@ -281,7 +281,7 @@ namespace Application.Mapping
 
             #region DescricaoDebito
             CreateMap<DescricaoDebito, DescricaoDebitoDto>();
-            CreateMap<CreateDescricaoDebitoRequest, DescricaoDebitoDto>()
+            CreateMap<CreateDescricaoDebitoRequest, DescricaoDebito>()
                 .ForMember(d => d.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
             CreateMap<UpdateDescricaoDebitoRequest, DescricaoDebito>()
