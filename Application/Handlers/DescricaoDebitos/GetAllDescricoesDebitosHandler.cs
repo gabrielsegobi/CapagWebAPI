@@ -38,8 +38,8 @@ namespace Application.Handlers.DescricaoDebitos
                     if (!string.IsNullOrWhiteSpace(request.Filter.NumCda))
                         q = q.Where(e => e.NumCda.Contains(request.Filter.NumCda.Trim()));
 
-                    if (request.Filter.DataInscricao.HasValue)
-                        q = q.Where(e => e.DataInscricao >= request.Filter.DataInscricao);
+                    //if (request.Filter.DataInscricao.HasValue)
+                    //    q = q.Where(e => e.DataInscricao >= request.Filter.DataInscricao);
 
                     if (request.Filter.ValorPrincipal.HasValue)
                         q = q.Where(e => e.ValorPrincipal >= request.Filter.ValorPrincipal);

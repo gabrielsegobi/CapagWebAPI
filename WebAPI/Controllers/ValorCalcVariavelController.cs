@@ -11,9 +11,9 @@ namespace WebAPI.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class ValorCalVariavelController : BaseApiController
+    public class ValorCalcVariavelController : BaseApiController
     {
-        public ValorCalVariavelController(IMediator mediator) : base(mediator)
+        public ValorCalcVariavelController(IMediator mediator) : base(mediator)
         {
         }
 
