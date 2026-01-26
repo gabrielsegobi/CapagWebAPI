@@ -10,13 +10,11 @@ namespace Domain.Contracts.RegDirfTerceiros
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
 
-        [JsonPropertyName("request")]
+        [JsonPropertyName("requests")]
         public List<RegDirfTerceiroItemRequest> Requests { get; set; } = new();
     }
     public class RegDirfTerceiroItemRequest
     {
-        [JsonPropertyName("id_tenant")]
-        public long IdTenant { get; set; }
         [JsonPropertyName("id_empresa")]
         public long IdEmpresa { get; set; }
         [JsonPropertyName("codigo")]
@@ -29,6 +27,5 @@ namespace Domain.Contracts.RegDirfTerceiros
         public string AnoCalendario { get; set; } = string.Empty;
         [JsonPropertyName("data_processamento")]
         public DateTime DataProcessamento { get; set; }
-
     }
 }

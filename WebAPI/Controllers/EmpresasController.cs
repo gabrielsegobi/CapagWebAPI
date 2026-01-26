@@ -17,6 +17,7 @@ namespace WebAPI.Controllers
         public EmpresasController(IMediator mediator) : base(mediator) { }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> CreateEmpresa([FromBody] CreateEmpresaRequest request)
         {
             var response = await mediator.Send(new CreateEmpresaCommand { CreateEmpresaRequest = request });
@@ -24,7 +25,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        //[Authorize(Roles = "Admin,Gerente")]
+
         public async Task<IActionResult> GetEmpresaById(long id)
         {
             var response = await mediator.Send(new GetEmpresaByIdQuery { Id = id });
@@ -41,6 +42,7 @@ namespace WebAPI.Controllers
 
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> UpdateEmpresa(long id, [FromBody] UpdateEmpresaRequest request)
         {
             var response = await mediator.Send(new UpdateEmpresaCommand
@@ -53,6 +55,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> DeleteEmpresa(long id)
         {
             var response = await mediator.Send(new DeleteEmpresaCommand { IdEmpresa = id });

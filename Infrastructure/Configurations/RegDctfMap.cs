@@ -17,6 +17,8 @@ namespace Infrastructure.Configurations
             builder.Property(r => r.IdFilename).HasColumnName("id_filename").HasColumnType("BIGINT").IsRequired();
             builder.Property(r => r.Valor).HasColumnName("valor").HasColumnType("DECIMAL(12,4)").IsRequired();
             builder.Property(r => r.Periodo).HasColumnName("periodo").HasColumnType("VARCHAR(10)").IsRequired();
+
+            builder.HasOne(rf => rf.FileName).WithMany(r => r.RegDctfs).HasForeignKey(rf => rf.IdFilename);
         }
     }
 }

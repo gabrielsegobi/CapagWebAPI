@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities
 {
-    public class RegIrpf
+    public class RegIrpf : ITenantEntity
     {
         public long Id { get; set; }
         public long IdTenant { get; set; }
@@ -14,6 +14,7 @@
         public decimal ValorV7 { get; set; }
         public string AnoCalendario { get; set; } = string.Empty;
 
-        //public RegFileName RegFileName { get; set; } = null!;
+
+        public RegFileName FileName { get; set; }
     }
 }

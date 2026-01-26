@@ -10,13 +10,11 @@ namespace Domain.Contracts.RegDarf
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
 
-        [JsonPropertyName("request")]
+        [JsonPropertyName("requests")]
         public List<RegDarfItemRequest> Requests { get; set; } = new();
     }
     public class RegDarfItemRequest
     {
-        [JsonPropertyName("id_tenant")]
-        public long IdTenant { get; set; }
         [JsonPropertyName("id_empresa")]
         public long IdEmpresa { get; set; }
         [JsonPropertyName("data_arrecadacao")]

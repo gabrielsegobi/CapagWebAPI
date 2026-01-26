@@ -6,17 +6,11 @@ namespace Application.Commands.RegsIrpf
 {
     public class CreateRegIrpfCommand : IRequest<CreateApiResponse>
     {
-        public string FileName { get; }
-        public string Type { get; }
-        public List<RegIrpfItemRequest> Requests { get; set; }
-        public CreateRegIrpfCommand(
-           string fileName,
-           string type,
-           List<RegIrpfItemRequest> requests)
+        public CreateRegIrpfCommand(CreateRegIrpfRequest requests)
         {
-            FileName = fileName;
-            Type = type;
             Requests = requests;
         }
+
+        public CreateRegIrpfRequest Requests { get; set; }
     }
 }

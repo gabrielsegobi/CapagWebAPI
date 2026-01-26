@@ -16,6 +16,7 @@ namespace WebAPI.Controllers
         public ICPLimitsController(IMediator mediator) : base(mediator) { }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> UpdaICPLimit(long id, [FromBody] UpdateICPLimitRequest request)
         {
             var response = await mediator.Send(new UpdateICPLimitCommand

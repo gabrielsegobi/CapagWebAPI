@@ -16,9 +16,10 @@ namespace WebAPI.Controllers
         public RegDirfTerceiroController(IMediator mediator) : base(mediator) { }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> CreateRegDirf([FromBody] CreateRegDirfTerceiroRequest request)
         {
-            var response = await mediator.Send(new CreateRegDirfTerceiroCommand(request.FileName, request.Type, request.Requests));
+            var response = await mediator.Send(new CreateRegDirfTerceiroCommand(request));
             return Ok(response);
         }
 

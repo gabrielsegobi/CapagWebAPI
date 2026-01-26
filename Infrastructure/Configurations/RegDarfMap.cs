@@ -18,6 +18,10 @@ namespace Infrastructure.Configurations
             builder.Property(rd => rd.DataArrecadacao).HasColumnName("data_arrecadacao").HasColumnType("DATE").IsRequired();
             builder.Property(rd => rd.ValorTotal).HasColumnName("valor_total").HasColumnType("DECIMAL(12,4)").IsRequired();
             builder.Property(rd => rd.DataProcessamento).HasColumnName("data_processamento").HasColumnType("TIMESTAMP");
+
+
+            builder.HasOne(rf => rf.FileName).WithMany(rd => rd.RegDarfs).HasForeignKey(rf => rf.IdFilename);
+
         }
     }
 }

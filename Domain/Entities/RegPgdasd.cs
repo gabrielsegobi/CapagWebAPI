@@ -1,6 +1,6 @@
 ﻿namespace Domain.Entities
 {
-    public class RegPgdasd
+    public class RegPgdasd : ITenantEntity
     {
         public long Id { get; set; }
         public long IdTenant { get; set; }
@@ -9,5 +9,7 @@
         public decimal ReceitaBruta { get; set; }
         public decimal TotalDebito { get; set; }
         public long IdFilename { get; set; }
+
+        public RegFileName FileName { get; set; }
     }
 }

@@ -16,16 +16,10 @@ namespace WebAPI.Controllers
         public RegPgdasdController(IMediator mediator) : base(mediator) { }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> CreateRegPgdasd([FromBody] CreateRegPgdasdRequest request)
         {
-            var response = await mediator.Send(
-                new CreateRegPgdasdCommand(
-                    request.FileName,
-                    request.Type,
-                    request.Requests
-                )
-            );
-
+            var response = await mediator.Send(new CreateRegPgdasdCommand(request));
             return Ok(response);
         }
 

@@ -249,7 +249,9 @@ namespace Application.Handlers.ResultadosIndicesICP
                     Console.WriteLine($"Mensagem: {ex.Message}");
                     valorCalculado = 0;
                 }
-
+                Console.WriteLine($"meta antes do erro : {modeloDb.Meta}");
+                Console.WriteLine($"pior acaso antes do erro: {modeloDb.PiorCaso}");
+                Console.WriteLine($"valor calculado antes de virar decimal eates do erro : {valorCalculado}");
                 var subScore = CalculosServices.CalcularSubScore(modeloDb.Meta, modeloDb.PiorCaso, Convert.ToDecimal(valorCalculado));
                 Console.WriteLine($"SubScore calculado: {subScore} | Peso: {modeloDb.Peso}");
 

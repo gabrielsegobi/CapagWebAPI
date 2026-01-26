@@ -10,14 +10,12 @@ namespace Domain.Contracts.RegIrpf
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
 
-        [JsonPropertyName("request")]
+        [JsonPropertyName("requests")]
         public List<RegIrpfItemRequest> Requests { get; set; } = new();
     }
 
     public class RegIrpfItemRequest
     {
-        [JsonPropertyName("id_tenant")]
-        public long IdTenant { get; set; }
 
         [JsonPropertyName("id_empresa")]
         public long IdEmpresa { get; set; }

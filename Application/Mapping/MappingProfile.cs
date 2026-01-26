@@ -1,15 +1,18 @@
 ﻿using AutoMapper;
 using Domain.Contracts.AnalisesICP;
 using Domain.Contracts.DemonstrativosContabeis;
+using Domain.Contracts.DescricaoDebitos;
 using Domain.Contracts.DocumentsLayouts;
 using Domain.Contracts.Empresas;
 using Domain.Contracts.ExtractionRules;
+using Domain.Contracts.ICPAnterior;
 using Domain.Contracts.ICPLimits;
 using Domain.Contracts.Indicadores;
 using Domain.Contracts.ModelosIndicesICP;
 using Domain.Contracts.ProcessLog;
 using Domain.Contracts.RefreshTokens;
 using Domain.Contracts.RegDarf;
+using Domain.Contracts.RegDefis;
 using Domain.Contracts.RegDirfTerceiros;
 using Domain.Contracts.RegimesTributarios;
 using Domain.Contracts.RegIrpf;
@@ -20,6 +23,7 @@ using Domain.Contracts.Tenants;
 using Domain.Contracts.TipoGrupos;
 using Domain.Contracts.Usuarios;
 using Domain.Contracts.UsuarioTenant;
+using Domain.Contracts.ValorCalcVariaveis;
 using Domain.Contracts.ValoresAnuais;
 using Domain.Contracts.Views;
 using Domain.Entities;
@@ -221,6 +225,68 @@ namespace Application.Mapping
             CreateMap<RegPgdasd, RegPgdasdDto>().ReverseMap();
             CreateMap<CreateRegPgdasdRequest, RegPgdasd>();
             CreateMap<RegPgdasdItemRequest, RegPgdasd>();
+            #endregion
+
+            #region RegDefis
+            CreateMap<RegDefi, RegDefisDto>().ReverseMap();
+            CreateMap<CreateRegDefisRequest, RegDefi>();
+            CreateMap<CreateRegDefisItemRequest, RegDefi>();
+            #endregion
+
+            #region RegFileName
+            //CreateMap<RegDefi, RegDefisDto>().ReverseMap();
+            CreateMap<CreateRegDefisRequest, RegFileName>()
+                .ForMember(df => df.RegDefis, opt => opt.MapFrom(src => src.Requests));
+
+            CreateMap<CreateRegDarfRequest, RegFileName>()
+              .ForMember(df => df.RegDarfs, opt => opt.MapFrom(src => src.Requests));
+
+            CreateMap<CreateRegDctfRequest, RegFileName>()
+              .ForMember(df => df.RegDctfs, opt => opt.MapFrom(src => src.Requests));
+
+            CreateMap<CreateRegDirfTerceiroRequest, RegFileName>()
+              .ForMember(df => df.RegDirfTerceiros, opt => opt.MapFrom(src => src.Requests));
+
+            CreateMap<CreateRegIrpfRequest, RegFileName>()
+              .ForMember(df => df.RegIrpfs, opt => opt.MapFrom(src => src.Requests));
+
+            CreateMap<CreateRegPgdasdRequest, RegFileName>()
+                .ForMember(df => df.RegPgdasds, opt => opt.MapFrom(src => src.Requests));
+
+            //CreateMap<CreateRegDefisItemRequest, RegDefi>();
+
+
+
+
+            #endregion
+
+            #region ICPAnterior
+            CreateMap<CreateICPAnteriorRequest, ICPsAnterior>()
+                .ForMember(ia => ia.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<UpdateICPAnteriorRequest, ICPsAnterior>()
+                .ForMember(ia => ia.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<ICPsAnterior, ICPAnteriorDto>();
+
+            #endregion
+
+            #region ValorCalcVariavel
+            CreateMap<ValorCalcVariavel, ValorCalcVariavelDto>();
+            CreateMap<CreateValorCalcVariavelRequest, ValorCalcVariavel>()
+                .ForMember(v => v.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
+                .ForMember(v => v.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+
+            CreateMap<UpdateValorCalcVariavelRequest, ValorCalcVariavel>()
+                .ForMember(v => v.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            #endregion
+
+            #region DescricaoDebito
+            CreateMap<DescricaoDebito, DescricaoDebitoDto>();
+            CreateMap<CreateDescricaoDebitoRequest, DescricaoDebitoDto>()
+                .ForMember(d => d.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
+                .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<UpdateDescricaoDebitoRequest, DescricaoDebito>()
+                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+
             #endregion
 
             #region View

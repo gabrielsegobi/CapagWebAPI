@@ -14,18 +14,12 @@ namespace WebAPI.Controllers
     public class RegIrpfController : BaseApiController
     {
         public RegIrpfController(IMediator mediator) : base(mediator) { }
-        [HttpPost]
-        public async Task<IActionResult> CreateRegIrpf(
-    [FromBody] CreateRegIrpfRequest request)
-        {
-            var response = await mediator.Send(
-                new CreateRegIrpfCommand(
-                    request.FileName,
-                    request.Type,
-                    request.Requests
-                )
-            );
 
+        [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> CreateRegIrpf([FromBody] CreateRegIrpfRequest request)
+        {
+            var response = await mediator.Send(new CreateRegIrpfCommand(request));
             return Ok(response);
         }
 

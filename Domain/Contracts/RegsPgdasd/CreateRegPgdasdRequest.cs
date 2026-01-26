@@ -10,14 +10,12 @@ namespace Domain.Contracts.RegsPgdasd
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
 
-        [JsonPropertyName("request")]
+        [JsonPropertyName("requests")]
         public List<RegPgdasdItemRequest> Requests { get; set; } = new();
     }
 
     public class RegPgdasdItemRequest
     {
-        [JsonPropertyName("id_tenant")]
-        public long IdTenant { get; set; }
         [JsonPropertyName("id_empresa")]
         public long IdEmpresa { get; set; }
         [JsonPropertyName("periodo")]
@@ -26,6 +24,5 @@ namespace Domain.Contracts.RegsPgdasd
         public decimal ReceitaBruta { get; set; }
         [JsonPropertyName("total_debito")]
         public decimal TotalDebito { get; set; }
-       
     }
 }

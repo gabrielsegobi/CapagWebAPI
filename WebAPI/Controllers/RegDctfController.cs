@@ -13,12 +13,12 @@ namespace WebAPI.Controllers
     [Authorize]
     public class RegDctfController : BaseApiController
     {
-        public RegDctfController(IMediator mediator) : base(mediator)  { }
+        public RegDctfController(IMediator mediator) : base(mediator) { }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRegDctf([FromBody]CreateRegDctfRequest request)
+        public async Task<IActionResult> CreateRegDctf([FromBody] CreateRegDctfRequest request)
         {
-            var response = await mediator.Send(new CreateRegDctfCommand(request.FileName, request.Type, request.Requests));
+            var response = await mediator.Send(new CreateRegDctfCommand(request));
             return Ok(response);
         }
 

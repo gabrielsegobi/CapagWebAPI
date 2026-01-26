@@ -26,9 +26,9 @@ namespace Application.Handlers.Empresas
                 throw new InvalidDataException("Invalid data");
 
             var empresaExistente = await _baseRepository.GetFirstOrDefaultAsync(e => e.Cnpj == empresa.Cnpj);
-
            if (empresaExistente != null)
                 throw new EmpresaCnpjConflictException(empresa.Cnpj);
+
 
             await _baseRepository.AddAsync(empresa);
             await _baseRepository.SaveChangesAsync();

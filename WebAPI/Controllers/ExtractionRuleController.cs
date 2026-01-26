@@ -17,6 +17,7 @@ namespace WebAPI.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> CreateExtractionRule([FromBody] CreateExtractionRuleRequest request)
         {
             var response = await mediator.Send(new CreateExtractionRuleCommand(request));
@@ -38,6 +39,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> UpdateExtractionRule(int id, [FromBody] UpdateExtractionRuleRequest request)
         {
             var response = await mediator.Send(new UpdateExtractionRuleCommand(id, request));

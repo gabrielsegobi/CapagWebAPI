@@ -17,6 +17,7 @@ namespace WebAPI.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> CreateDocumentLayout([FromBody] CreateDocumentLayoutRequest request)
         {
             var response = await mediator.Send(new CreateDocumentLayoutCommand(request));
@@ -38,6 +39,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> UpdateDocumentLayout(int id, [FromBody] UpdateDocumentLayoutRequest request)
         {
             var response = await mediator.Send(new UpdateDocumentLayoutCommand(id, request));

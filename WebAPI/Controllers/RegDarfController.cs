@@ -16,9 +16,10 @@ namespace WebAPI.Controllers
         public RegDarfController(IMediator mediator) : base(mediator) { }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> CreateRegDarf([FromBody] CreateRegDarfRequest request)
         {
-            var response = await mediator.Send(new CreateRegDarfCommand(request.FileName, request.Type, request.Requests));
+            var response = await mediator.Send(new CreateRegDarfCommand(request));
             return Ok(response);
         }
 
@@ -37,6 +38,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> UpdateRegDarf(int id, [FromBody] UpdateRegDarfRequest request)
         {
             var response = await mediator.Send(new UpdateRegDarfCommand(request, id));

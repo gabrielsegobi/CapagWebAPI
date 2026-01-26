@@ -3,28 +3,39 @@ using FluentValidation;
 
 namespace Application.Validators.RegsDctf
 {
-    public class CreateRegDctfCommandValidator : AbstractValidator<CreateRegDctfCommand>
+    public class CreateRegDctfCommandValidator
+        : AbstractValidator<CreateRegDctfCommand>
     {
         public CreateRegDctfCommandValidator()
         {
             RuleFor(x => x.Requests)
-                .NotNull().WithMessage("A lista de registros DCTF não pode ser nula.")
-                .NotEmpty().WithMessage("A lista de registros DCTF não pode estar vazia.");
+                .NotNull()
+                .WithMessage("O objeto de requisição não pode ser nulo.");
 
-            RuleForEach(x => x.Requests)
+            RuleFor(x => x.Requests.FileName)
+                .NotEmpty()
+                .WithMessage("O nome do arquivo é obrigatório.");
+
+            RuleFor(x => x.Requests.Type)
+                .NotEmpty()
+                .WithMessage("O tipo é obrigatório.");
+
+            RuleFor(x => x.Requests.Requests)
+                .NotNull()
+                .WithMessage("A lista de registros DCTF não pode ser nula.")
+                .NotEmpty()
+                .WithMessage("A lista de registros DCTF não pode estar vazia.");
+
+            RuleForEach(x => x.Requests.Requests)
                 .ChildRules(req =>
                 {
-                    req.RuleFor(d => d.IdTenant)
-                        .NotEmpty().WithMessage("O ID do tenant é obrigatório.")
-                        .GreaterThanOrEqualTo(0).WithMessage("O ID do tenant deve ser maior ou igual a zero.");
-
                     req.RuleFor(d => d.IdEmpresa)
-                        .NotEmpty().WithMessage("O ID da empresa é obrigatório.")
-                        .GreaterThanOrEqualTo(0).WithMessage("O ID da empresa deve ser maior ou igual a zero.");
+                        .GreaterThan(0)
+                        .WithMessage("O ID da empresa deve ser maior que zero.");
 
                     req.RuleFor(d => d.Valor)
-                        .NotEmpty().WithMessage("O valor é obrigatório.")
-                        .GreaterThanOrEqualTo(0).WithMessage("O valor deve ser maior ou igual a zero.");
+                        .GreaterThanOrEqualTo(0)
+                        .WithMessage("O valor deve ser maior ou igual a zero.");
                 });
         }
     }

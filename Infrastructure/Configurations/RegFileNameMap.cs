@@ -15,7 +15,12 @@ namespace Infrastructure.Configurations
             builder.Property(rf => rf.FileName).HasColumnName("filename").HasColumnType("VARCHAR(100)").IsRequired();
             builder.Property(rf => rf.Type).HasColumnName("type").HasColumnType("VARCHAR(10)").IsRequired();
 
-            //builder.HasMany(rf => rf.RegIrpfs).WithOne(ri => ri.RegFileName).HasForeignKey(ri => ri.IdFilename);
+            builder.HasMany(rf => rf.RegDefis).WithOne(ri => ri.FileName).HasForeignKey(ri => ri.IdFilename);
+            builder.HasMany(rf => rf.RegDarfs).WithOne(rda => rda.FileName).HasForeignKey(rda => rda.IdFilename);
+            builder.HasMany(rf => rf.RegDctfs).WithOne(rdc => rdc.FileName).HasForeignKey(rdc => rdc.IdFilename);
+            builder.HasMany(rf => rf.RegDirfTerceiros).WithOne(rdt => rdt.FileName).HasForeignKey(rdt => rdt.IdFilename);
+            builder.HasMany(rf => rf.RegIrpfs).WithOne(rip => rip.FileName).HasForeignKey(rip => rip.IdFilename);
+            builder.HasMany(rf => rf.RegPgdasds).WithOne(rp => rp.FileName).HasForeignKey(rp => rp.IdFilename);
         }
     }
 }

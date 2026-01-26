@@ -10,14 +10,12 @@ namespace Domain.Contracts.RegsDctf
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
 
-        [JsonPropertyName("request")]
+        [JsonPropertyName("requests")]
         public List<RegDctfItemRequest> Requests { get; set; } = new();
     }
 
     public class RegDctfItemRequest
     {
-        [JsonPropertyName("id_tenant")]
-        public long IdTenant { get; set; }
         [JsonPropertyName("id_empresa")]
         public long IdEmpresa { get; set; }
         [JsonPropertyName("valor")]

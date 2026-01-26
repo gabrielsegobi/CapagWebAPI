@@ -18,6 +18,8 @@ namespace Infrastructure.Configurations
             builder.Property(r => r.ReceitaBruta).HasColumnName("receita_bruta").HasColumnType("DECIMAL(12,4)").IsRequired();
             builder.Property(r => r.TotalDebito).HasColumnName("total_debito").HasColumnType("DECIMAL(12,4)").IsRequired();
             builder.Property(r => r.IdFilename).HasColumnName("id_filename").HasColumnType("BIGINT").IsRequired();
+
+            builder.HasOne(rf => rf.FileName).WithMany(r => r.RegPgdasds).HasForeignKey(rf => rf.IdFilename);
         }
     }
 }

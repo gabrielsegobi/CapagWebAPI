@@ -20,6 +20,9 @@ namespace Infrastructure.Configurations
             builder.Property(r => r.ValorRendimento).HasColumnName("valor_rendimento").HasColumnType("DECIMAL(12,4)").IsRequired();
             builder.Property(r => r.ValorTributo).HasColumnName("valor_tributo").HasColumnType("DECIMAL(12,4)").IsRequired();
             builder.Property(r => r.AnoCalendario).HasColumnName("ano_calendario").HasColumnType("VARCHAR(4)").IsRequired();
+
+
+            builder.HasOne(rf => rf.FileName).WithMany(r => r.RegDirfTerceiros).HasForeignKey(rf => rf.IdFilename);
         }
     }
 }

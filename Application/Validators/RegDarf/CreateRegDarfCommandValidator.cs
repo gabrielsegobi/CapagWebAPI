@@ -9,29 +9,40 @@ namespace Application.Validators.RegDarf
         public CreateRegDarfCommandValidator()
         {
             RuleFor(x => x.Requests)
-                .NotNull().WithMessage("A lista de DARFs não pode ser nula.")
-                .NotEmpty().WithMessage("A lista de DARFs não pode estar vazia.");
+                .NotNull()
+                .WithMessage("O objeto de requisição não pode ser nulo.");
 
-            RuleForEach(x => x.Requests)
+            RuleFor(x => x.Requests.FileName)
+                .NotEmpty()
+                .WithMessage("O nome do arquivo é obrigatório.");
+
+            RuleFor(x => x.Requests.Type)
+                .NotEmpty()
+                .WithMessage("O tipo é obrigatório.");
+
+            RuleFor(x => x.Requests.Requests)
+                .NotNull()
+                .WithMessage("A lista de DARFs não pode ser nula.")
+                .NotEmpty()
+                .WithMessage("A lista de DARFs não pode estar vazia.");
+
+            RuleForEach(x => x.Requests.Requests)
                 .ChildRules(darf =>
                 {
-                    darf.RuleFor(d => d.IdTenant)
-                        .NotEmpty().WithMessage("O ID do tenant é obrigatório.")
-                        .GreaterThanOrEqualTo(0).WithMessage("O ID do tenant deve ser maior ou igual a zero.");
-
                     darf.RuleFor(d => d.IdEmpresa)
-                        .NotEmpty().WithMessage("O ID da empresa é obrigatório.")
-                        .GreaterThanOrEqualTo(0).WithMessage("O ID da empresa deve ser maior ou igual a zero.");
+                        .GreaterThan(0)
+                        .WithMessage("O ID da empresa deve ser maior que zero.");
 
                     darf.RuleFor(d => d.DataArrecadacao)
-                        .NotEmpty().WithMessage("A data de arrecadação é obrigatória.")
+                        .NotEmpty()
+                        .WithMessage("A data de arrecadação é obrigatória.")
                         .Must(data =>
                             data.ToDateTime(TimeOnly.MinValue) <= DateTimeHelper.GetDateTimeNow())
                         .WithMessage("A data de arrecadação não pode ser futura.");
 
                     darf.RuleFor(d => d.ValorTotal)
-                        .NotEmpty().WithMessage("O valor total é obrigatório.")
-                        .GreaterThanOrEqualTo(0).WithMessage("O valor total deve ser maior ou igual a zero.");
+                        .GreaterThan(0)
+                        .WithMessage("O valor total deve ser maior que zero.");
                 });
         }
     }
