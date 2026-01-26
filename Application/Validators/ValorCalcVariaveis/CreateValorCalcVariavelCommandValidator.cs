@@ -35,12 +35,11 @@ namespace Application.Validators.ValorCalcVariaveis
             RuleFor(x => x.Request.Valor)
                 .GreaterThanOrEqualTo(0)
                 .WithMessage("O valor deve ser maior ou igual a zero.");
-
             RuleFor(x => x.Request.Status)
                 .NotEmpty()
                 .WithMessage("O status é obrigatório.")
-                .MaximumLength(20)
-                .WithMessage("O status deve ter no máximo 20 caracteres.");
+                .Must(s => s == "ignorado" || s == "preenchido")
+                .WithMessage("O status deve ser 'ignorado' ou 'preenchido'.");
         }
     }
 }
