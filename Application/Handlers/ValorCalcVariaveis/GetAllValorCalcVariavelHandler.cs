@@ -38,7 +38,7 @@ namespace Application.Handlers.ValorCalcVariaveis
                         q = q.Where(e => e.Valor >= request.Filter.Valor);
 
                     if (request.Filter.AnoBase >= 0)
-                        q = q.Where(e => e.AnoBase >= request.Filter.AnoBase);
+                        q = q.Where(e => e.AnoBase == request.Filter.AnoBase);
 
                     if (!string.IsNullOrWhiteSpace(request.Filter.IdVariavel))
                         q = q.Where(e => e.IdVariavel.ToString().Contains(request.Filter.IdVariavel.Trim()));
