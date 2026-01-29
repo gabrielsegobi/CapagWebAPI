@@ -50,6 +50,12 @@ namespace Application.Handlers.SimulacoesCalc
                     if (request.Filter.AbatimentoValor >= 0)
                         q = q.Where(e => e.AbatimentoValor >= request.Filter.AbatimentoValor);
 
+                    if (!string.IsNullOrWhiteSpace(request.Filter.TipoSimulacao))
+                    {
+                        var tipoSimulacao = request.Filter.TipoSimulacao.Trim().ToUpper();
+                        q = q.Where(e => e.TipoSimulacao == tipoSimulacao);
+                    }
+
                     var sort = request.Filter.Sort?.Trim().ToLower();
 
                     q = sort switch
