@@ -71,7 +71,7 @@ namespace Application.Strategies
                     v1 = darfs,
                     v2 = rendimento,
                     v3 = tributo,
-                    v6 = dre.ValCtaRefFin,
+                    v6 = dre?.ValCtaRefFin ?? 0,
                     v7 = totalDctf
                 }
             };
