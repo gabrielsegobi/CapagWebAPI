@@ -17,7 +17,7 @@ namespace Infrastructure.Configurations
             builder.Property(v => v.IdTipoGrupo).HasColumnName("id_tipo_grupo").HasColumnType("BIGINT").IsRequired();
             builder.Property(v => v.AnoBase).HasColumnName("ano_base").HasColumnType("YEAR").IsRequired();
             builder.Property(v => v.IdVariavel).HasColumnName("id_variavel").HasColumnType("VARCHAR(3)").IsRequired();
-            builder.Property(v => v.Valor).HasColumnName("valor").HasColumnType("DECIMAL(12,4)").IsRequired();
+            builder.Property(v => v.Valor).HasColumnName("valor").HasColumnType("DECIMAL(14,4)").IsRequired();
             builder.Property(v => v.Status).HasColumnName("status").HasColumnType("ENUM('preenchido','calculado')").IsRequired();
             builder.Property(v => v.CreatedAt).HasColumnName("created_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(v => v.UpdatedAt).HasColumnName("updated_at").HasColumnType("TIMESTAMP").IsRequired();
