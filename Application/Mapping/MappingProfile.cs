@@ -19,6 +19,8 @@ using Domain.Contracts.RegIrpf;
 using Domain.Contracts.RegsDctf;
 using Domain.Contracts.RegsPgdasd;
 using Domain.Contracts.ResultadosIndicesICP;
+using Domain.Contracts.SimulacoesCalc;
+using Domain.Contracts.SimulacoesIntervalo;
 using Domain.Contracts.Tenants;
 using Domain.Contracts.TipoGrupos;
 using Domain.Contracts.Usuarios;
@@ -175,6 +177,7 @@ namespace Application.Mapping
             #region DocumentLayouts
             CreateMap<DocumentLayout, DocumentLayoutDto>().ReverseMap()
               .ForMember(dto => dto.ExtractionRules, opt => opt.MapFrom(src => src.ExtractionRules)).ReverseMap();
+
             CreateMap<CreateDocumentLayoutRequest, DocumentLayout>()
                   .ForMember(pl => pl.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
             CreateMap<UpdateDocumentLayoutRequest, DocumentLayout>();
@@ -288,6 +291,28 @@ namespace Application.Mapping
                  .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
 
             #endregion
+
+
+            #region SimulacaoCalc
+            CreateMap<CreateSimulacaoCalcRequest, SimulacaoCalc>()
+                .ForMember(d => d.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
+                .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<UpdateSimulacaoCalcRequest, SimulacaoCalc>()
+                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<SimulacaoCalc, SimulacaoCalcDto>()
+                .ForMember(d => d.Intervalos, opt => opt.MapFrom(src => src.SimulacaoIntervalos));
+
+            #endregion
+
+            #region SimulacaoIntervalo
+            CreateMap<CreateSimulacaoIntervaloRequest, SimulacaoIntervalo>()
+                .ForMember(d => d.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
+                .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<UpdateSimulacaoIntervaloRequest, SimulacaoIntervalo>()
+                 .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<SimulacaoIntervalo, SimulacaoIntervaloDto>();
+            #endregion
+
 
             #region View
             CreateMap<BalancoPatrimonialVw, BPViewDto>();
