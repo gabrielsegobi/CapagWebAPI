@@ -13,6 +13,13 @@ namespace Application.Handlers.SimulacoesIntervalo
     {
         private readonly IBaseRepository<SimulacaoIntervalo> _baseRepository;
         private readonly IMapper _mapper;
+
+        public GetAllSimulacoesIntervalosHandler(IBaseRepository<SimulacaoIntervalo> baseRepository, IMapper mapper)
+        {
+            _baseRepository = baseRepository;
+            _mapper = mapper;
+        }
+
         public async Task<PagedApiResponse<SimulacaoIntervaloDto>> Handle(GetAllSimulacoesIntervalosQuery request, CancellationToken cancellationToken)
         {
             var query = _baseRepository.Query();

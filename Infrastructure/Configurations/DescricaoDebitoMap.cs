@@ -17,10 +17,10 @@ namespace Infrastructure.Configurations
             builder.Property(d => d.Natureza).HasColumnName("natureza").HasColumnType("VARCHAR(50)").IsRequired();
             builder.Property(d => d.NumCda).HasColumnName("num_cda").HasColumnType("VARCHAR(20)").IsRequired();
             builder.Property(d => d.DataInscricao).HasColumnName("data_inscricao").HasColumnType("DATE").IsRequired();
-            builder.Property(d => d.ValorPrincipal).HasColumnName("valor_principal").HasColumnType("DECIMAL(12,2)").IsRequired();
-            builder.Property(d => d.ValorMulta).HasColumnName("valor_multa").HasColumnType("DECIMAL(12,2)").IsRequired();
-            builder.Property(d => d.ValorJuros).HasColumnName("valor_juros").HasColumnType("DECIMAL(12,2)").IsRequired();
-            builder.Property(d => d.ValorEncargos).HasColumnName("valor_encargos").HasColumnType("DECIMAL(12,2)").IsRequired();
+            builder.Property(d => d.ValorPrincipal).HasColumnName("valor_principal").HasColumnType("DECIMAL(14,2)").IsRequired();
+            builder.Property(d => d.ValorMulta).HasColumnName("valor_multa").HasColumnType("DECIMAL(14,2)").IsRequired();
+            builder.Property(d => d.ValorJuros).HasColumnName("valor_juros").HasColumnType("DECIMAL(14,2)").IsRequired();
+            builder.Property(d => d.ValorEncargos).HasColumnName("valor_encargos").HasColumnType("DECIMAL(14,2)").IsRequired();
             builder.Property(d => d.CreatedAt).HasColumnName("created_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(d => d.UpdatedAt).HasColumnName("updated_at").HasColumnType("TIMESTAMP").IsRequired();
         }
