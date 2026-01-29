@@ -38,5 +38,12 @@ namespace WebAPI.Controllers
             var response = await mediator.Send(new UpdateSimulacaoIntervaloCommand(id, request));
             return Ok(response);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(long id)
+        {
+            var response = await mediator.Send(new DeleteSimulacaoIntervaloCommand(id));
+            return Ok(response);
+        }
     }
 }

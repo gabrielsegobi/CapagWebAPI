@@ -37,5 +37,12 @@ namespace WebAPI.Controllers
             var response = await mediator.Send(new UpdateDescricaoDebitoCommand(request, id));
             return Ok(response);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(long id)
+        {
+            var response = await mediator.Send(new DeleteDescricaoDebitoCommand(id));
+            return Ok(response);
+        }
     }
 }
