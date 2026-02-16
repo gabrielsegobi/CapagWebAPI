@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Interface;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Win32;
 
 namespace Application.Strategies
 {
@@ -53,15 +54,59 @@ namespace Application.Strategies
             var totalDctf = await _dctfRepository.Query()
                 .Where(d =>
                     d.IdEmpresa == idEmpresa
+                    && d.Periodo == ano
+
                 )
                 .SumAsync(d => d.Valor, cancellationToken);
 
+            //var dre = await _dreRepository.Query()
+            //    .FirstOrDefaultAsync(d =>
+            //        d.IdEmpresa == idEmpresa &&
+            //        d.Ano.ToString() == ano &&
+            //        d.Codigo == codigoDre
+            //    );
+
+
             var dre = await _dreRepository.Query()
-                .FirstOrDefaultAsync(d =>
+                .Where(d =>
                     d.IdEmpresa == idEmpresa &&
                     d.Ano.ToString() == ano &&
                     d.Codigo == codigoDre
-                );
+                )
+                .ToListAsync();
+
+
+            var registroAnual = dre.FirstOrDefault(d => d.PerApur.StartsWith("A"));
+            var registrosTrimestrais = dre
+                .Where(d => d.PerApur.StartsWith("T"))
+                .OrderBy(d => d.PerApur) 
+                .ToList();
+
+            decimal valCtaRefFin;
+
+            if (registroAnual != null)
+            {
+                valCtaRefFin = registroAnual.ValCtaRefFin.GetValueOrDefault();
+            }
+            else if (registrosTrimestrais.Any())
+            {
+                valCtaRefFin = registrosTrimestrais.Sum(d => d.ValCtaRefFin.GetValueOrDefault());
+            }
+            else
+            {
+                valCtaRefFin = 0;
+            }
+
+
+            // Decide o valor final
+            //decimal valCtaRefFin = registroAnual != null
+            //    ? registroAnual.ValCtaRefFin         // usa o anual se existir
+            //    : registrosTrimestrais.Sum(d => d.ValCtaRefFin); // soma trimestrais se não houver anual
+
+            // se encntrar o t deve somar todos os anos trimestres 
+            //se emncontrar o a deve somar apenas a pirmeira emrpesa
+
+            // registrar o peridodo do dctf e fazer por ao
 
 
             return new GetApiResponse
@@ -71,7 +116,7 @@ namespace Application.Strategies
                     v1 = darfs,
                     v2 = rendimento,
                     v3 = tributo,
-                    v6 = dre?.ValCtaRefFin ?? 0,
+                    v6 = valCtaRefFin,
                     v7 = totalDctf
                 }
             };

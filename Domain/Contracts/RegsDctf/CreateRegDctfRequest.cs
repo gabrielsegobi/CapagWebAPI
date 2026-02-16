@@ -20,5 +20,8 @@ namespace Domain.Contracts.RegsDctf
         public long IdEmpresa { get; set; }
         [JsonPropertyName("valor")]
         public decimal Valor { get; set; }
+
+        [JsonPropertyName("periodo")]
+        public string Periodo { get; set; } = string.Empty;
     }
 }
