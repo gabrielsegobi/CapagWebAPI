@@ -12,6 +12,8 @@ namespace Infrastructure.Security
         {
             _httpContextAccessor = httpContextAccessor;
         }
+        private long? _tenantId;
+        private string? _role;
 
         public bool IsAuthenticated =>
             _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
@@ -19,18 +21,20 @@ namespace Infrastructure.Security
         private long? _manualTenantId;
         public long? UserId => GetClaimValue(ClaimTypes.NameIdentifier)?.ToLong();
         public string? Email => GetClaimValue(ClaimTypes.Email);
-        public string? Role => GetClaimValue(ClaimTypes.Role);
-        public long? TenantId
-        {
-            get
-            {
-                if (_manualTenantId.HasValue)
-                    return _manualTenantId;
+        public string? Role => _role;
+        public long? TenantId => _tenantId;
 
-                var tenantClaim = GetClaimValue("tenantId");
-                return tenantClaim?.ToLong();
-            }
-        }
+        //public long? TenantId
+        //{
+        //    get
+        //    {
+        //        if (_manualTenantId.HasValue)
+        //            return _manualTenantId;
+
+        //        var tenantClaim = GetClaimValue("tenantId");
+        //        return tenantClaim?.ToLong();
+        //    }
+        //}
 
 
         public string? GetClaimValue(string claimType)
@@ -47,7 +51,47 @@ namespace Infrastructure.Security
 
         public void SetTenantId(long? tenantId)
         {
-            _manualTenantId = tenantId;
+            _tenantId = tenantId;
+        }
+
+        //public void SetRole(string? role)
+        //{
+        //    if (string.IsNullOrWhiteSpace(role))
+        //        return;
+
+        //    var httpContext = _httpContextAccessor.HttpContext;
+        //    if (httpContext == null)
+        //        return;
+
+        //    var identity = httpContext.User.Identity as ClaimsIdentity;
+        //    if (identity == null)
+        //        return;
+
+        //    var hasRole = identity.Claims.Any(c =>
+        //        c.Type == ClaimTypes.Role && c.Value == role);
+
+        //    if (hasRole)
+        //        return;
+
+        //    identity.AddClaim(new Claim(ClaimTypes.Role, role));
+        //}
+
+        public void SetRole(string role)
+        {
+            _role = role;
+
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext == null)
+                return;
+
+            var identity = httpContext.User.Identity as ClaimsIdentity;
+            if (identity == null)
+                return;
+
+            if (identity.HasClaim(ClaimTypes.Role, role))
+                return;
+
+            identity.AddClaim(new Claim(ClaimTypes.Role, role));
         }
     }
 

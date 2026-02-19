@@ -16,6 +16,7 @@ namespace WebAPI.Controllers
         public UsuariosController(IMediator mediator) : base(mediator) { }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateUsuario([FromBody] CreateUsuarioRequest request)
         {
             var response = await mediator.Send(new CreateUsuarioCommand { CreateUsuarioRequest = request });
@@ -63,6 +64,21 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> DeleteUsuario(long id)
         {
             var response = await mediator.Send(new DeleteUsuarioCommand { Id = id });
+            return Ok(response);
+        }
+
+        [HttpGet("tenants")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetUserTenants()
+        {
+            var response = await mediator.Send(new GetUserTenantsQuery());
+            return Ok(response);
+        }
+
+        [HttpGet("tenant-permission")]
+        public async Task<IActionResult> GetTenantPermissions()
+        {
+            var response = await mediator.Send(new GetTenantPermissionsQuery());
             return Ok(response);
         }
     }

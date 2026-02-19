@@ -22,10 +22,10 @@ namespace Infrastructure.Security
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
-                new Claim(ClaimTypes.Email, usuario.Email),
-                new Claim(ClaimTypes.Name, usuario.Nome),
-                new Claim(ClaimTypes.Role, papel),
-                new Claim("tenantId", "1")
+                //new Claim(ClaimTypes.Email, usuario.Email),
+                //new Claim(ClaimTypes.Name, usuario.Nome),
+                //new Claim(ClaimTypes.Role, papel),
+                //new Claim("tenantId", "1")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));

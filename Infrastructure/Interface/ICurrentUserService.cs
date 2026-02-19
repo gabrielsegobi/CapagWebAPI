@@ -11,5 +11,6 @@
         string? GetClaimValue(string claimType);
         IDictionary<string, string> GetAllClaims();
         void SetTenantId(long? tenantId);
+        void SetRole(string? role);
     }
 }
