@@ -1,0 +1,25 @@
+﻿using Application.Commands.RegsFileName;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebAPI.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class RegFileNameController : BaseApiController
+    {
+        public RegFileNameController(IMediator mediator) : base(mediator)
+        {
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(long id)
+        {
+            var result =  await mediator.Send(new DeleteRegFileNameCommnad(id));
+
+            return Ok(result);
+        }
+    }
+}
