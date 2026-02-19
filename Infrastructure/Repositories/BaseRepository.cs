@@ -101,6 +101,19 @@ namespace Infrastructure.Repositories
         {
             return await _context.SaveChangesAsync();
         }
+
+        public async Task<long> AddAsyncAndGetId(T entity)
+        {
+            await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
+
+            var idProperty = entity.GetType().GetProperty("Id");
+
+            if (idProperty == null)
+                throw new InvalidOperationException($"A entidade {typeof(T).Name} não possui a propriedade 'Id'.");
+
+            return (long)idProperty.GetValue(entity)!;
+        }
         #endregion
     }
 }

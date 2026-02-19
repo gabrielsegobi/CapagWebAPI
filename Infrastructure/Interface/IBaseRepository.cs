@@ -10,6 +10,8 @@ namespace Infrastructure.Interface
         #region Create
         Task AddAsync(T entity);
         Task AddRangeAsync(IEnumerable<T> entities);
+
+        Task<long> AddAsyncAndGetId(T entity);
         #endregion
 
         #region Read
