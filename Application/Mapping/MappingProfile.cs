@@ -320,6 +320,10 @@ namespace Application.Mapping
             CreateMap<DREVw, DREViewDto>();
             CreateMap<UsuariosAcessosVw, UAViewDto>();
             #endregion
+
+            #region Operation 
+
+            #endregion
         }
     }
 }
