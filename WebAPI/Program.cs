@@ -7,9 +7,13 @@ using Application.Mapping;
 using Application.Strategies;
 using Application.teste;
 using Domain.Contracts.Views;
+using Domain.Factories;
 using Domain.Interfaces;
+using Domain.Strategies.Sped;
+using Domain.Strategies.Sped.Ecf;
 using FluentValidation;
 using Infrastructure;
+using Infrastructure.BackgroundJobs;
 using Infrastructure.Context;
 using Infrastructure.Interface;
 using Infrastructure.Repositories;
@@ -17,6 +21,7 @@ using Infrastructure.Security;
 using Infrastructure.Services;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -49,6 +54,13 @@ builder.Services.AddDbContext<CPGDbContext>(options =>
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped(typeof(IBaseViewRepository<>), typeof(BaseViewRepository<>));
 
+var basePath = @"C:\Users\gabriel.souza\source\data\sped";
+
+builder.Services.AddSingleton<IObjectStorage>(
+    new LocalFileStorage(basePath)
+);
+
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
@@ -57,6 +69,18 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblyContaining<AssemblyMarker>();
 });
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 1L * 1024 * 1024 * 1024; // 1 GB
+});
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 1L * 1024 * 1024 * 1024; // 1 GB
+});
+
+
 
 builder.Services.AddValidatorsFromAssembly(typeof(CreateUsuarioCommand).Assembly);
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -67,11 +91,28 @@ builder.Services.AddHttpClient<IApiDadosService, ApiDadosService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<AuditInterceptor>();
+builder.Services.AddScoped<IEcfFactory, EcfFactory>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_0000Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_0001Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_0010Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_L001Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_L030Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_L100Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_L300Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_P001builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_P030Builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_P100builder>();
+builder.Services.AddScoped<IEcfBuilderStrategy, E_P150builder>();
+builder.Services.AddScoped<IEcfProcessorService, EcfProcessorService>();
+
+builder.Services.AddScoped<IBulkInsertService, BulkInsertService>();
+
 //builder.Services.AddScoped<ICalculoGrupoStrategy, PessoaJuridicaCalculoStrategy>();
 //builder.Services.AddScoped<ICalculoGrupoStrategy, PessoaFisicaCalculoStrategy>();
 builder.Services.AddScoped<ICalculoGrupoStrategy, PjNOptanteCalculoStrategy>();
 builder.Services.AddScoped<ICalculoGrupoStrategy, PjOptanteCalculoStrategy>();
-
+builder.Services.AddScoped<IGetRelationShip, GetRelationShip>();
+builder.Services.AddScoped<IApiGateway, ApiGateway>();
 builder.Services.AddScoped<ICalculoGrupoStrategy, PfCalculoStrategy>();
 builder.Services.AddScoped<ICalculoGrupoFactory, CalculoGrupoFactory>();
 
@@ -119,7 +160,14 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+builder.Services.AddSingleton<EcfBackgroundWorker>();
 builder.Services.AddHostedService<QueuedHostedService>();
+//builder.Services.AddHostedService<EcfBackgroundWorker>();
+builder.Services.AddHostedService(provider =>
+    provider.GetRequiredService<EcfBackgroundWorker>());
+builder.Services.AddSingleton<EcfReprocessWorker>();
+builder.Services.AddHostedService(provider =>
+    provider.GetRequiredService<EcfReprocessWorker>());
 var app = builder.Build();
 
 
@@ -136,8 +184,8 @@ app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
+app.UseMiddleware<TenantPermissionMiddleware>();
 app.UseMiddleware<AuthorizationMiddleware>();
-
 app.UseAuthorization();
 
 app.MapControllers();
