@@ -46,5 +46,17 @@ namespace WebAPI.Controllers
 
             return Ok(response);
         }
+
+
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> DeleteExtractionRule(int id)
+        {
+            var response = await mediator.Send(new DeleteExtractionRuleCommand(id));
+
+            return Ok(response);
+        }
+
     }
 }

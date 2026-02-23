@@ -29,7 +29,7 @@ namespace Application.Handlers.Empresas
             _baseRepository.Update(empresa);
             await _baseRepository.SaveChangesAsync();
           
-            return new DeleteApiResponse { Message = "Empresa deleteada com sucesso" };
+            return new DeleteApiResponse { Message = "Empresa deletada com sucesso" };
         }
     }
 }
