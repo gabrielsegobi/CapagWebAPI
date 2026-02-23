@@ -14,6 +14,7 @@ namespace Application.Handlers.DocumentLayouts
         private readonly IBaseRepository<DocumentLayout> _baseRepository;
         private readonly IMapper _mapper;
 
+        public static string CreateMessage = "Layout Criado com Sucesso";
         public CreateDocumentLayoutHandler(IBaseRepository<DocumentLayout> baseRepository, IMapper mapper)
         {
             _baseRepository = baseRepository;
@@ -35,7 +36,7 @@ namespace Application.Handlers.DocumentLayouts
 
             return new CreateApiResponse
             {
-                Message = "Layout Criado com Sucesso"
+                Message = CreateMessage
             };
         }
     }

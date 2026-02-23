@@ -5,6 +5,7 @@ using Domain.Contracts.Responses;
 using Domain.Entities;
 using Infrastructure.Interface;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers.DocumentLayouts
 {
@@ -12,6 +13,8 @@ namespace Application.Handlers.DocumentLayouts
     {
         private readonly IBaseRepository<DocumentLayout> _baseRepository;
         private readonly IMapper _mapper;
+
+        public static string UpdateMessage = "Layout atualizado com sucesso.";
         public UpdateDocumentLayoutHandler(IBaseRepository<DocumentLayout> baseRepository, IMapper mapper)
         {
             _baseRepository = baseRepository;
@@ -19,19 +22,57 @@ namespace Application.Handlers.DocumentLayouts
         }
         public async Task<UpdateApiResponse> Handle(UpdateDocumentLayoutCommand request, CancellationToken cancellationToken)
         {
-            var layout =  await _baseRepository.GetByIdAsync(request.Id) ?? throw new DocumentLayoutNotFoundException(request.Id);
+            var layout =  await _baseRepository.Query().Include(x => x.ValidationRegexes).FirstOrDefaultAsync(x => x.Id == request.Id) ?? throw new DocumentLayoutNotFoundException(request.Id);
 
-            var layoutExistente = await _baseRepository.GetFirstOrDefaultAsync(e => e.LayoutName == layout.LayoutName);
+            var layoutExistente = await _baseRepository.GetFirstOrDefaultAsync(e => e.LayoutName == layout.LayoutName && e.Id != request.Id);
 
             if (layoutExistente != null)
                 throw new LayoutNameConflictException(layout.LayoutName);
 
-            var layoutToUpdate = _mapper.Map(request.UpdateDocumentLayoutRequest, layout);
+            _mapper.Map(request.UpdateDocumentLayoutRequest, layout);
 
-            _baseRepository.Update(layoutToUpdate);
+
+            if (request.UpdateDocumentLayoutRequest.ValidationRegexes != null)
+            {
+                var requestRegexes = request.UpdateDocumentLayoutRequest.ValidationRegexes;
+
+                var requestIds = requestRegexes
+                    .Where(x => x.Id > 0)
+                     .Select(x => x.Id)
+                    .ToList();
+
+                var regexesParaRemover = layout.ValidationRegexes
+                    .Where(db => !requestIds.Contains(db.Id))
+                    .ToList();
+
+                foreach (var regex in regexesParaRemover)
+                {
+                    layout.ValidationRegexes.Remove(regex);
+                }
+
+                foreach (var regexRequest in requestRegexes)
+                {
+                    if (regexRequest.Id == 0)
+                    {
+                        var novaRegex = _mapper.Map<ValidationRegex>(regexRequest);
+                        layout.ValidationRegexes.Add(novaRegex);
+                    }
+                    else
+                    {
+                        var regexExistente = layout.ValidationRegexes
+                                 .FirstOrDefault(x => x.Id == regexRequest.Id);
+
+                        if (regexExistente != null)
+                        {
+                            _mapper.Map(regexRequest, regexExistente);
+                        }
+                    }
+                }
+            }
+            _baseRepository.Update(layout);
             await _baseRepository.SaveChangesAsync();
 
-            return new UpdateApiResponse { Message = "Layout atualizado com sucesso." };
+            return new UpdateApiResponse { Message = UpdateMessage };
         }
     }
 }

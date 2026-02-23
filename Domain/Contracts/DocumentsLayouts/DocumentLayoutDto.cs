@@ -1,4 +1,5 @@
 ﻿using Domain.Contracts.ExtractionRules;
+using Domain.Contracts.ValidatioRegexes;
 using Domain.Entities;
 using System.Text.Json.Serialization;
 
@@ -18,8 +19,13 @@ namespace Domain.Contracts.DocumentsLayouts
         public DateTime? CreatedAt { get; set; }
         [JsonPropertyName("active")]
         public bool? Active { get; set; }
+        [JsonPropertyName("system")]
+        public bool System { get; set; }
 
         [JsonPropertyName("extraction_rules")]
         public List<ExtractionRuleDto> ExtractionRules { get; set; } = new List<ExtractionRuleDto>();
+
+        [JsonPropertyName("validation_regexes")]
+        public List<ValidationRegexDto> ValidationRegexes { get; set; } = new List<ValidationRegexDto>();
     }
 }

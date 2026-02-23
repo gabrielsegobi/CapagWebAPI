@@ -17,8 +17,10 @@ namespace Infrastructure.Configurations
             builder.Property(dl => dl.ValidationRegex).HasColumnName("validation_regex").HasColumnType("TEXT").IsRequired();
             builder.Property(dl => dl.CreatedAt).HasColumnName("created_at").HasColumnType("TIMESTAMP");
             builder.Property(dl => dl.Active).HasColumnName("active").HasColumnType("TINYINT(1)");
+            builder.Property(dl => dl.System).HasColumnName("system").HasColumnType("TINYINT(1)").IsRequired();
 
             builder.HasMany(dl => dl.ExtractionRules).WithOne(er => er.Layout).HasForeignKey(er => er.LayoutId);
+            builder.HasMany(dl => dl.ValidationRegexes).WithOne(vr => vr.Layout).HasForeignKey(er => er.DocumentLayoutId);
         }
     }
 }

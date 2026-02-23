@@ -22,7 +22,7 @@ namespace Application.Handlers.DocumentLayouts
 
         public async Task<PagedApiResponse<DocumentLayoutDto>> Handle(GetAllDocumentsLayoutsQuery request, CancellationToken cancellationToken)
         {
-            var query = _baseRepository.Query().Include(er => er.ExtractionRules);
+            var query = _baseRepository.Query().Include(er => er.ExtractionRules).Include(vr => vr.ValidationRegexes);
 
             var pagedResult = await query.ReadPage<DocumentLayout, DocumentLayoutDto>(
                 request.Filter,

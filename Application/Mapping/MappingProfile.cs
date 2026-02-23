@@ -25,6 +25,7 @@ using Domain.Contracts.Tenants;
 using Domain.Contracts.TipoGrupos;
 using Domain.Contracts.Usuarios;
 using Domain.Contracts.UsuarioTenant;
+using Domain.Contracts.ValidatioRegexes;
 using Domain.Contracts.ValorCalcVariaveis;
 using Domain.Contracts.ValoresAnuais;
 using Domain.Contracts.Views;
@@ -179,8 +180,16 @@ namespace Application.Mapping
               .ForMember(dto => dto.ExtractionRules, opt => opt.MapFrom(src => src.ExtractionRules)).ReverseMap();
 
             CreateMap<CreateDocumentLayoutRequest, DocumentLayout>()
-                  .ForMember(pl => pl.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+                  .ForMember(pl => pl.CreatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
+                  .ForMember(pl => pl.Active, opt => opt.MapFrom(src => true));
             CreateMap<UpdateDocumentLayoutRequest, DocumentLayout>();
+            #endregion
+
+
+            #region ValidationRegex
+            CreateMap<CreateValidationRegexRequest, ValidationRegex>();
+            CreateMap<UpdateValidationRegexRequest, ValidationRegex>();
+
             #endregion
 
             #region ExtractionRules

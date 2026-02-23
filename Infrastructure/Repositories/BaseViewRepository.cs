@@ -30,5 +30,9 @@ namespace Infrastructure.Repositories
         {
             return _dbSet.AsNoTracking().AsQueryable();
         }
+
+
+
+
     }
 }

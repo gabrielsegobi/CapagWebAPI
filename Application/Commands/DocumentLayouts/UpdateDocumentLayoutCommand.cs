@@ -8,7 +8,7 @@ namespace Application.Commands.DocumentLayouts
     {
         public long Id { get; set; }
         public UpdateDocumentLayoutRequest UpdateDocumentLayoutRequest { get; set; }
-        public UpdateDocumentLayoutCommand(int id, UpdateDocumentLayoutRequest updateDocumentLayoutRequest)
+        public UpdateDocumentLayoutCommand(long id, UpdateDocumentLayoutRequest updateDocumentLayoutRequest)
         {
             Id = id;
             UpdateDocumentLayoutRequest = updateDocumentLayoutRequest;

@@ -8,7 +8,9 @@
         public string ValidationRegex { get; set; } = string.Empty;
         public DateTime? CreatedAt { get; set; }
         public bool? Active { get; set; }
+        public bool System { get; set; }
 
         public ICollection<ExtractionRule> ExtractionRules { get; set; } = new List<ExtractionRule>();
+        public ICollection<ValidationRegex> ValidationRegexes { get; set; } = new List<ValidationRegex>();
     }
 }
