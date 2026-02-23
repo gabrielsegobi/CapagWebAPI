@@ -187,6 +187,7 @@ namespace Application.Mapping
 
 
             #region ValidationRegex
+            CreateMap<ValidationRegex, ValidationRegexDto>().ReverseMap();
             CreateMap<CreateValidationRegexRequest, ValidationRegex>();
             CreateMap<UpdateValidationRegexRequest, ValidationRegex>();
 
