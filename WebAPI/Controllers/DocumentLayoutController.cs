@@ -47,5 +47,14 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> DeleteDocumentLayout(int id)
+        {
+            var response = await mediator.Send(new DeleteDocumentLayoutCommand(id));
+
+            return Ok(response);
+        }
     }
 }
