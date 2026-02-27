@@ -15,5 +15,8 @@ namespace Domain.Contracts.Indicadores
 
         [JsonPropertyName("saude_empresa")]
         public decimal? SaudeEmpresa { get; set; }
+
+        [JsonPropertyName("valores_calc_saude_empresa")]
+        public string ValoresCalcSaudeEmpresa { get; set; } = string.Empty;
     }
 }

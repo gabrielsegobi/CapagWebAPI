@@ -114,6 +114,11 @@ namespace Application.Mapping
                   .ForMember(dto => dto.DescricaoIndicador, opt => opt.MapFrom(src => IndicadorDescricaoMapper.ObterDescricao(src.Nome)))
 
                   .ReverseMap();
+
+            CreateMap<Indicador, CalcIndicadoresDto>()
+                .ForMember(dto => dto.ValoresAnuais, opt => opt.MapFrom(src => src.ValoresAnuais));
+
+
             #endregion
 
             #region ValoresAnuais
@@ -122,6 +127,7 @@ namespace Application.Mapping
                   .ForMember(va => va.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
 
             CreateMap<ValorAnual, ValorAnualDto>().ReverseMap();
+            CreateMap<ValorAnual, CalcValoresAnuaisDto>().ReverseMap();
             #endregion
 
             #region ModelosIndicesICP

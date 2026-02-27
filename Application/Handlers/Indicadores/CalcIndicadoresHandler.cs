@@ -66,8 +66,6 @@ namespace Application.Handlers.Indicadores
                     if (double.IsNaN(valorCalculado) || double.IsInfinity(valorCalculado))
                         valorCalculado = 0;
 
-
-
                     if (!resultadosPorIndicador.ContainsKey(formula.Nome))
                         resultadosPorIndicador[formula.Nome] = new List<object>();
 
@@ -93,12 +91,36 @@ namespace Application.Handlers.Indicadores
                     .DefaultIfEmpty(0)
                     .Average();
 
+                var valoresDetalhados = kv.Value
+                    .Where(v => ((decimal?)((dynamic)v).Valor).HasValue)
+                    .Select(v =>
+                    {
+                        dynamic d = v;
+                        return $"Valor{d.Ano}: {((decimal)d.Valor).ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+                    })
+                    .ToList();
+
+                var quantidade = valoresDetalhados.Count;
+
+                string formula;
+
+                if (quantidade > 0)
+                {
+                    var somaString = string.Join(" + ", valoresDetalhados);
+                    formula = $" ({somaString}) / {quantidade}";
+                }
+                else
+                {
+                    formula = " 0";
+                }
+
                 var createIndicadorRequest = new CreateIndicadorRequest
                 {
                     IdEmpresa = request.IdEmpresa,
                     IdTenant = tenantId.Value,
                     Nome = kv.Key,
-                    SaudeEmpresa = mediaValores
+                    SaudeEmpresa = mediaValores,
+                    ValoresCalcSaudeEmpresa = formula
                 };
 
                 var indicador = _mapper.Map<Indicador>(createIndicadorRequest);
@@ -112,7 +134,8 @@ namespace Application.Handlers.Indicadores
                     {
                         IdIndicador = indicador.IdIndicador,
                         Ano = valorDin.Ano,
-                        Valor = (decimal?)valorDin.Valor
+                        Valor = (decimal?)valorDin.Valor,
+                        valoresCalcAno = valorDin.Expressao,
                     };
 
                     var valorAnual = _mapper.Map<ValorAnual>(createValorRequest);
@@ -123,7 +146,6 @@ namespace Application.Handlers.Indicadores
             }
 
             return resultadosPorIndicador;
-
         }
     }
 }

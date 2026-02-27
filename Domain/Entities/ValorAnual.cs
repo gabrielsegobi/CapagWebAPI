@@ -6,6 +6,7 @@
         public long IdIndicador { get; set; }
         public int Ano { get; set; }
         public decimal? Valor { get; set; }
+        public string? ValoresCalcAno { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

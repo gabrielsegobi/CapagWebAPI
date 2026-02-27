@@ -28,5 +28,12 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
+        [HttpGet("calculos_indicaroes/{idEmpresa}")]
+        public async Task<IActionResult> GetIndicadoresByEmpresaId(long idEmpresa, [FromQuery] CalcIndicadoresFilter filter)
+        {
+            var response = await mediator.Send(new GetAllCalcIndicaoresQuery(idEmpresa, filter));
+
+            return Ok(response);
+        }
     }
 }
