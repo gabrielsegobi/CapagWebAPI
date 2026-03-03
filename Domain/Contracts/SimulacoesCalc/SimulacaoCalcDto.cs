@@ -14,7 +14,7 @@ namespace Domain.Contracts.SimulacoesCalc
         [JsonPropertyName("limitador_pct")]
         public decimal LimitadorPCT { get; set; }
         [JsonPropertyName("desc_max_pct")]
-        public decimal DescMaxPct { get; set; }
+        public decimal? DescMaxPct { get; set; }
         [JsonPropertyName("has_prejuizo")]
         public bool HasPrejuizo { get; set; }
         [JsonPropertyName("prejuizo_valor")]

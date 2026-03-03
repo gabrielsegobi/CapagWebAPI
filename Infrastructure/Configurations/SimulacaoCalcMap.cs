@@ -16,7 +16,7 @@ namespace Infrastructure.Configurations
             builder.Property(s => s.IdEmpresa).HasColumnName("id_empresa") .HasColumnType("BIGINT UNSIGNED") .IsRequired();
             builder.Property(s => s.TipoSimulacao).HasColumnName("tipo_simulacao").HasColumnType("ENUM('PREVIDENCIARIO', 'OUTRO')").IsRequired();
             builder.Property(s => s.LimitadorPCT).HasColumnName("limitador_pct").HasColumnType("DECIMAL(5,2)").IsRequired();
-            builder.Property(s => s.DescMaxPct).HasColumnName("desc_max_pct").HasColumnType("DECIMAL(5,2)").IsRequired();
+            builder.Property(s => s.DescMaxPct).HasColumnName("desc_max_pct").HasColumnType("DECIMAL(5,2)");
             builder.Property(s => s.HasPrejuizo).HasColumnName("has_prejuizo").HasColumnType("TINYINT(1)").IsRequired();
             builder.Property(s => s.PrejuizoValor).HasColumnName("prejuizo_valor").HasColumnType("DECIMAL(15,2)").IsRequired();
             builder.Property(s => s.HasAbatimento).HasColumnName("has_abatimento") .HasColumnType("TINYINT(1)").IsRequired();

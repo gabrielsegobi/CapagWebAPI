@@ -8,7 +8,7 @@
 
         public string TipoSimulacao { get; set; }
         public decimal LimitadorPCT { get; set; }
-        public decimal DescMaxPct { get; set; }
+        public decimal? DescMaxPct { get; set; }
 
         public bool HasPrejuizo { get; set; }
         public decimal PrejuizoValor { get; set; }
