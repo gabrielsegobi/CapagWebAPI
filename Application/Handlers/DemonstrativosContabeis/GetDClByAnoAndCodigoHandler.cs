@@ -38,8 +38,8 @@ namespace Application.Handlers.DemonstrativosContabeis
                     {
                         g.Key.Codigo,
                         g.Key.Ano,
-                        TotalValCtaRefFin = g.Sum(x => x.ValCtaRefFin),
-                        TotalValCtaRefIni = g.Sum(x => x.ValCtaRefIni)
+                        TotalValCtaRefFin = g.Any(x=>x.PerApur=="T01")?g.First(x=>x.PerApur=="T04").ValCtaRefFin: g.First(x => x.PerApur == "A00").ValCtaRefFin,
+                        TotalValCtaRefIni = g.Any(x => x.PerApur == "T01") ? g.First(x => x.PerApur == "T01").ValCtaRefIni : g.First(x => x.PerApur == "A00").ValCtaRefIni
                     })
                     .ToListAsync(cancellationToken);
 
