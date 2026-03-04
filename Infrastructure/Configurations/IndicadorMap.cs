@@ -17,7 +17,7 @@ namespace Infrastructure.Configurations
             builder.Property(ir => ir.IdEmpresa).HasColumnName("id_empresa").HasColumnType("BIGINT").IsRequired();
             builder.Property(ir => ir.Nome).HasColumnName("nome").HasColumnType("VARCHAR(50)").IsRequired();
             builder.Property(ir => ir.ValoresCalcSaudeEmpresa).HasColumnName("valores_calc_saude_empresa").HasColumnType("VARCHAR(500)");
-            builder.Property(ir => ir.SaudeEmpresa).HasColumnName("saude_empresa").HasColumnType("DECIMAL(10,2)");
+            builder.Property(ir => ir.SaudeEmpresa).HasColumnName("saude_empresa").HasColumnType("DECIMAL(12,4)");
             builder.Property(ir => ir.CreatedAt).HasColumnName("created_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(ir => ir.UpdatedAt).HasColumnName("updated_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(ir => ir.DeletedAt).HasColumnName("deleted_at").HasColumnType("TIMESTAMP");
