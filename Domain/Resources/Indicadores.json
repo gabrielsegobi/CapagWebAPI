@@ -65,6 +65,6 @@
   },
   {
     "nome": "Capital de Giro de Longo Prazo (CGLP)",
-    "formula": "({2.02} + {2.03}) - {1.02}"
+    "formula": "(({2.02} + {2.03}) - {1.02}) / {1}"
   }
 ]
