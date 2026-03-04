@@ -19,7 +19,10 @@
             { "Prazo Médio de Pagamento (PMP)", "Indica o tempo médio que a empresa leva para pagar seus fornecedores." },
             { "Prazo Médio de Estocagem (PME)", "Mede o tempo médio que os produtos permanecem em estoque." },
             { "Prazo Médio de Recebimento (PMR)", "Mostra quanto tempo a empresa leva para receber de seus clientes." },
-            { "Ciclo Financeiro", "Representa o tempo entre o pagamento aos fornecedores e o recebimento das vendas." }
+            { "Ciclo Financeiro", "Representa o tempo entre o pagamento aos fornecedores e o recebimento das vendas." },
+            { "Necessidade de Capital de Giro (NCG)", "Ativo Circulante Operacional (ACO) – Passivo Circulante Operacional (PCO)." },
+            { "Capital de Giro de Longo Prazo (CGLP)", "(Passivo Não Circulante + Patrimônio Líquido) – Ativo Não Circulante." }
+
         };
 
         public static string ObterDescricao(string nomeIndicador)

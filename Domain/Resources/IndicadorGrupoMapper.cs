@@ -7,6 +7,7 @@
             { "Liquidez Geral", "Liquidez" },
             { "Liquidez Seca", "Liquidez" },
             { "Liquidez Imediata", "Liquidez" },
+            { "Capital de Giro de Longo Prazo (CGLP)", "Liquidez" },
 
             { "Índice de Endividamento Geral", "Endividamento" },
             { "Grau de Endividamento", "Endividamento" },
@@ -22,7 +23,9 @@
             { "Prazo Médio de Pagamento (PMP)", "Ciclo Financeiro" },
             { "Prazo Médio de Estocagem (PME)", "Ciclo Financeiro" },
             { "Prazo Médio de Recebimento (PMR)", "Ciclo Financeiro" },
-            { "Ciclo Financeiro", "Ciclo Financeiro" }
+            { "Ciclo Financeiro", "Ciclo Financeiro" },
+            { "Necessidade de Capital de Giro (NCG)", "Ciclo Financeiro" }
+
         };
 
         private static readonly Dictionary<string, string> _descricaoGrupos = new(StringComparer.OrdinalIgnoreCase)
