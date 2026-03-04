@@ -1,13 +1,21 @@
-﻿using System.Collections;
-
-namespace Domain.Entities
+﻿namespace Domain.Entities
 {
     public class RegFileName
     {
+        public RegFileName()
+        {
+            var now = DateTime.UtcNow;
+
+            Status = "Sucesso";
+            CreatedAt = now.AddHours(-3);
+        }
+
         public long Id { get; set; }
         public string FileName { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
-
+        public string Status { get; set; } = string.Empty;
+        public string Error { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
         //public ICollection<RegIrpf> RegIrpfs { get; set; } = new List<RegIrpf>();
         public ICollection<RegDefi> RegDefis { get; set; } = [];
         public ICollection<RegDarfs> RegDarfs { get; set; } = [];
