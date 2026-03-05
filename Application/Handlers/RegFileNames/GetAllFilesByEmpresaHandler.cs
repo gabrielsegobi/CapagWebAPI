@@ -135,11 +135,11 @@ namespace Application.Handlers.RegFileNames
             var ecffiles = await ecf.ToListAsync(cancellationToken);
 
             var regs = await dctf
-                .Concat(darf)
-                .Concat(defi)
-                .Concat(dirf)
-                .Concat(irpf)
-                .Concat(pgdas)
+                .Union(darf)
+                .Union(defi)
+                .Union(dirf)
+                .Union(irpf)
+                .Union(pgdas)
                 .ToListAsync(cancellationToken);
 
             var result = regs
