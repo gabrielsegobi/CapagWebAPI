@@ -12,13 +12,15 @@ namespace Application.Handlers.DocumentLayouts
     public class UpdateDocumentLayoutHandler : IRequestHandler<UpdateDocumentLayoutCommand, UpdateApiResponse>
     {
         private readonly IBaseRepository<DocumentLayout> _baseRepository;
+        private readonly IBaseRepository<ValidationRegex> _validationRegexRepository;
         private readonly IMapper _mapper;
 
         public static string UpdateMessage = "Layout atualizado com sucesso.";
-        public UpdateDocumentLayoutHandler(IBaseRepository<DocumentLayout> baseRepository, IMapper mapper)
+        public UpdateDocumentLayoutHandler(IBaseRepository<DocumentLayout> baseRepository, IMapper mapper, IBaseRepository<ValidationRegex> validationRegexRepository)
         {
             _baseRepository = baseRepository;
             _mapper = mapper;
+            _validationRegexRepository = validationRegexRepository;
         }
         public async Task<UpdateApiResponse> Handle(UpdateDocumentLayoutCommand request, CancellationToken cancellationToken)
         {
@@ -48,6 +50,7 @@ namespace Application.Handlers.DocumentLayouts
                 foreach (var regex in regexesParaRemover)
                 {
                     layout.ValidationRegexes.Remove(regex);
+                    _validationRegexRepository.Delete(regex);
                 }
 
                 foreach (var regexRequest in requestRegexes)
