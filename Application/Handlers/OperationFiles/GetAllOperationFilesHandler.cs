@@ -32,10 +32,6 @@ namespace Application.Handlers.OperationFiles
 
 
 
-                    q = request.Filter.OrderByDescending
-                        ? q.OrderByDescending(e => e.ValorTotal)
-                        : q.OrderBy(e => e.ValorTotal);
-
                     return q;
                 },
                 mapFunc: data => _mapper.Map<IEnumerable<OperationFilesDto>>(data)
