@@ -9,6 +9,7 @@ using Domain.Contracts.ICPAnterior;
 using Domain.Contracts.ICPLimits;
 using Domain.Contracts.Indicadores;
 using Domain.Contracts.ModelosIndicesICP;
+using Domain.Contracts.OperationFiles;
 using Domain.Contracts.ProcessLog;
 using Domain.Contracts.RefreshTokens;
 using Domain.Contracts.RegDarf;
@@ -337,7 +338,9 @@ namespace Application.Mapping
             CreateMap<UsuariosAcessosVw, UAViewDto>();
             #endregion
 
-            #region Operation 
+            #region OperationFile 
+            CreateMap<OperationFile, OperationFilesDto>()
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
             #endregion
         }
