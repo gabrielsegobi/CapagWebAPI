@@ -3,6 +3,7 @@ using Application.Queries.RegFileNames;
 using Domain.Contracts.RegFileNames;
 using Domain.Contracts.Responses;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Interface;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +19,11 @@ namespace Application.Handlers.RegFileNames
         private readonly IBaseRepository<RegIrpf> _regIrpfRepository;
         private readonly IBaseRepository<RegPgdasd> _regPgdasdRepository;
         private readonly IBaseRepository<Empresa> _empresaRepository;
+        private readonly IBaseRepository<OperationFile> _operationFileRepository;
 
         public GetAllFilesByEmpresaHandler(IBaseRepository<RegDefi> regDefiRepository, IBaseRepository<RegDarfs> regDarfsRepository,
             IBaseRepository<RegDctf> regDctfRepository, IBaseRepository<RegDirfTerceiro> regDirfTerceiroRepository,
-            IBaseRepository<RegIrpf> regIrpfRepository, IBaseRepository<RegPgdasd> regPgdasdRepository, IBaseRepository<Empresa> empresaRepository)
+            IBaseRepository<RegIrpf> regIrpfRepository, IBaseRepository<RegPgdasd> regPgdasdRepository, IBaseRepository<Empresa> empresaRepository, IBaseRepository<OperationFile> operationFileRepository)
         {
             _regDefiRepository = regDefiRepository;
             _regDarfsRepository = regDarfsRepository;
@@ -30,6 +32,7 @@ namespace Application.Handlers.RegFileNames
             _regIrpfRepository = regIrpfRepository;
             _regPgdasdRepository = regPgdasdRepository;
             _empresaRepository = empresaRepository;
+            _operationFileRepository = operationFileRepository;
         }
 
         public async Task<GetApiResponse> Handle(GetAllFilesByEmpresaQuery request, CancellationToken cancellationToken)
@@ -115,18 +118,37 @@ namespace Application.Handlers.RegFileNames
                    Type = "PGDASD"
                });
 
-            var result = await dctf
-                  .Union(darf)
-                  .Union(defi)
-                  .Union(dirf)
-                  .Union(irpf)
-                  .Union(pgdas)
-                  .OrderByDescending(x => x.CreatedAt)
-                  .ToListAsync(cancellationToken);
+            var ecf = _operationFileRepository
+                .Query()
+                .Where(x => x.Operation.IdEmpresa == empresa.IdEmpresa)
+                .Select(x => new RegFileNameDto
+                {
+                    Id = x.Id,
+                    FileName = x.FileName,
+                    Status = x.Status == OperationFileStatus.ProcessadaComErro ? "Erro" : x.Status.ToString(),
+                    Error = x.Status == OperationFileStatus.ProcessadaComErro ? "Erro ao processar arquivo ECF": "",
+                    CreatedAt = x.Operation.DateCreate,
+                    Type = "ECF"
+                });
+
+
+            var ecffiles = await ecf.ToListAsync(cancellationToken);
+
+            var regs = await dctf
+                .Concat(darf)
+                .Concat(defi)
+                .Concat(dirf)
+                .Concat(irpf)
+                .Concat(pgdas)
+                .ToListAsync(cancellationToken);
+
+            var result = regs
+                .Concat(ecffiles)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToList();
+
 
             return new GetApiResponse { Data = result };
-
-
         }
     }
 }
