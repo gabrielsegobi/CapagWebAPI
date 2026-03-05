@@ -125,7 +125,9 @@ namespace Application.Handlers.RegFileNames
                 {
                     Id = x.Id,
                     FileName = x.FileName,
-                    Status = x.Status == OperationFileStatus.ProcessadaComErro ? "Erro" : x.Status.ToString(),
+                    Status = x.Status == OperationFileStatus.ProcessadaComErro? "Erro" : x.Status == OperationFileStatus.Processado? 
+                    "Sucesso": x.Status == OperationFileStatus.AguardandoProcessamento? 
+                    "Pendente": x.Status.ToString(),
                     Error = x.Status == OperationFileStatus.ProcessadaComErro ? "Erro ao processar arquivo ECF": "",
                     CreatedAt = x.Operation.DateCreate,
                     Type = "ECF"
