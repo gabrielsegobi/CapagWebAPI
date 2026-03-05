@@ -6,10 +6,6 @@ namespace Domain.Contracts.RegsPgdasd
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }
-        [JsonPropertyName("id_tenant")]
-        public long IdTenant { get; set; }
-        [JsonPropertyName("id_empresa")]
-        public long IdEmpresa { get; set; }
         [JsonPropertyName("periodo")]
         public string Periodo { get; set; } = string.Empty;
         [JsonPropertyName("receita_bruta")]

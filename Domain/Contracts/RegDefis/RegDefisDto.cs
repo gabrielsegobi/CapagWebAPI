@@ -7,8 +7,6 @@ namespace Domain.Contracts.RegDefis
 
         [JsonPropertyName("id")]
         public long Id { get; set; }
-        [JsonPropertyName("id_empresa")]
-        public long IdEmpresa { get; set; }
         [JsonPropertyName("periodo")]
         public DateTime Periodo { get; set; }
         [JsonPropertyName("descricao")]
