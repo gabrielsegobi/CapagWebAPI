@@ -30,6 +30,9 @@ namespace Application.Handlers.RegDirfTerceiros
                     if (request.Filter.IdEmpresa >= 0)
                         q = q.Where(e => e.IdEmpresa == request.Filter.IdEmpresa);
 
+                    if (request.Filter.IdFilename >= 0)
+                        q = q.Where(e => e.IdFilename == request.Filter.IdFilename);
+
                     if (!string.IsNullOrWhiteSpace(request.Filter.Codigo))
                         q = q.Where(e => e.Codigo.ToString().Contains(request.Filter.Codigo.Trim()));
 

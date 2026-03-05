@@ -4,5 +4,6 @@
     {
         public long? IdEmpresa { get; set; }
         public string Codigo { get; set; } = string.Empty;
+        public long? IdFilename { get; set; }
     }
 }

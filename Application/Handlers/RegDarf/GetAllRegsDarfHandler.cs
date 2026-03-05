@@ -30,6 +30,9 @@ namespace Application.Handlers.RegDarf
                     if (request.Filter.IdEmpresa >= 0)
                         q = q.Where(e => e.IdEmpresa == request.Filter.IdEmpresa);
 
+                    if (request.Filter.IdFilename >= 0)
+                        q = q.Where(e => e.IdFilename == request.Filter.IdFilename);
+
                     if (request.Filter.ValorTotal >= 0)
                         q = q.Where(e => e.ValorTotal == request.Filter.ValorTotal);
 

@@ -29,6 +29,10 @@ namespace Application.Handlers.RegsDctf
                     if (request.Filter.IdEmpresa >= 0)
                         q = q.Where(e => e.IdEmpresa == request.Filter.IdEmpresa);
 
+
+                    if (request.Filter.IdFilename >= 0)
+                        q = q.Where(e => e.IdFilename == request.Filter.IdFilename);
+
                     q = request.Filter.OrderByDescending
                         ? q.OrderByDescending(e => e.IdEmpresa)
                         : q.OrderBy(e => e.IdEmpresa);
