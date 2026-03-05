@@ -30,6 +30,13 @@ namespace WebAPI.Controllers
             var response = await mediator.Send(new CreateProcessLogCommand { CreateProcessLogRequest = request });
             return Ok(response);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteProcessLog(long id)
+        {
+            var response = await mediator.Send(new DeleteProcessLogCommand(id));
+            return Ok(response);
+        }
     }
 }
 
