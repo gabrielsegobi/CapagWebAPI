@@ -1,10 +1,7 @@
 ﻿using Application.Commands.SimulacoesCalc;
-using Application.Commands.ValorCalcVariaveis;
 using Application.Filters;
 using Application.Queries.SimulacoesCalc;
-using Application.Queries.ValorCalcVariaveis;
 using Domain.Contracts.SimulacoesCalc;
-using Domain.Contracts.ValorCalcVariaveis;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -38,6 +35,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Update([FromBody] UpdateSimulacaoCalcRequest request, long id)
         {
             var response = await mediator.Send(new UpdateSimulacaoCalcCommand(id, request));
+            return Ok(response);
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(long id)
+        {
+            var response = await mediator.Send(new DeleteSimulacaoCalcCommand(id));
             return Ok(response);
         }
     }
