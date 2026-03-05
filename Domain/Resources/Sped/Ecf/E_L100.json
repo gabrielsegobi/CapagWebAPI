@@ -1,0 +1,174 @@
+{
+  "registro": "L100",
+  "tabela": "ecf_l100",
+  "nivel": 3,
+  "pai": "L030",
+  "layoutIndex": {
+    "1": "v0",
+    "2": "v0",
+    "3": "v0",
+    "4": "v0",
+    "5": "v1",
+    "6": "v1",
+    "7": "v1",
+    "8": "v1",
+    "9": "v1",
+    "10": "v1",
+    "11": "v1",
+    "12": "v1"
+  },
+  "versoes": {
+    "v0": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "CODIGO",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "codigo"
+        },
+        {
+          "nome": "DESCRICAO",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "descricao"
+        },
+        {
+          "nome": "TIPO",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "tipo"
+        },
+        {
+          "nome": "NIVEL",
+          "indice": 5,
+          "tipo": "string",
+          "coluna": "nivel"
+        },
+        {
+          "nome": "COD_NAT",
+          "indice": 6,
+          "tipo": "string",
+          "coluna": "cod_nat"
+        },
+        {
+          "nome": "COD_CTA_SUP",
+          "indice": 7,
+          "tipo": "string",
+          "coluna": "cod_cta_sup"
+        },
+        {
+          "nome": "VAL_CTA_REF_INI",
+          "indice": 8,
+          "tipo": "string",
+          "coluna": "val_cta_ref_ini"
+        },
+        {
+          "nome": "IND_VAL_CTA_REF_INI",
+          "indice": 9,
+          "tipo": "string",
+          "coluna": "ind_val_cta_ref_ini"
+        },
+        {
+          "nome": "VAL_CTA_REF_FIN",
+          "indice": 10,
+          "tipo": "string",
+          "coluna": "val_cta_ref_fin"
+        },
+        {
+          "nome": "IND_VAL_CTA_REF_FIN",
+          "indice": 11,
+          "tipo": "string",
+          "coluna": "ind_val_cta_ref_fin"
+        }
+      ]
+    },
+    "v1": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "CODIGO",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "codigo"
+        },
+        {
+          "nome": "DESCRICAO",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "descricao"
+        },
+        {
+          "nome": "TIPO",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "tipo"
+        },
+        {
+          "nome": "NIVEL",
+          "indice": 5,
+          "tipo": "string",
+          "coluna": "nivel"
+        },
+        {
+          "nome": "COD_NAT",
+          "indice": 6,
+          "tipo": "string",
+          "coluna": "cod_nat"
+        },
+        {
+          "nome": "COD_CTA_SUP",
+          "indice": 7,
+          "tipo": "string",
+          "coluna": "cod_cta_sup"
+        },
+        {
+          "nome": "VAL_CTA_REF_INI",
+          "indice": 8,
+          "tipo": "string",
+          "coluna": "val_cta_ref_ini"
+        },
+        {
+          "nome": "IND_VAL_CTA_REF_INI",
+          "indice": 9,
+          "tipo": "string",
+          "coluna": "ind_val_cta_ref_ini"
+        },
+        {
+          "nome": "VAL_CTA_REF_DEB",
+          "indice": 10,
+          "tipo": "string",
+          "coluna": "val_cta_ref_deb"
+        },
+        {
+          "nome": "VAL_CTA_REF_CRED",
+          "indice": 11,
+          "tipo": "string",
+          "coluna": "val_cta_ref_cred"
+        },
+        {
+          "nome": "VAL_CTA_REF_FIN",
+          "indice": 12,
+          "tipo": "string",
+          "coluna": "val_cta_ref_fin"
+        },
+        {
+          "nome": "IND_VAL_CTA_REF_FIN",
+          "indice": 13,
+          "tipo": "string",
+          "coluna": "ind_val_cta_ref_fin"
+        }
+      ]
+    }
+  }
+}

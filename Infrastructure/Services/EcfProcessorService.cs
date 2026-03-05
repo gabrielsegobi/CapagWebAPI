@@ -1,8 +1,12 @@
 ﻿using Domain.Contracts;
 using Domain.Entities;
+using Domain.Entities.Sped;
 using Domain.Entities.Sped.Ecf;
 using Domain.Interfaces;
 using Infrastructure.Interface;
+using Infrastructure.Parsers.Sped;
+using Infrastructure.Writers.Sped;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.DependencyInjection;
 using Org.BouncyCastle.Ocsp;
 using System;
@@ -13,9 +17,10 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
+using MySqlConnector;
 namespace Infrastructure.Services
 {
     public class EcfProcessorService : IEcfProcessorService
@@ -33,10 +38,13 @@ namespace Infrastructure.Services
         //private readonly Dictionary<Type, IList<EcfBase>> _buffer = new();
 
         private readonly IServiceScopeFactory _scopeFactory;
-
-        public EcfProcessorService(IServiceScopeFactory scopeFactory)
+        private readonly ILayoutRepository _layoutRepository;
+        //private readonly ChannelWriter<ParsedRow> _writer;
+        public EcfProcessorService(IServiceScopeFactory scopeFactory, ILayoutRepository layoutRepository)
         {
             _scopeFactory = scopeFactory;
+            _layoutRepository = layoutRepository;
+            //_writer = writer;
         }
 
 
@@ -70,11 +78,11 @@ namespace Infrastructure.Services
             var ecfs = new List<EcfBase>();
 
 
+            var _connectionString = "server=192.168.0.184; port=3306; database=gsaas; user=user; password=password; AllowLoadLocalInfile=true; Persist Security Info=false;";
 
-
-            string? line;
-            int lineNumber = 0;
-            int lineProcessed = 0;
+            //string? line;
+            //int lineNumber = 0;
+            //int lineProcessed = 0;
 
             var registrosPermitidos = new HashSet<string>
             {
@@ -100,130 +108,191 @@ namespace Infrastructure.Services
             //await _operationFileRepository.SaveChangesAsync();
 
             // 2️⃣ lê o arquivo do object storage
+            var swTotal = Stopwatch.StartNew();
+            var layouts = (await _layoutRepository.LoadAllAsync())
+                  .ToDictionary(x => x.Registro, StringComparer.OrdinalIgnoreCase);
+
             await using var stream = await _objectStorage.OpenReadAsync($"{IdOp}", FileName);
-            using var reader = new StreamReader(stream, Encoding.GetEncoding("ISO-8859-1"));
-            stream.Position = 0;
+            // 2. Cria o Channel — nasce e morre por processamento
+            //var channel = Channel.CreateBounded<ParsedRow>(
+            //    new BoundedChannelOptions(10_000)
+            //    {
+            //        FullMode = BoundedChannelFullMode.Wait,
+            //        SingleWriter = true,
+            //        SingleReader = true
+            //    });
 
-            //verfica se a competencia ja existe para esse cnpj
-            var primeiraLinha = await reader.ReadLineAsync();
-            if (string.IsNullOrWhiteSpace(primeiraLinha))
-                throw new Exception("Não foi possível fazer a leitura da linha");
+            //var parser = new SpedStreamParser(layouts, _writer);
 
-            var competenciaString = ExtrairCompetencia(primeiraLinha);
-            var cnpjRaiz = ExtrairCnpjRaiz(primeiraLinha);
-            var campos0000 = primeiraLinha.Split('|');
-            var firstReg = campos0000[1];
-            lineProcessed++;
-            stack.Push(new StackItem { Reg = firstReg, Id = lineProcessed });
-            var strategyy = _ecfFactory.ObterPorReg(firstReg);
-
-            var entidadee = strategyy.Build(
-                primeiraLinha,
-                Id: lineProcessed,
-                IdOp,
-                IdTenant,
-                IdEmpresa,
-                IdPai: null,
-                FileId,
-                FileName,
-                competenciaString
-            );
-
-            Add(entidadee, _buffer);
-
-            var competencia = DateTime.ParseExact(
-                competenciaString,
-                "yyyyMM",
-                CultureInfo.InvariantCulture
-            );
+            var channel = Channel.CreateBounded<ParsedRow>(
+                new BoundedChannelOptions(40_000)
+                {
+                    FullMode = BoundedChannelFullMode.Wait, // parser espera se banco lento
+                    SingleWriter = true,  // só um parser por arquivo
+                    SingleReader = true   // só um writer consome
+                });
 
 
 
-
-            var query = e_0000Repository.Query(o =>
-                   o.Cnpj.StartsWith(campos0000[4].Substring(0, 8)) &&
-             o.DtIni == ConverterData(campos0000, 10));
-
-            var listaExistentes = query.ToList();
-
-            if (listaExistentes.Any())
-            {
-                if (overwrite == false)
-                    throw new Exception($"Já existe uma operação para o CNPJ raiz {cnpjRaiz} na competência {competencia}.");
+            var parser = new SpedStreamParser(layouts, channel.Writer);
+            //parser.ParseAsync(stream, FileId, IdOp, IdTenant, IdEmpresa, 10, competencia: null).Wait();
 
 
-                e_0000Repository.DeleteRange(listaExistentes);
-                await e_0000Repository.SaveChangesAsync();
-            }
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync(cancellationToken);
+            await using var writer = new SqlBulkWriter(conn, layouts, 10);
+            //channel.Writer.Complete();
+
+            Console.Write("comecando");
+            var parseTask = ParseComFechamentoAsync(
+              parser, stream, FileId, IdOp, IdTenant, IdEmpresa,
+              10, channel.Writer, cancellationToken);
+
+
+
+
+            //var parseTask = parser.ParseAsync(parser, stream, FileId, IdOp, IdTenant, IdEmpresa,
+            //   competencia, channel.Writer, cancellationToken);
+
+            var writeTask = writer.ConsumeAsync(channel.Reader, cancellationToken);
+
+            // Aguarda ambos — se qualquer um lançar exceção, propaga
+            await Task.WhenAll(parseTask, writeTask);
+
+
+
+
+
+
+
+            swTotal.Stop();
+            Console.WriteLine($"Tempo TOTAL ParseAsync: {swTotal.ElapsedMilliseconds} ms");
+            Console.Write("terminou");
+            //return;
+
+            //using var reader = new StreamReader(stream, Encoding.GetEncoding("ISO-8859-1"));
+            //stream.Position = 0;
+
+            ////verfica se a competencia ja existe para esse cnpj
+            //var primeiraLinha = await reader.ReadLineAsync();
+            //if (string.IsNullOrWhiteSpace(primeiraLinha))
+            //    throw new Exception("Não foi possível fazer a leitura da linha");
+
+            //var competenciaString = ExtrairCompetencia(primeiraLinha);
+            //var cnpjRaiz = ExtrairCnpjRaiz(primeiraLinha);
+            //var campos0000 = primeiraLinha.Split('|');
+            //var firstReg = campos0000[1];
+            //lineProcessed++;
+            //stack.Push(new StackItem { Reg = firstReg, Id = lineProcessed });
+            //var strategyy = _ecfFactory.ObterPorReg(firstReg);
+
+            //var entidadee = strategyy.Build(
+            //    primeiraLinha,
+            //    Id: lineProcessed,
+            //    IdOp,
+            //    IdTenant,
+            //    IdEmpresa,
+            //    IdPai: null,
+            //    FileId,
+            //    FileName,
+            //    competenciaString
+            //);
+
+            //Add(entidadee, _buffer);
+
+            //var competencia = DateTime.ParseExact(
+            //    competenciaString,
+            //    "yyyyMM",
+            //    CultureInfo.InvariantCulture
+            //);
+
+
+
+
+            //var query = e_0000Repository.Query(o =>
+            //       o.Cnpj.StartsWith(campos0000[4].Substring(0, 8)) &&
+            // o.DtIni == ConverterData(campos0000, 10));
+
+            //var listaExistentes = query.ToList();
+
+            //if (listaExistentes.Any())
+            //{
+            //    if (overwrite == false)
+            //        throw new Exception($"Já existe uma operação para o CNPJ raiz {cnpjRaiz} na competência {competencia}.");
+
+
+            //    e_0000Repository.DeleteRange(listaExistentes);
+            //    await e_0000Repository.SaveChangesAsync();
+            //}
 
           
 
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                lineNumber++;
+            //while ((line = await reader.ReadLineAsync()) != null)
+            //{
+            //    lineNumber++;
 
 
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-                var campos = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            //    if (string.IsNullOrWhiteSpace(line))
+            //        continue;
+            //    var campos = line.Split('|', StringSplitOptions.RemoveEmptyEntries);
 
 
 
 
 
-                var reg = campos[0];
-                if (!registrosPermitidos.Contains(reg))
-                    continue;
+            //    var reg = campos[0];
+            //    if (!registrosPermitidos.Contains(reg))
+            //        continue;
 
-                lineProcessed++;
-                if (!hierarchy.TryGetValue(reg, out var parentReg))
-                {
-                    continue;
-                }
+            //    lineProcessed++;
+            //    if (!hierarchy.TryGetValue(reg, out var parentReg))
+            //    {
+            //        continue;
+            //    }
 
-                // 4️⃣ ajusta stack até encontrar o pai correto
-                while (stack.Any() && stack.Peek().Reg != parentReg)
-                {
-                    stack.Pop();
-                }
+            //    // 4️⃣ ajusta stack até encontrar o pai correto
+            //    while (stack.Any() && stack.Peek().Reg != parentReg)
+            //    {
+            //        stack.Pop();
+            //    }
 
-                var pai = stack.Any() ? stack.Peek() : null;
-                var idPai = pai?.Id;
+            //    var pai = stack.Any() ? stack.Peek() : null;
+            //    var idPai = pai?.Id;
 
-                stack.Push(new StackItem
-                {
-                    Reg = reg,
-                    Id = lineProcessed
-                });
+            //    stack.Push(new StackItem
+            //    {
+            //        Reg = reg,
+            //        Id = lineProcessed
+            //    });
 
-                try
-                {
-                    var strategy = _ecfFactory.ObterPorReg(reg);
+            //    try
+            //    {
+            //        var strategy = _ecfFactory.ObterPorReg(reg);
 
-                    var entidade = strategy.Build(
-                        line,
-                        Id: lineProcessed,
-                        IdOp,
-                        IdTenant,
-                        IdEmpresa,
-                        idPai.HasValue ? idPai.Value.GetHashCode() : null,
-                        FileId,          // fileId
-                        FileName,    // fileName
-                        competenciaString             // competencia (pode ser extraída da linha 0000 ou passada como parâmetro)  
-                    );
-                    Add(entidade, _buffer);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Erro ao processar linha {lineNumber}: {ex.Message}", ex);
-                    continue;
-                }
+            //        var entidade = strategy.Build(
+            //            line,
+            //            Id: lineProcessed,
+            //            IdOp,
+            //            IdTenant,
+            //            IdEmpresa,
+            //            idPai.HasValue ? idPai.Value.GetHashCode() : null,
+            //            FileId,          // fileId
+            //            FileName,    // fileName
+            //            competenciaString             // competencia (pode ser extraída da linha 0000 ou passada como parâmetro)  
+            //        );
+            //        Add(entidade, _buffer);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        throw new Exception($"Erro ao processar linha {lineNumber}: {ex.Message}", ex);
+            //        continue;
+            //    }
 
 
-            }
-            await _bulkInsertService.FlushAsync(_buffer, cancellationToken);
+            //}
+            //await _bulkInsertService.FlushAsync(_buffer, cancellationToken);
 
-            await Task.CompletedTask;
+            //await Task.CompletedTask;
         }
         private static string ExtrairCompetencia(string linha)
         {
@@ -240,6 +309,32 @@ namespace Infrastructure.Services
             }
 
             return string.Empty;
+        }
+
+
+        private static async Task ParseComFechamentoAsync(
+             SpedStreamParser parser,
+             Stream stream,
+             long fileId,
+             long idOp,
+             long idTenant,
+             long idEmpresa,
+             int layoutNumber,
+             ChannelWriter<ParsedRow> channelWriter,
+             CancellationToken cancellationToken)
+        {
+            try
+            {
+                await parser.ParseAsync(
+                    stream, fileId, idOp, idTenant, idEmpresa,
+                    layoutNumber);
+            }
+            finally
+            {
+                // Sempre fecha — mesmo se der exceção
+                // Sem isso o ConsumeAsync fica preso esperando para sempre
+                channelWriter.TryComplete();
+            }
         }
 
         private static string ExtrairDataInicial(string linha)

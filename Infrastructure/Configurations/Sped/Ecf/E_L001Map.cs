@@ -10,20 +10,20 @@ namespace Infrastructure.Configurations.Sped.Ecf
         {
             builder.ToTable("ecf_l001");
 
-            builder.HasKey(e => new { e.IdOp, e.FileId, e.Id, });
+            builder.HasKey(e => new { e.FileId, e.Id, });
 
 
             // ===== EcfBase =====
             builder.Property(e => e.Id).HasColumnName("id").HasColumnType("BIGINT").IsRequired();
             builder.Property(e => e.IdOp).HasColumnName("id_op").HasColumnType("BIGINT").IsRequired();
             builder.Property(e => e.IdPai).HasColumnName("id_pai").HasColumnType("BIGINT");
-            builder.Property(e => e.IdTenant).HasColumnName("id_tenant").HasColumnType("BIGINT").IsRequired();
-            builder.Property(e => e.IdEmpresa).HasColumnName("id_empresa").HasColumnType("BIGINT").IsRequired();
+            //builder.Property(e => e.IdTenant).HasColumnName("id_tenant").HasColumnType("BIGINT").IsRequired();
+            builder.Property(e => e.Reg).HasColumnName("reg").HasColumnType("TEXT");
+            //builder.Property(e => e.IdEmpresa).HasColumnName("id_empresa").HasColumnType("BIGINT").IsRequired();
             builder.Property(e => e.FileId).HasColumnName("file_id").HasColumnType("BIGINT").IsRequired();
-            builder.Property(e => e.FileName).HasColumnName("file_name").HasColumnType("TEXT");
+            //builder.Property(e => e.FileName).HasColumnName("file_name").HasColumnType("TEXT");
 
             // ===== E_L001 =====
-            builder.Property(e => e.Reg).HasColumnName("reg").HasColumnType("TEXT");
             builder.Property(e => e.IndDad).HasColumnName("ind_dad").HasColumnType("TEXT");
         }
     }

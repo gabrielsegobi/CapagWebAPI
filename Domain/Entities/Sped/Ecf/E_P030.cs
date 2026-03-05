@@ -8,16 +8,13 @@ namespace Domain.Entities.Sped.Ecf
         public E_P030(
             long id,
             long? idPai,
-            long idTenant,
-            long idEmpresa,
             long idOp,
             long fileId,
-            string fileName,
             string reg,
             string dtIni,
             string dtFin,
             string perApur
-            ) : base(id, idPai, idTenant, idEmpresa, idOp, fileId, fileName)
+            ) : base(id, idPai, idOp, fileId)
         {
             Reg = reg;
             DtIni = dtIni;
@@ -38,7 +35,6 @@ namespace Domain.Entities.Sped.Ecf
             sb.AppendLine($" DtIni = {DtIni}");
             sb.AppendLine($" DtFin = {DtFin}");
             sb.AppendLine($" PerApur = {PerApur}");
-            sb.AppendLine($" FileName = {FileName}");
             sb.AppendLine($" IdOp = {IdOp}");
             sb.AppendLine($" FileNameId = {FileId}");
             sb.AppendLine("}");

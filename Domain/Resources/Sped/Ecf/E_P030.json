@@ -1,0 +1,50 @@
+{
+  "registro": "P030",
+  "tabela": "E_P030",
+  "nivel": 2,
+  "pai": "P001",
+  "layoutIndex": {
+    "1": "v0",
+    "2": "v0",
+    "3": "v0",
+    "4": "v0",
+    "5": "v0",
+    "6": "v0",
+    "7": "v0",
+    "8": "v0",
+    "9": "v0",
+    "10": "v0",
+    "11": "v0",
+    "12": "v0"
+  },
+  "versoes": {
+    "v0": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "DT_INI",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "dt_ini"
+        },
+        {
+          "nome": "DT_FIN",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "dt_fin"
+        },
+        {
+          "nome": "PER_APUR",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "per_apur"
+        }
+      ]
+    }
+  }
+}

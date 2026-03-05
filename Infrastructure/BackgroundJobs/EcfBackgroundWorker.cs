@@ -136,6 +136,7 @@ namespace Infrastructure.BackgroundJobs
 
                         continue;
                     }
+
                 }
 
                 if (errors > 0)

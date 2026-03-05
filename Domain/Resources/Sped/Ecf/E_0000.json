@@ -1,0 +1,116 @@
+{
+  "registro": "0000",
+  "tabela": "ecf_0000",
+  "nivel": 0,
+  "pai": null,
+  "layoutIndex": {
+    "1": "v0",
+    "2": "v0",
+    "3": "v0",
+    "4": "v0",
+    "5": "v0",
+    "6": "v0",
+    "7": "v0",
+    "8": "v0",
+    "9": "v0",
+    "10": "v0",
+    "11": "v0",
+    "12": "v0"
+  },
+  "versoes": {
+    "v0": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "NOME_ESC",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "nome_esc"
+        },
+        {
+          "nome": "COD_VER",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "cod_ver"
+        },
+        {
+          "nome": "CNPJ",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "cnpj"
+        },
+        {
+          "nome": "NOME",
+          "indice": 5,
+          "tipo": "string",
+          "coluna": "nome"
+        },
+        {
+          "nome": "IND_SIT_INI_PER",
+          "indice": 6,
+          "tipo": "string",
+          "coluna": "ind_sit_ini_per"
+        },
+        {
+          "nome": "SIT_ESPECIAL",
+          "indice": 7,
+          "tipo": "string",
+          "coluna": "sit_especial"
+        },
+        {
+          "nome": "PAT_REMAN_CIS",
+          "indice": 8,
+          "tipo": "string",
+          "coluna": "pat_reman_cis"
+        },
+        {
+          "nome": "DT_SIT_ESP",
+          "indice": 9,
+          "tipo": "string",
+          "coluna": "dt_sit_esp"
+        },
+        {
+          "nome": "DT_INI",
+          "indice": 10,
+          "tipo": "string",
+          "coluna": "dt_ini"
+        },
+        {
+          "nome": "DT_FIN",
+          "indice": 11,
+          "tipo": "string",
+          "coluna": "dt_fin"
+        },
+        {
+          "nome": "RETIFICADORA",
+          "indice": 12,
+          "tipo": "string",
+          "coluna": "retificadora"
+        },
+        {
+          "nome": "NUM_REC",
+          "indice": 13,
+          "tipo": "string",
+          "coluna": "num_rec"
+        },
+        {
+          "nome": "TIP_ECF",
+          "indice": 14,
+          "tipo": "string",
+          "coluna": "tip_ecf"
+        },
+        {
+          "nome": "COD_SCP",
+          "indice": 15,
+          "tipo": "string",
+          "coluna": "cod_scp"
+        }
+      ]
+    }
+  }
+}

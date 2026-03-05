@@ -8,11 +8,8 @@ namespace Domain.Entities.Sped.Ecf
         public E_L300(
             long id,
             long? idPai,
-            long idTenant,
-            long idEmpresa,
             long idOp,
             long fileId,
-            string fileName,
             string reg,
             string codigo,
             string descricao,
@@ -22,7 +19,7 @@ namespace Domain.Entities.Sped.Ecf
             string codCtaSup,
             string valor,
             string indValor
-        ) : base(id, idPai, idTenant, idEmpresa, idOp, fileId, fileName)
+        ) : base(id, idPai, idOp, fileId)
         {
             Reg = reg;
             Codigo = codigo;
@@ -58,7 +55,6 @@ namespace Domain.Entities.Sped.Ecf
             sb.AppendLine($" CodCtaSup = {CodCtaSup}");
             sb.AppendLine($" Valor = {Valor}");
             sb.AppendLine($" IndValor = {IndValor}");
-            sb.AppendLine($" FileName = {FileName}");
             sb.AppendLine($" IdOp = {IdOp}");
             sb.AppendLine($" FileNameId = {FileId}");
             sb.AppendLine("}");

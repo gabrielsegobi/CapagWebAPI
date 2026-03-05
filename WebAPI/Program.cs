@@ -7,9 +7,9 @@ using Application.Mapping;
 using Application.Strategies;
 using Application.teste;
 using Domain.Contracts.Views;
+using Domain.Entities.Sped;
 using Domain.Factories;
 using Domain.Interfaces;
-using Domain.Strategies.Sped;
 using Domain.Strategies.Sped.Ecf;
 using FluentValidation;
 using Infrastructure;
@@ -54,12 +54,11 @@ builder.Services.AddDbContext<CPGDbContext>(options =>
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped(typeof(IBaseViewRepository<>), typeof(BaseViewRepository<>));
 
-var basePath = @"C:\Users\gabriel.souza\source\data\sped";
+var basePath = builder.Configuration["Storage:BasePath"];
 
 builder.Services.AddSingleton<IObjectStorage>(
     new LocalFileStorage(basePath)
 );
-
 
 builder.Services.AddAutoMapper(cfg =>
 {
@@ -72,14 +71,27 @@ builder.Services.AddMediatR(cfg =>
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.Limits.MaxRequestBodySize = 1L * 1024 * 1024 * 1024; // 1 GB
+    options.Limits.MaxRequestBodySize = 2L * 1024 * 1024 * 1024; // 1 GB
 });
 
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 1L * 1024 * 1024 * 1024; // 1 GB
+    options.MultipartBodyLengthLimit = 2L * 1024 * 1024 * 1024; // 1 GB
 });
 
+//var channel = Channel.CreateBounded<ParsedRow>(
+//    new BoundedChannelOptions(10_000)
+//    {
+//        FullMode = BoundedChannelFullMode.Wait,
+//        SingleWriter = false,  
+//        SingleReader = true
+//    });
+
+//builder.Services.AddSingleton(channel);
+//builder.Services.AddSingleton(channel.Reader);
+//builder.Services.AddSingleton(channel.Writer);
+
+//builder.Services.AddHostedService<BulkWorker>();
 
 
 builder.Services.AddValidatorsFromAssembly(typeof(CreateUsuarioCommand).Assembly);
@@ -115,6 +127,10 @@ builder.Services.AddScoped<IGetRelationShip, GetRelationShip>();
 builder.Services.AddScoped<IApiGateway, ApiGateway>();
 builder.Services.AddScoped<ICalculoGrupoStrategy, PfCalculoStrategy>();
 builder.Services.AddScoped<ICalculoGrupoFactory, CalculoGrupoFactory>();
+
+
+//builder.Services.AddSingleton<ILayoutRepository, JsonLayoutRepository>();
+builder.Services.AddSpedServices(builder.Configuration);
 
 
 
@@ -155,6 +171,34 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+//    {
+//        Name = "Authorization",
+//        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+//        Scheme = "Bearer",
+//        BearerFormat = "JWT",
+//        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+//        Description = "Insira o token JWT assim: Bearer {seu token}"
+//    });
+
+//    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+//    {
+//        {
+//            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+//            {
+//                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+//                {
+//                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+//                    Id = "Bearer"
+//                }
+//            },
+//            Array.Empty<string>()
+//        }
+//    });
+//});
 
 
 builder.Services.AddAuthorization();

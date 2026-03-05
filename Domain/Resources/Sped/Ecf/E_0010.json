@@ -1,0 +1,286 @@
+{
+  "registro": "0010",
+  "tabela": "ecf_0010",
+  "nivel": 2,
+  "pai": "0001",
+  "layoutIndex": {
+    "1": "v0",
+    "2": "v1",
+    "3": "v1",
+    "4": "v1",
+    "5": "v1",
+    "6": "v1",
+    "7": "v2",
+    "8": "v2",
+    "9": "v2",
+    "10": "v2",
+    "11": "v2",
+    "12": "v2"
+  },
+  "versoes": {
+    "v0": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "HASH_ECF_ANTERIOR",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "hash_ecf_anterior"
+        },
+        {
+          "nome": "OPT_REFIS",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "opt_refis"
+        },
+        {
+          "nome": "OPT_PAES",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "opt_paes"
+        },
+        {
+          "nome": "FORMA_TRIB",
+          "indice": 5,
+          "tipo": "string",
+          "coluna": "forma_trib"
+        },
+        {
+          "nome": "FORMA_APUR",
+          "indice": 6,
+          "tipo": "string",
+          "coluna": "forma_apur"
+        },
+        {
+          "nome": "COD_QUALIF_PJ",
+          "indice": 7,
+          "tipo": "string",
+          "coluna": "cod_qualif_pj"
+        },
+        {
+          "nome": "FORMA_TRIB_PER",
+          "indice": 8,
+          "tipo": "string",
+          "coluna": "forma_trib_per"
+        },
+        {
+          "nome": "MES_BAL_RED",
+          "indice": 9,
+          "tipo": "string",
+          "coluna": "mes_bal_red"
+        },
+        {
+          "nome": "TIP_ESC_PRE",
+          "indice": 10,
+          "tipo": "string",
+          "coluna": "tip_esc_pre"
+        },
+        {
+          "nome": "TIP_ENT",
+          "indice": 11,
+          "tipo": "string",
+          "coluna": "tip_ent"
+        },
+        {
+          "nome": "FORMA_APUR_I",
+          "indice": 12,
+          "tipo": "string",
+          "coluna": "forma_apur_i"
+        },
+        {
+          "nome": "APUR_CSLL",
+          "indice": 13,
+          "tipo": "string",
+          "coluna": "apur_csll"
+        },
+        {
+          "nome": "OPT_EXT_RTT",
+          "indice": 14,
+          "tipo": "string",
+          "coluna": "opt_ext_rtt"
+        },
+        {
+          "nome": "DIF_FCONT",
+          "indice": 15,
+          "tipo": "string",
+          "coluna": "dif_fcont"
+        }
+      ]
+    },
+    "v1": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "HASH_ECF_ANTERIOR",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "hash_ecf_anterior"
+        },
+        {
+          "nome": "OPT_REFIS",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "opt_refis"
+        },
+        {
+          "nome": "OPT_PAES",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "opt_paes"
+        },
+        {
+          "nome": "FORMA_TRIB",
+          "indice": 5,
+          "tipo": "string",
+          "coluna": "forma_trib"
+        },
+        {
+          "nome": "FORMA_APUR",
+          "indice": 6,
+          "tipo": "string",
+          "coluna": "forma_apur"
+        },
+        {
+          "nome": "COD_QUALIF_PJ",
+          "indice": 7,
+          "tipo": "string",
+          "coluna": "cod_qualif_pj"
+        },
+        {
+          "nome": "FORMA_TRIB_PER",
+          "indice": 8,
+          "tipo": "string",
+          "coluna": "forma_trib_per"
+        },
+        {
+          "nome": "MES_BAL_RED",
+          "indice": 9,
+          "tipo": "string",
+          "coluna": "mes_bal_red"
+        },
+        {
+          "nome": "TIP_ESC_PRE",
+          "indice": 10,
+          "tipo": "string",
+          "coluna": "tip_esc_pre"
+        },
+        {
+          "nome": "TIP_ENT",
+          "indice": 11,
+          "tipo": "string",
+          "coluna": "tip_ent"
+        },
+        {
+          "nome": "FORMA_APUR_I",
+          "indice": 12,
+          "tipo": "string",
+          "coluna": "forma_apur_i"
+        },
+        {
+          "nome": "APUR_CSLL",
+          "indice": 13,
+          "tipo": "string",
+          "coluna": "apur_csll"
+        },
+        {
+          "nome": "IND_RECEITA",
+          "indice": 14,
+          "tipo": "string",
+          "coluna": "ind_receita"
+        }
+      ]
+    },
+    "v2": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "HASH_ECF_ANTERIOR",
+          "indice": 2,
+          "tipo": "string",
+          "coluna": "hash_ecf_anterior"
+        },
+        {
+          "nome": "OPT_REFIS",
+          "indice": 3,
+          "tipo": "string",
+          "coluna": "opt_refis"
+        },
+        {
+          "nome": "FORMA_TRIB",
+          "indice": 4,
+          "tipo": "string",
+          "coluna": "forma_trib"
+        },
+        {
+          "nome": "FORMA_APUR",
+          "indice": 5,
+          "tipo": "string",
+          "coluna": "forma_apur"
+        },
+        {
+          "nome": "COD_QUALIF_PJ",
+          "indice": 6,
+          "tipo": "string",
+          "coluna": "cod_qualif_pj"
+        },
+        {
+          "nome": "FORMA_TRIB_PER",
+          "indice": 7,
+          "tipo": "string",
+          "coluna": "forma_trib_per"
+        },
+        {
+          "nome": "MES_BAL_RED",
+          "indice": 8,
+          "tipo": "string",
+          "coluna": "mes_bal_red"
+        },
+        {
+          "nome": "TIP_ESC_PRE",
+          "indice": 9,
+          "tipo": "string",
+          "coluna": "tip_esc_pre"
+        },
+        {
+          "nome": "TIP_ENT",
+          "indice": 10,
+          "tipo": "string",
+          "coluna": "tip_ent"
+        },
+        {
+          "nome": "FORMA_APUR_I",
+          "indice": 11,
+          "tipo": "string",
+          "coluna": "forma_apur_i"
+        },
+        {
+          "nome": "APUR_CSLL",
+          "indice": 12,
+          "tipo": "string",
+          "coluna": "apur_csll"
+        },
+        {
+          "nome": "IND_REC_RECEITA",
+          "indice": 13,
+          "tipo": "string",
+          "coluna": "ind_rec_receita"
+        }
+      ]
+    }
+  }
+}

@@ -10,6 +10,7 @@
     <PackageReference Include="EFCore.BulkExtensions" Version="10.0.0" />
     <PackageReference Include="EFCore.BulkExtensions.MySql" Version="9.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.12" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />

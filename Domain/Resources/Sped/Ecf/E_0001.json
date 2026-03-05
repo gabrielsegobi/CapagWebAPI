@@ -1,0 +1,38 @@
+{
+  "registro": "0001",
+  "tabela": "ecf_0001",
+  "nivel": 1,
+  "pai": "0000",
+  "layoutIndex": {
+    "1": "v0",
+    "2": "v0",
+    "3": "v0",
+    "4": "v0",
+    "5": "v0",
+    "6": "v0",
+    "7": "v0",
+    "8": "v0",
+    "9": "v0",
+    "10": "v0",
+    "11": "v0",
+    "12": "v0"
+  },
+  "versoes": {
+    "v0": {
+      "campos": [
+        {
+          "nome": "REG",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "reg"
+        },
+        {
+          "nome": "IND_DAD",
+          "indice": 1,
+          "tipo": "string",
+          "coluna": "ind_dad"
+        }
+      ]
+    }
+  }
+}

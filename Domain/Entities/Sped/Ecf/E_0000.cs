@@ -8,9 +8,9 @@ namespace Domain.Entities.Sped.Ecf
         //{
         //}
 
-        public E_0000(long id, long? idPai, long idTenant, long idEmpresa, long idOp, long fileId, string fileName, string reg, string nomeEsc, string codVer, string cnpj, string nome, string indSitIniPer, string sitEspecial,
+        public E_0000(long id, long? idPai, long idOp, long fileId, string reg, string nomeEsc, string codVer, string cnpj, string nome, string indSitIniPer, string sitEspecial,
             string patRemanCis, DateTime? dtSitEsp, DateTime? dtIni, DateTime? dtFin, string retificadora,
-            string numRec, string tipEcf, string codScp) : base(id, idPai, idTenant, idEmpresa, idOp, fileId, fileName)
+            string numRec, string tipEcf, string codScp) : base(id, idPai, idOp, fileId)
         {
             Reg = reg;
             NomeEsc = nomeEsc;
@@ -67,13 +67,11 @@ namespace Domain.Entities.Sped.Ecf
             sb.AppendLine($"  NumRec = {NumRec}");
             sb.AppendLine($"  TipEcf = {TipEcf}");
             sb.AppendLine($"  CodScp = {CodScp}");
-            sb.AppendLine($"  FileName = {FileName}");
+            //sb.AppendLine($"  FileName = {FileName}");
             sb.AppendLine($"  FileNameId = {FileId}");
             sb.AppendLine("}");
 
             return sb.ToString();
         }
     }
-
-
 }

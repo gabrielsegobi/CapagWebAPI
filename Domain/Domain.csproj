@@ -15,5 +15,14 @@
 	<ItemGroup>
 	  <Folder Include="Contracts\Sped\Ecf\" />
 	</ItemGroup>
+	<ItemGroup>
+		<!--
+      PreserveNewest = só copia se o JSON for mais novo que o destino
+      Mais rápido que Always (que copia toda build)
+    -->
+		<None Update="Resources\Sped\Ecf\**\*.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>

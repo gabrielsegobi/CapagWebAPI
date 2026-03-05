@@ -7,8 +7,6 @@ namespace Domain.Entities.Sped.Ecf
         public E_0010(
             long id,
             long? idPai,
-            long idTenant,
-            long idEmpresa,
             long idOp,
             string reg,
             string hashEcfAnterior,
@@ -26,9 +24,8 @@ namespace Domain.Entities.Sped.Ecf
             string optExtRtt,
             string difFcont,
             string indRecReceita,
-            string fileName,
             long fileId
-        ) : base(id, idPai, idTenant, idEmpresa, idOp, fileId, fileName)
+        ) : base(id, idPai, idOp, fileId)
         {
             Reg = reg;
             HashEcfAnterior = hashEcfAnterior;
@@ -85,7 +82,7 @@ namespace Domain.Entities.Sped.Ecf
             sb.AppendLine($" OptExtRtt = {OptExtRtt}");
             sb.AppendLine($" DifFcont = {DifFcont}");
             sb.AppendLine($" IndRecReceita = {IndRecReceita}");
-            sb.AppendLine($" FileName = {FileName}");
+            //sb.AppendLine($" FileName = {FileName}");
             sb.AppendLine($" FileNameId = {FileId}");
             sb.AppendLine("}");
             return sb.ToString();

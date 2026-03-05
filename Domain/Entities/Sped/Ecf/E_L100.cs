@@ -8,11 +8,8 @@ namespace Domain.Entities.Sped.Ecf
         public E_L100(
             long id,
             long? idPai,
-            long idTenant,
-            long idEmpresa,
             long idOp,
             long fileId,
-            string fileName,
             string reg,
             string codigo,
             string descricao,
@@ -27,7 +24,7 @@ namespace Domain.Entities.Sped.Ecf
             string valCtaRefFin,
             string indValCtaRefFin
 
-        ) : base(id, idPai, idTenant, idEmpresa, idOp, fileId, fileName)
+        ) : base(id, idPai, idOp, fileId)
         {
             Reg = reg;
             Codigo = codigo;
@@ -75,7 +72,6 @@ namespace Domain.Entities.Sped.Ecf
             sb.AppendLine($" ValCtaRefCred = {ValCtaRefCred}");
             sb.AppendLine($" ValCtaRefFin = {ValCtaRefFin}");
             sb.AppendLine($" IndValCtaRefFin = {IndValCtaRefFin}");
-            sb.AppendLine($" FileName = {FileName}");
             sb.AppendLine($" IdOp = {IdOp}");
             sb.AppendLine($" FileNameId = {FileId}");
             sb.AppendLine("}");

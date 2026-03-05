@@ -8,7 +8,7 @@ namespace Domain.Strategies.Sped.Ecf
     {
         public string Codigo => "0010";
 
-        public EcfBase Build(string linha, long Id, long IdOp, long IdTenant, long IdEmpresa, long? IdPai, long FileId, string FileName, string Competencia)
+        public EcfBase Build(string linha, long Id, long IdOp, long? IdPai, long FileId, string Competencia)
         {
             var campos = linha.Split('|');
             var reg = campos[1];
@@ -52,8 +52,6 @@ namespace Domain.Strategies.Sped.Ecf
             return new E_0010(
                 Id,
                 IdPai,
-                IdTenant,
-                IdEmpresa,
                 IdOp,
                 reg,
                 hashEcfAnterior,
@@ -72,7 +70,6 @@ namespace Domain.Strategies.Sped.Ecf
                 difFcont,
                
                 indReceita,
-                 FileName,
                 FileId
              );
 

@@ -7,7 +7,7 @@ namespace Domain.Strategies.Sped.Ecf
     {
         public string Codigo => "L300";
 
-        public EcfBase Build(string linha, long Id, long IdOp, long IdTenant, long IdEmpresa, long? IdPai, long FileId, string FileName, string Competencia)
+        public EcfBase Build(string linha, long Id, long IdOp, long? IdPai, long FileId, string Competencia)
         {
             var campos = linha.Split('|');
 
@@ -24,11 +24,8 @@ namespace Domain.Strategies.Sped.Ecf
             return new E_L300(
                 Id,
                 IdPai,
-                IdTenant,
-                IdEmpresa,
                 IdOp,
                 FileId,
-                FileName,
                 reg,
                 codigo,
                 descricao,
