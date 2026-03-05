@@ -6,6 +6,10 @@ namespace Domain.Contracts.RegFileNames
     {
         [JsonPropertyName("id")]
         public long Id { get; set; }
+        [JsonPropertyName("id_empresa")]
+        public long IdEmpresa { get; set; }
+        [JsonPropertyName("id_tenant")]
+        public long IdTenant { get; set; }
         [JsonPropertyName("type")]
         public string Type { get; set; } = string.Empty;
         [JsonPropertyName("file_name")]
