@@ -92,7 +92,7 @@ namespace Application.Handlers.Indicadores
 
             if (formulas != null)
             {
-                var formulasDict = formulas.ToDictionary(f => f.Nome, f => f.Formula);
+                var formulasDict = formulas.ToDictionary(f => f.Nome, f => f.Desc_Formula);
 
                 foreach (var indicador in pagedResult.Data)
                 {

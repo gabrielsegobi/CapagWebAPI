@@ -4,5 +4,6 @@
     {
         public string Nome { get; set; } = string.Empty;
         public string Formula { get; set; } = string.Empty;
+        public string Desc_Formula { get; set; } = string.Empty;
     }
 }

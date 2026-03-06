@@ -1,70 +1,87 @@
 [
   {
     "nome": "Liquidez Geral",
+    "desc_formula": "(Ativo Circulante) / (Passivo Circulante)",
     "formula": "{1.01} / {2.01}"
   },
   {
     "nome": "Liquidez Seca",
+    "desc_formula": "(Ativo Circulante - Estoques) / (Passivo Circulante)",
     "formula": "({1.01} - {1.01.03}) / {2.01}"
   },
   {
     "nome": "Liquidez Imediata",
+    "desc_formula": "(Disponibilidades) / (Passivo Circulante)",
     "formula": "{1.01.01} / {2.01}"
   },
   {
     "nome": "Índice de Endividamento Geral",
+    "desc_formula": "(Passivo Total) / (Ativo Total)",
     "formula": "({2.01} + {2.02}) / {1}"
   },
   {
     "nome": "Grau de Endividamento",
+    "desc_formula": "(Passivo Total) / (Patrimônio Líquido)",
     "formula": "({2.01} + {2.02}) / {2.03}"
   },
   {
     "nome": "Composição do Endividamento",
+    "desc_formula": "(Passivo Circulante) / (Passivo Total)",
     "formula": "{2.01} / ({2.01} + {2.02})"
   },
   {
     "nome": "Margem Operacional",
+    "desc_formula": "(Resultado Operacional) / (Receita Líquida)",
     "formula": "{3.01.01} / {3.01.01.01}"
   },
   {
     "nome": "Margem Líquida",
+    "desc_formula": "(Lucro Líquido) / (Receita Líquida)",
     "formula": "{3} / {3.01.01.01}"
   },
   {
     "nome": "Retorno sobre o Ativo (ROA)",
+    "desc_formula": "(Lucro Líquido) / (Ativo Total)",
     "formula": "{3} / {1}"
   },
   {
     "nome": "Retorno sobre o Patrimônio Líquido (ROE)",
+    "desc_formula": "(Lucro Líquido) / (Patrimônio Líquido)",
     "formula": "{3} / {2.03}"
   },
   {
     "nome": "Giro do Estoque",
+    "desc_formula": " (Custo dos Produtos Vendidos - CPV) / (Estoque Médio)",
     "formula": "{3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)"
   },
   {
     "nome": "Prazo Médio de Pagamento (PMP)",
+    "desc_formula": "(Contas a Pagar Médio * 365) / (Compras Brutas)",
     "formula": "((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]})"
   },
   {
     "nome": "Prazo Médio de Estocagem (PME)",
+    "desc_formula": "(Giro do Estoque) / 365",
     "formula": "({3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)) / 365"
   },
   {
     "nome": "Prazo Médio de Recebimento (PMR)",
+    "desc_formula": "(Contas a Receber Médio * 365) / (Receita Bruta)",
     "formula": "((({1.01.02.02[I]} + {1.01.02.02}) / 2) * 365) / {3.01.01.01.01}"
   },
   {
     "nome": "Ciclo Financeiro",
+    "desc_formula": "PME + PMR - PMP",
     "formula": "((({3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)) / 365) + (((({1.01.02.02[I]} + {1.01.02.02}) / 2) * 365) / {3.01.01.01.01})) - (((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]}))"
   },
   {
     "nome": "Necessidade de Capital de Giro (NCG)",
+    "desc_formula": "(Ativo Circulante Operacional (ACO) – Passivo Circulante Operacional (PCO))/Receita Líquida",
     "formula": "(({1.01} - {1.01.01}) - ({2.01} - {2.01.01.07} - {2.01.01.09.09} - {2.01.01.09.10} - {2.01.01.17.13})) / {3.01.01.01}"
   },
   {
     "nome": "Capital de Giro de Longo Prazo (CGLP)",
+    "desc_formula": "(Passivo Não Circulante + Patrimônio Líquido) – Ativo Não Circulante/Ativo Total",
     "formula": "(({2.02} + {2.03}) - {1.02}) / {1}"
   }
 ]
