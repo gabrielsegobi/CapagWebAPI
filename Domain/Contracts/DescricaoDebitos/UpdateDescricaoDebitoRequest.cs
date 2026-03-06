@@ -12,7 +12,7 @@ namespace Domain.Contracts.DescricaoDebitos
         public string NumCda { get; set; } = string.Empty;
 
         [JsonPropertyName("data_inscricao")]
-        public DateTime DataInscricao { get; set; }
+        public DateTime? DataInscricao { get; set; }
 
         [JsonPropertyName("valor_principal")]
         public decimal ValorPrincipal { get; set; }

@@ -7,7 +7,7 @@
         public long IdEmpresa { get; set; }
         public string Natureza { get; set; } = string.Empty;
         public string NumCda { get; set; } = string.Empty;
-        public DateTime DataInscricao { get; set; }
+        public DateTime? DataInscricao { get; set; }
         public decimal ValorPrincipal { get; set; }
         public decimal ValorMulta { get; set; }
         public decimal ValorJuros { get; set; }

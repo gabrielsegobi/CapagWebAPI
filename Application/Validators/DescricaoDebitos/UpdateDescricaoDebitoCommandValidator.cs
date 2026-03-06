@@ -26,11 +26,11 @@ namespace Application.Validators.DescricaoDebitos
                 .MaximumLength(50)
                 .WithMessage("O número da CDA deve ter no máximo 50 caracteres.");
 
-            RuleFor(x => x.Request.DataInscricao)
-                .NotEmpty()
-                .WithMessage("A data de inscrição é obrigatória.")
-                .LessThanOrEqualTo(DateTime.Today)
-                .WithMessage("A data de inscrição não pode ser maior que a data atual.");
+            //RuleFor(x => x.Request.DataInscricao)
+            //    .NotEmpty()
+            //    .WithMessage("A data de inscrição é obrigatória.")
+            //    .LessThanOrEqualTo(DateTime.Today)
+            //    .WithMessage("A data de inscrição não pode ser maior que a data atual.");
 
             RuleFor(x => x.Request.ValorPrincipal)
                 .GreaterThanOrEqualTo(0)
