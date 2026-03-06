@@ -14,8 +14,8 @@ namespace Infrastructure.Configurations
             builder.Property(d => d.IdDescricaoDebitos).HasColumnName("id_descricao_debitos").HasColumnType("BIGINT").UseMySqlIdentityColumn();
             builder.Property(d => d.IdTenant).HasColumnName("id_tenant").HasColumnType("BIGINT").IsRequired();
             builder.Property(d => d.IdEmpresa).HasColumnName("id_empresa").HasColumnType("BIGINT").IsRequired();
-            builder.Property(d => d.Natureza).HasColumnName("natureza").HasColumnType("VARCHAR(50)").IsRequired();
-            builder.Property(d => d.NumCda).HasColumnName("num_cda").HasColumnType("VARCHAR(20)").IsRequired();
+            builder.Property(d => d.Natureza).HasColumnName("natureza").HasColumnType("VARCHAR(50)");
+            builder.Property(d => d.NumCda).HasColumnName("num_cda").HasColumnType("VARCHAR(20)");
             builder.Property(d => d.DataInscricao).HasColumnName("data_inscricao").HasColumnType("DATE").IsRequired();
             builder.Property(d => d.ValorPrincipal).HasColumnName("valor_principal").HasColumnType("DECIMAL(14,2)").IsRequired();
             builder.Property(d => d.ValorMulta).HasColumnName("valor_multa").HasColumnType("DECIMAL(14,2)").IsRequired();

@@ -17,14 +17,12 @@ namespace Application.Validators.DescricaoDebitos
                 .WithMessage("O objeto de requisição não pode ser nulo.");
 
             RuleFor(x => x.Request.Natureza)
-                .NotEmpty()
-                .WithMessage("A natureza do débito é obrigatória.")
+              
                 .MaximumLength(100)
                 .WithMessage("A natureza do débito deve ter no máximo 100 caracteres.");
 
             RuleFor(x => x.Request.NumCda)
-                .NotEmpty()
-                .WithMessage("O número da CDA é obrigatório.")
+             
                 .MaximumLength(50)
                 .WithMessage("O número da CDA deve ter no máximo 50 caracteres.");
 
