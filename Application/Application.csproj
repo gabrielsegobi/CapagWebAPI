@@ -26,6 +26,7 @@
   <ItemGroup>
     <Folder Include="Exceptions\Sped\Ecf\" />
     <Folder Include="Interfaces\" />
+    <Folder Include="Notifications\" />
     <Folder Include="Queries\SimulacoesIntervalo\" />
     <Folder Include="Validators\DemonstrativosContabeis\" />
   </ItemGroup>

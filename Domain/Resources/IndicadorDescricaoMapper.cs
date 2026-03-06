@@ -20,8 +20,8 @@
             { "Prazo Médio de Estocagem (PME)", "Mede o tempo médio que os produtos permanecem em estoque." },
             { "Prazo Médio de Recebimento (PMR)", "Mostra quanto tempo a empresa leva para receber de seus clientes." },
             { "Ciclo Financeiro", "Representa o tempo entre o pagamento aos fornecedores e o recebimento das vendas." },
-            { "Necessidade de Capital de Giro (NCG)", "Ativo Circulante Operacional (ACO) – Passivo Circulante Operacional (PCO)." },
-            { "Capital de Giro de Longo Prazo (CGLP)", "(Passivo Não Circulante + Patrimônio Líquido) – Ativo Não Circulante." }
+            { "Necessidade de Capital de Giro (NCG)", "Mede quanto recurso a operação exige para financiar o ciclo operacional." },
+            { "Capital de Giro de Longo Prazo (CGLP)", "Indica o volume de recursos permanentes que financiam o ativo circulante, demonstrando equilíbrio estrutural de longo prazo." }
 
         };
 

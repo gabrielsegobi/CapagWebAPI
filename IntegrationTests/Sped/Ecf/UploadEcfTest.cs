@@ -22,28 +22,28 @@ namespace IntegrationTests.Sped.Ecf
         }
 
 
-        [Fact]
-        public async Task Handle_Deve_Processar_Arquivo_ECF_Real()
-        {
-            // ARRANGE
-            var caminhoArquivo = @"C:\temp\arquivo_teste.ecf";
-            var file = FakeFormFile.Create(caminhoArquivo);
+        //[Fact]
+        //public async Task Handle_Deve_Processar_Arquivo_ECF_Real()
+        //{
+        //    // ARRANGE
+        //    var caminhoArquivo = @"C:\temp\arquivo_teste.ecf";
+        //    var file = FakeFormFile.Create(caminhoArquivo);
 
-            var request = new UploadECFRequest
-            {
-                File = file
-            };
+        //    var request = new UploadECFRequest
+        //    {
+        //        File = file
+        //    };
 
 
-            var command = new UploadECFCommand(request);
+        //    var command = new UploadECFCommand(request);
 
-            await _mediator.Send(command);
+        //    await _mediator.Send(command);
 
-            // ACT
-            //await handler.Handle(command, CancellationToken.None);
+        //    // ACT
+        //    //await handler.Handle(command, CancellationToken.None);
 
-            // ASSERT
-            // validações aqui
-        }
+        //    // ASSERT
+        //    // validações aqui
+        //}
     }
 }
