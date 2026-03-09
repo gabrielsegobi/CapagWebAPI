@@ -54,7 +54,7 @@ namespace Application.Strategies
             var totalDctf = await _dctfRepository.Query()
                 .Where(d =>
                     d.IdEmpresa == idEmpresa
-                    && d.Periodo == ano
+                    && d.Periodo.StartsWith(ano)
 
                 )
                 .SumAsync(d => d.Valor, cancellationToken);
