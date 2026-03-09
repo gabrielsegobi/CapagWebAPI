@@ -19,6 +19,7 @@ namespace Infrastructure.Interface
         Task<T?> GetByIdAsync(long id);
         Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
         IQueryable<T> Query(Expression<Func<T, bool>>? predicate = null, bool asNoTracking = true);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
         #endregion
 
         #region Update

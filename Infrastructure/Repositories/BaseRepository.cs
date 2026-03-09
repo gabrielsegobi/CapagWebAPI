@@ -57,6 +57,12 @@ namespace Infrastructure.Repositories
             if (predicate != null) query = query.Where(predicate);
             return query;
         }
+
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _context.Set<T>().AnyAsync(predicate);
+        }
+
         #endregion
 
         #region Update

@@ -8,6 +8,7 @@
         public decimal Valor { get; set; }
         public long IdFilename { get; set; }
         public string Periodo { get; set; } = string.Empty;
+        public string ReciboRetificadora { get; set; } = string.Empty;
 
         public RegFileName FileName { get; set; }
     }

@@ -23,5 +23,8 @@ namespace Domain.Contracts.RegsDctf
 
         [JsonPropertyName("periodo")]
         public string Periodo { get; set; } = string.Empty;
+
+        [JsonPropertyName("recibo_retificadora")]
+        public string ReciboRetificadora { get; set; } = string.Empty;
     }
 }
