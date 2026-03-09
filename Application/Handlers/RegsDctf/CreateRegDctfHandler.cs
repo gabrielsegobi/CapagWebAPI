@@ -25,7 +25,7 @@ namespace Application.Handlers.RegsDctf
         {
             var periodo = request.Requests.Requests[0].Periodo;
             var idEmpresa = request.Requests.Requests[0].IdEmpresa;
-            var isRetificadora = string.IsNullOrWhiteSpace(request.Requests.Requests[0].ReciboRetificadora);
+            var isRetificadora = !string.IsNullOrWhiteSpace(request.Requests.Requests[0].ReciboRetificadora);
 
 
             if (isRetificadora)
