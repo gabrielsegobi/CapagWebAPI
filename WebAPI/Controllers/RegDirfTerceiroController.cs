@@ -29,5 +29,12 @@ namespace WebAPI.Controllers
             var response = await mediator.Send(new GetAllRegsDirfTerceirosQuery(filter));
             return Ok(response);
         }
+
+        [HttpGet("/count/{id_filename}")]
+        public async Task<IActionResult> Count(long id_filename)
+        {
+            var response = await mediator.Send(new RegDirfCountQuery(id_filename));
+            return Ok(response);
+        }
     }
 }

@@ -63,6 +63,14 @@ namespace Infrastructure.Repositories
             return await _context.Set<T>().AnyAsync(predicate);
         }
 
+        public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+        {
+            if (predicate == null)
+                return await _context.Set<T>().CountAsync();
+
+            return await _context.Set<T>().CountAsync(predicate);
+        }
+
         #endregion
 
         #region Update

@@ -20,6 +20,7 @@ namespace Infrastructure.Interface
         Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
         IQueryable<T> Query(Expression<Func<T, bool>>? predicate = null, bool asNoTracking = true);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
         #endregion
 
         #region Update

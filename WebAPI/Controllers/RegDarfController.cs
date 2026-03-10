@@ -37,6 +37,17 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
+
+        [HttpGet("/count/{id_filename}")]
+        public async Task<IActionResult> Count(long id_filename)
+        {
+            var response = await mediator.Send(new RegDarfCountQuery(id_filename));
+            return Ok(response);
+        }
+
+
+
+
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> UpdateRegDarf(int id, [FromBody] UpdateRegDarfRequest request)
