@@ -29,27 +29,43 @@ namespace Application.Strategies
             string[] codigos = { "1708", "3280", "5944", "8045" };
             string codigoDre = "3.01.01.01.01";
 
+            //var darfs = await _darfRepository.Query()
+            //    .Where(d =>
+            //        d.IdEmpresa == idEmpresa &&
+            //        d.DataArrecadacao.Year.ToString() == ano
+            //    )
+            //     .SumAsync(d => d.ValorTotal, cancellationToken);
+
+
             var darfs = await _darfRepository.Query()
-                .Where(d =>
-                    d.IdEmpresa == idEmpresa &&
-                    d.DataArrecadacao.Year.ToString() == ano
-                )
-                 .SumAsync(d => d.ValorTotal, cancellationToken);
+            .Where(d =>
+                d.IdEmpresa == idEmpresa &&
+                d.DataArrecadacao.Year.ToString() == ano
+            )
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                ValorTotal = g.Sum(x => x.ValorTotal),
+                TotalArquivos = g.Select(x => x.IdFilename).Distinct().Count()
+            })
+            .FirstOrDefaultAsync(cancellationToken);
 
-            var rendimento = await _dirfRepository.Query()
-                .Where(d =>
-                    d.IdEmpresa == idEmpresa &&
-                    d.AnoCalendario.ToString() == ano &&
-                    codigos.Contains(d.Codigo)
-                )
-                .SumAsync(d => d.ValorRendimento, cancellationToken);
 
-            var tributo = await _dirfRepository.Query()
-                .Where(d =>
-                    d.IdEmpresa == idEmpresa &&
-                    d.AnoCalendario.ToString() == ano 
-                )
-                .SumAsync(d => d.ValorTributo, cancellationToken);
+
+            //var rendimento = await _dirfRepository.Query()
+            //    .Where(d =>
+            //        d.IdEmpresa == idEmpresa &&
+            //        d.AnoCalendario.ToString() == ano &&
+            //        codigos.Contains(d.Codigo)
+            //    )
+            //    .SumAsync(d => d.ValorRendimento, cancellationToken);
+
+            //var tributo = await _dirfRepository.Query()
+            //    .Where(d =>
+            //        d.IdEmpresa == idEmpresa &&
+            //        d.AnoCalendario.ToString() == ano 
+            //    )
+            //    .SumAsync(d => d.ValorTributo, cancellationToken);
 
             //var totalDctf = await _dctfRepository.Query()
             //    .Where(d =>
@@ -59,7 +75,39 @@ namespace Application.Strategies
             //    )
             //    .SumAsync(d => d.Valor, cancellationToken);
 
-         
+
+            var dirf = await _dirfRepository.Query()
+                .Where(d =>
+                    d.IdEmpresa == idEmpresa &&
+                    d.AnoCalendario.ToString() == ano
+                )
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Rendimento = g
+                        .Where(x => codigos.Contains(x.Codigo))
+                        .Sum(x => x.ValorRendimento),
+
+                    Tributo = g
+                        .Sum(x => x.ValorTributo),
+
+                    //ArquivosRendimento = g
+                    //    .Where(x => codigos.Contains(x.Codigo))
+                    //    .Select(x => x.IdFilename)
+                    //    .Distinct()
+                    //    .Count(),
+
+                    TotalArquivos = g
+                        .Select(x => x.IdFilename)
+                        .Distinct()
+                        .Count()
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+
+
+
+
+
 
             var dctf = await _dctfRepository.Query()
                .Where(d =>
@@ -93,7 +141,7 @@ namespace Application.Strategies
             var registroAnual = dre.FirstOrDefault(d => d.PerApur.StartsWith("A"));
             var registrosTrimestrais = dre
                 .Where(d => d.PerApur.StartsWith("T"))
-                .OrderBy(d => d.PerApur) 
+                .OrderBy(d => d.PerApur)
                 .ToList();
 
             decimal valCtaRefFin;
@@ -127,20 +175,20 @@ namespace Application.Strategies
             {
                 Data = new
                 {
-                    v1 = darfs,
-                    v2 = rendimento,
-                    v3 = tributo,
+                    v1 = darfs?.ValorTotal ?? 0,
+                    v2 = dirf?.Rendimento ?? 0,
+                    v3 = dirf?.Tributo ?? 0,
                     v6 = valCtaRefFin,
                     v7 = dctf?.TotalValor ?? 0,
                     count_files = new
                     {
+                        v1 = darfs?.TotalArquivos ?? 0,
+                        v2 = dirf?.TotalArquivos ?? 0,
+                        v3 = dirf?.TotalArquivos ?? 0,
                         v7 = dctf?.TotalArquivos ?? 0
                     }
-
                 }
             };
-
-
             //.Where(d =>
             //    d.IdEmpresa == idEmpresa &&
             //    d.DataArrecadacao == dataArrecadacao
