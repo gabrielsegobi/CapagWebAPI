@@ -51,14 +51,28 @@ namespace Application.Strategies
                 )
                 .SumAsync(d => d.ValorTributo, cancellationToken);
 
-            var totalDctf = await _dctfRepository.Query()
-                .Where(d =>
-                    d.IdEmpresa == idEmpresa
-                    && d.Periodo.StartsWith(ano)
+            //var totalDctf = await _dctfRepository.Query()
+            //    .Where(d =>
+            //        d.IdEmpresa == idEmpresa
+            //        && d.Periodo.StartsWith(ano)
 
-                )
-                .SumAsync(d => d.Valor, cancellationToken);
+            //    )
+            //    .SumAsync(d => d.Valor, cancellationToken);
 
+         
+
+            var dctf = await _dctfRepository.Query()
+               .Where(d =>
+                   d.IdEmpresa == idEmpresa &&
+                   d.Periodo.StartsWith(ano)
+               )
+               .GroupBy(_ => 1)
+               .Select(g => new
+               {
+                   TotalValor = g.Sum(x => x.Valor),
+                   TotalArquivos = g.Select(x => x.IdFilename).Distinct().Count()
+               })
+               .FirstOrDefaultAsync(cancellationToken);
             //var dre = await _dreRepository.Query()
             //    .FirstOrDefaultAsync(d =>
             //        d.IdEmpresa == idEmpresa &&
@@ -117,7 +131,12 @@ namespace Application.Strategies
                     v2 = rendimento,
                     v3 = tributo,
                     v6 = valCtaRefFin,
-                    v7 = totalDctf
+                    v7 = dctf?.TotalValor ?? 0,
+                    count_files = new
+                    {
+                        v7 = dctf?.TotalArquivos ?? 0
+                    }
+
                 }
             };
 
