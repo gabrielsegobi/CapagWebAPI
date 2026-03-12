@@ -29,7 +29,7 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpGet("/count/{id_filename}")]
+        [HttpGet("count/{id_filename}")]
         public async Task<IActionResult> Count(long id_filename)
         {
             var response = await mediator.Send(new RegDcftCountQuery(id_filename));
