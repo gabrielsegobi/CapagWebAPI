@@ -19,7 +19,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateRegDctf([FromBody] CreateRegDctfRequest request)
         {
             var response = await mediator.Send(new CreateRegDctfCommand(request));
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpGet]

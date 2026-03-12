@@ -25,10 +25,7 @@ namespace Application.Handlers.ICPAnterior
             await _baseRepository.AddAsync(icpAnterior);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "ICP Criado com Sucesso"
-            };
+            return new CreateApiResponse("ICP Criado com Sucesso", icpAnterior.IdIcpAnterior);
         }
     }
 }

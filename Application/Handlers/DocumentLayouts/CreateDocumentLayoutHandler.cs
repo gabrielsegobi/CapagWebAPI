@@ -34,10 +34,7 @@ namespace Application.Handlers.DocumentLayouts
             await _baseRepository.AddAsync(layout);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = CreateMessage
-            };
+            return new CreateApiResponse(CreateMessage, layout.Id);
         }
     }
 }

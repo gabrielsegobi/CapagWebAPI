@@ -33,7 +33,7 @@ namespace Application.Handlers.ValorCalcVariaveis
             await _baseRepository.SaveChangesAsync();
 
 
-            return new CreateApiResponse { Message = "Valor Criado com sucesso" };
+            return new CreateApiResponse("Valor Criado com sucesso", valorCalc.IdValorCalcVariavel);
         }
     }
 }

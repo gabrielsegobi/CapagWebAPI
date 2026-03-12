@@ -35,7 +35,13 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateUsuarioTenant([FromBody] CreateUsuarioTenantRequest request)
         {
             var response = await mediator.Send(new CreateUsuarioTenantCommand(request));
-            return Ok(response);
+
+            return CreatedAtAction(
+                   nameof(GetUsuarioTenantById),
+                   new { id = response.Id },
+                   response
+               );
+
         }
 
         [HttpPut("{id}")]

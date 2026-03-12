@@ -34,8 +34,14 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateTenant([FromBody] CreateTenantRequest request)
         {
-            var response = await mediator.Send(new CreateTenantCommand (request));
-            return Ok(response);
+            var response = await mediator.Send(new CreateTenantCommand(request));
+
+            return CreatedAtAction(
+                nameof(GetTenantById),
+                new { id = response.Id },
+                response
+            );
+
         }
 
         [HttpPut("{id}")]
@@ -48,7 +54,7 @@ namespace WebAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTenant(long id)
         {
-            var response = await mediator.Send(new DeleteTenantCommand (id));
+            var response = await mediator.Send(new DeleteTenantCommand(id));
             return Ok(response);
         }
     }

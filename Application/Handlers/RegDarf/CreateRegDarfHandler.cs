@@ -24,10 +24,8 @@ namespace Application.Handlers.RegDarf
             await _fileNameRepository.AddAsync(darfList);
             await _fileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Darfs Criadas com Sucesso"
-            };
+            return new CreateApiResponse("Darfs Criadas com Sucesso", darfList.Id);
+            
         }
     }
 }

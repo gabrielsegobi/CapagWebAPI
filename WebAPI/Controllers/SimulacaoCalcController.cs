@@ -21,7 +21,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateSimulacaoCalcRequest request)
         {
             var response = await mediator.Send(new CreateSimulacaoCalcCommand(request));
-            return Ok(response);
+            return Created("",response);
         }
 
         [HttpGet]

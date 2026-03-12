@@ -20,7 +20,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateUsuario([FromBody] CreateUsuarioRequest request)
         {
             var response = await mediator.Send(new CreateUsuarioCommand { CreateUsuarioRequest = request });
-            return Ok(response);
+
+            return CreatedAtAction(
+                   nameof(GetUsuarioById),
+                   new { id = response.Id },
+                   response
+               );
         }
 
         [HttpGet("{id}")]

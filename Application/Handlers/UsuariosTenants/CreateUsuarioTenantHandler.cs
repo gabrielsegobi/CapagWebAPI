@@ -29,7 +29,7 @@ namespace Application.Handlers.UsuariosTenants
             await _baseRepository.AddAsync(usuariotenant);
             await _baseRepository.SaveChangesAsync(); 
 
-           return new CreateApiResponse { Message = "Usuário tenant adicionado com sucesso" };
+           return new CreateApiResponse ( "Usuário tenant adicionado com sucesso" , usuariotenant.Id);
         }
     }
 }

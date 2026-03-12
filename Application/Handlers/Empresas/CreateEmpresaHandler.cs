@@ -33,10 +33,7 @@ namespace Application.Handlers.Empresas
             await _baseRepository.AddAsync(empresa);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Empresa Criada com Sucesso"
-            };
+            return new CreateApiResponse("Empresa Criada com Sucesso", empresa.IdEmpresa);
         }
     }
 }

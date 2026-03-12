@@ -33,8 +33,11 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateRegimeTributario([FromBody] CreateRegimeTributarioRequest request)
         {
             var response = await mediator.Send(new CreateRegimeTributarioCommand { CreateRegimeTributarioRequest = request });
-            return Ok(response);
+            return CreatedAtAction(
+                   nameof(GetRegimeTributarioById),
+                   new { id = response.Id },
+                   response
+               );
         }
-
     }
 }

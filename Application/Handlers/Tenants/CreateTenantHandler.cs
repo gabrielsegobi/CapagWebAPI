@@ -25,7 +25,7 @@ namespace Application.Handlers.Tenants
             await _baseRepository.AddAsync(tenant);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse { Message = "Tenant Criado com sucesso" };
+            return new CreateApiResponse("Tenant Criado com sucesso", tenant.IdTenant);
         }
     }
 }

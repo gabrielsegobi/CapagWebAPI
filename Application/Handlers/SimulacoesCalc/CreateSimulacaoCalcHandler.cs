@@ -33,7 +33,7 @@ namespace Application.Handlers.SimulacoesCalc
             await _baseRepository.AddAsync(calc);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse { Message = CreateMessage };
+            return new CreateApiResponse (CreateMessage , calc.IdSimulacaoCalc);
         }
     }
 }

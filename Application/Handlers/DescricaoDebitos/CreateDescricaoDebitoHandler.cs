@@ -32,7 +32,9 @@ namespace Application.Handlers.DescricaoDebitos
             await _baseRepository.AddAsync(debito);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse { Message = "Débito Criado com sucesso" };
+
+
+            return new CreateApiResponse("Débito Criado com sucesso", debito.IdDescricaoDebitos);
         }
     }
 }

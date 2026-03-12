@@ -24,7 +24,7 @@ namespace Application.Handlers.RegDefis
         {
             //var regFileName = new RegFileName
             //{
-               
+
             //    FileName = request.FileName,
             //    Type = request.Type
             //};
@@ -37,7 +37,7 @@ namespace Application.Handlers.RegDefis
 
             //var DefisList = _mapper.Map<List<RegDefi>>(request.Request) ?? throw new InvalidDataException("Invalid data");
             var DefisList = _mapper.Map<RegFileName>(request.Request) ?? throw new InvalidDataException("Invalid data");
-     
+
             //foreach (var item in DefisList)
             //{
             //    item.IdFilename = regFileName.Id;
@@ -49,10 +49,7 @@ namespace Application.Handlers.RegDefis
             await _fileNameRepository.AddAsync(DefisList);
             await _fileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Defis Criadas com Sucesso"
-            };
+            return new CreateApiResponse("Defis Criadas com Sucesso", DefisList.Id);
         }
     }
 }

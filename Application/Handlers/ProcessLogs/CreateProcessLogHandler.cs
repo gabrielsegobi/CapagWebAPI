@@ -37,10 +37,7 @@ namespace Application.Handlers.ProcessLogs
             await _baseRepository.AddAsync(log);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "log de processo criado com sucesso"
-            };
+            return new CreateApiResponse("log de processo criado com sucesso", log.Id);
         }
     }
 }

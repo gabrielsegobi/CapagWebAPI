@@ -26,10 +26,7 @@ namespace Application.Handlers.RegsIrpf
             await _fileNameRepository.AddAsync(irpfList);
             await _fileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Irpfs Criadas com Sucesso"
-            };
+            return new CreateApiResponse("Irpfs Criadas com Sucesso", irpfList.Id);
         }
     }
 }

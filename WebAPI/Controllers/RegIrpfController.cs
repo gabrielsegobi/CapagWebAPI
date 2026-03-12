@@ -20,7 +20,8 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateRegIrpf([FromBody] CreateRegIrpfRequest request)
         {
             var response = await mediator.Send(new CreateRegIrpfCommand(request));
-            return Ok(response);
+
+            return Created("", response);
         }
 
         [HttpGet]

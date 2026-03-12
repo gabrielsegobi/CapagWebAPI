@@ -21,7 +21,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateDescricaoDebitoRequest request)
         {
             var response = await mediator.Send(new CreateDescricaoDebitoCommand(request));
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpGet]

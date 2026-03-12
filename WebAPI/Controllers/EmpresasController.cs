@@ -21,7 +21,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateEmpresa([FromBody] CreateEmpresaRequest request)
         {
             var response = await mediator.Send(new CreateEmpresaCommand { CreateEmpresaRequest = request });
-            return Ok(response);
+
+            return CreatedAtAction(
+                   nameof(GetEmpresaById),
+                   new { id = response.Id },
+                   response
+               );
         }
 
         [HttpGet("{id}")]

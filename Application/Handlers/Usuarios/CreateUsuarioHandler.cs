@@ -40,10 +40,7 @@ namespace Application.Handlers.Usuarios
             await _baseRepository.AddAsync(usuario);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Usuário Criado com Sucesso"
-            };
+            return new CreateApiResponse("Usuário Criado com Sucesso", usuario.IdUsuario);
         }
     }
 }

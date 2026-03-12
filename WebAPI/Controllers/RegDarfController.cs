@@ -20,7 +20,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateRegDarf([FromBody] CreateRegDarfRequest request)
         {
             var response = await mediator.Send(new CreateRegDarfCommand(request));
-            return Ok(response);
+
+            return CreatedAtAction(
+               nameof(GetRegDarfById),
+               new { id = response.Id },
+               response
+           );
         }
 
         [HttpGet("{id}")]
@@ -44,8 +49,6 @@ namespace WebAPI.Controllers
             var response = await mediator.Send(new RegDarfCountQuery(id_filename));
             return Ok(response);
         }
-
-
 
 
         [HttpPut("{id}")]

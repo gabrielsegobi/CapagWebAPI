@@ -26,10 +26,7 @@ namespace Application.Handlers.RegsPgdasd
             await _fileNameRepository.AddAsync(pgdasdList);
             await _fileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Pgdasds Criados com Sucesso"
-            };
+            return new CreateApiResponse("Pgdasds Criados com Sucesso" , pgdasdList.Id);
         }
     }
 }

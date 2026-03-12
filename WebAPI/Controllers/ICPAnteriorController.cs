@@ -1,6 +1,7 @@
 ﻿using Application.Commands.ICPAnterior;
 using Application.Filters;
 using Application.Queries.ICPAnterior;
+using Azure;
 using Domain.Contracts.ICPAnterior;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -27,8 +28,8 @@ namespace WebAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateICPAnteriorRequest request)
         {
-            var reponse = await mediator.Send(new CreateICPAnteriorCommand(request));
-            return Ok(reponse);
+            var response = await mediator.Send(new CreateICPAnteriorCommand(request));
+            return Created("", response);
         }
 
         [HttpPut("{id}")]

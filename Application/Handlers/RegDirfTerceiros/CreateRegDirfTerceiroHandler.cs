@@ -26,10 +26,7 @@ namespace Application.Handlers.RegDirfTerceiros
             await _fileNameRepository.AddAsync(DirfList);
             await _fileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Dirfs Criadas com Sucesso"
-            };
+            return new CreateApiResponse("Dirfs Criadas com Sucesso", DirfList.Id);
         }
     }
 }

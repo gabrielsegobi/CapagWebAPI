@@ -21,7 +21,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateDocumentLayout([FromBody] CreateDocumentLayoutRequest request)
         {
             var response = await mediator.Send(new CreateDocumentLayoutCommand(request));
-            return Ok(response);
+
+            return CreatedAtAction(
+                   nameof(GetDocumentLayoutById),
+                   new { id = response.Id },
+                   response
+               );
         }
 
         [HttpGet("{id}")]

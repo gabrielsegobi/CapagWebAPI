@@ -22,7 +22,7 @@ namespace WebAPI.Controllers
         {
             var response = await mediator.Send(new CreateRegDefisCommand(request));
 
-            return Ok(response);
+            return Created("", response);
         }
 
 

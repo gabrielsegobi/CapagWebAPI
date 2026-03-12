@@ -20,7 +20,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateRegDirf([FromBody] CreateRegDirfTerceiroRequest request)
         {
             var response = await mediator.Send(new CreateRegDirfTerceiroCommand(request));
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpGet]

@@ -47,10 +47,7 @@ namespace Application.Handlers.RegsDctf
             await _fileNameRepository.AddAsync(dctfList);
             await _fileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Dctfs Criados com Sucesso"
-            };
+            return new CreateApiResponse("Dctfs Criados com Sucesso", dctfList.Id);
         }
     }
 }

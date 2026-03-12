@@ -21,7 +21,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateValorCalcVariavelRequest request)
         {
             var response = await mediator.Send(new CreateValorCalcVariavelCommand(request));
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpGet]

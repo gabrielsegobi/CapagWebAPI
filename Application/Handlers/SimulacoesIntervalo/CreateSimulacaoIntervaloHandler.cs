@@ -36,16 +36,13 @@ namespace Application.Handlers.SimulacoesIntervalo
                 var jaExisteEntrada = await _baseRepository.GetFirstOrDefaultAsync(x => x.IdSimulacaoCalc == request.Request.IdSimulacaoCalc && x.TipoIntervalo == "ENTRADA");
 
                 if (jaExisteEntrada != null)
-                {
                     throw new DuplicateIntervalException();
-                }
-
             }
 
             await _baseRepository.AddAsync(intervalo);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse { Message = CreateMessage };
+            return new CreateApiResponse(CreateMessage, intervalo.IdSimulacaoIntervalo);
         }
     }
 }

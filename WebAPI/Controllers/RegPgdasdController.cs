@@ -20,7 +20,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateRegPgdasd([FromBody] CreateRegPgdasdRequest request)
         {
             var response = await mediator.Send(new CreateRegPgdasdCommand(request));
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpGet]

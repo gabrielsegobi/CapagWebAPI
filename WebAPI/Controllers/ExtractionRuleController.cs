@@ -21,7 +21,12 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateExtractionRule([FromBody] CreateExtractionRuleRequest request)
         {
             var response = await mediator.Send(new CreateExtractionRuleCommand(request));
-            return Ok(response);
+
+            return CreatedAtAction(
+                 nameof(GetExtractionRuleById),
+                 new { id = response.Id },
+                 response
+             );
         }
 
         [HttpGet("{id}")]

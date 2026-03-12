@@ -27,10 +27,7 @@ namespace Application.Handlers.RegimesTributarios
             await _baseRepository.AddAsync(regime);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Empresa Criada com Sucesso"
-            };
+            return new CreateApiResponse("Regime criado com sucesso.", regime.Id);
         }
     }
 }

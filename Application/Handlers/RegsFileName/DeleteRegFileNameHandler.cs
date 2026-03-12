@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Application.Handlers.RegsFileName
 {
-    public class DeleteRegFileNameHandler : IRequestHandler<DeleteRegFileNameCommnad, CreateApiResponse>
+    public class DeleteRegFileNameHandler : IRequestHandler<DeleteRegFileNameCommnad, DeleteApiResponse>
     {
         private readonly IBaseRepository<RegFileName> _regFileNameRepository;
 
@@ -16,7 +16,7 @@ namespace Application.Handlers.RegsFileName
             _regFileNameRepository = regFileNameRepository;
         }
 
-        public async Task<CreateApiResponse> Handle(DeleteRegFileNameCommnad request, CancellationToken cancellationToken)
+        public async Task<DeleteApiResponse> Handle(DeleteRegFileNameCommnad request, CancellationToken cancellationToken)
         {
             var reg = await _regFileNameRepository.GetByIdAsync(request.Id)
                 ?? throw new RegFileNameNotFoundException(request.Id);
@@ -24,7 +24,7 @@ namespace Application.Handlers.RegsFileName
             _regFileNameRepository.Delete(reg);
             await _regFileNameRepository.SaveChangesAsync();
 
-            return new CreateApiResponse { Message = "Arquivo deletado com sucesso" };
+            return new DeleteApiResponse { Message = "Arquivo deletado com sucesso" };
         }
     }
 }

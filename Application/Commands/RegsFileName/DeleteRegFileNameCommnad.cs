@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Commands.RegsFileName
 {
-    public class DeleteRegFileNameCommnad : IRequest<CreateApiResponse>
+    public class DeleteRegFileNameCommnad : IRequest<DeleteApiResponse>
     {
         public DeleteRegFileNameCommnad(long id)
         {

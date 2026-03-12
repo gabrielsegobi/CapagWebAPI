@@ -22,7 +22,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> Create([FromBody] CreateSimulacaoIntervaloRequest request)
         {
             var response = await mediator.Send(new CreateSimulacaoIntervaloCommand(request));
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpGet]

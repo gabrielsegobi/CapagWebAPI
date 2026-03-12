@@ -28,7 +28,7 @@ namespace WebAPI.Controllers
         public async Task<IActionResult> CreateProcessLog([FromBody] CreateProcessLogRequest request)
         {
             var response = await mediator.Send(new CreateProcessLogCommand { CreateProcessLogRequest = request });
-            return Ok(response);
+            return Created("", response);
         }
 
         [HttpDelete("{id}")]

@@ -25,7 +25,7 @@ namespace Application.Handlers.ExtractionRules
 
         public async Task<CreateApiResponse> Handle(CreateExtractionRuleCommand request, CancellationToken cancellationToken)
         {
-            var rule = _mapper.Map<ExtractionRule>(request.CreateExtractionRuleRequest) 
+            var rule = _mapper.Map<ExtractionRule>(request.CreateExtractionRuleRequest)
                 ?? throw new InvalidDataException("Invalid data");
 
             var layoutExistente = await _layoutRepository.GetFirstOrDefaultAsync(l => l.Id == request.CreateExtractionRuleRequest.LayoutId);
@@ -42,10 +42,7 @@ namespace Application.Handlers.ExtractionRules
             await _baseRepository.AddAsync(rule);
             await _baseRepository.SaveChangesAsync();
 
-            return new CreateApiResponse
-            {
-                Message = "Regra Criada com Sucesso"
-            };
+            return new CreateApiResponse("Regra Criada com Sucesso", rule.Id);
         }
     }
 }
