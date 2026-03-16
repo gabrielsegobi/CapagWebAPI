@@ -15,9 +15,10 @@ namespace Domain.Contracts.RegDarf
         
         [JsonPropertyName("data_arrecadacao")]
         public DateOnly DataArrecadacao { get; set; }
-        [JsonPropertyName("valor_total")]
-        public decimal ValorTotal { get; set; }
+     
         [JsonPropertyName("data_processamento")]
         public DateTime? DataProcessamento { get; set; }
+        [JsonPropertyName("valor_total")]
+        public decimal ValorTotal { get; set; }
     }
 }
