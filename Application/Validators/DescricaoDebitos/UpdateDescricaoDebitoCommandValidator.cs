@@ -21,10 +21,10 @@ namespace Application.Validators.DescricaoDebitos
                 .MaximumLength(100)
                 .WithMessage("A natureza do débito deve ter no máximo 100 caracteres.");
 
-            RuleFor(x => x.Request.NumCda)
+            //RuleFor(x => x.Request.NumCda)
              
-                .MaximumLength(50)
-                .WithMessage("O número da CDA deve ter no máximo 50 caracteres.");
+            //    .MaximumLength(50)
+            //    .WithMessage("O número da CDA deve ter no máximo 50 caracteres.");
 
             //RuleFor(x => x.Request.DataInscricao)
             //    .NotEmpty()
