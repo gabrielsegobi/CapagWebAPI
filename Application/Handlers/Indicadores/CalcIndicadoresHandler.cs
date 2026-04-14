@@ -32,29 +32,32 @@ namespace Application.Handlers.Indicadores
         {
             var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery { IdEmpresa = request.IdEmpresa, Ano = true });
 
-     //       var valoresPorAno = consolidados
-     //.GroupBy(x => x.Ano) // agrupa pelo ano real, não por bool
-     //.ToDictionary(
-     //    g => g.Key ?? 0, // ou algum valor padrão se Ano puder ser null
-     //    g => g
-     //        .GroupBy(x => x.Codigo) // garante unicidade
-     //        //.Select(gr => gr.First()) // pega o primeiro se houver duplicados
-     //        .ToDictionary(x => x.Codigo, x => x.Valor)
-     //);
             var valoresPorAno = consolidados
-                .GroupBy(x => x.Ano)
-                .ToDictionary(
-                    g => g.Key ?? 0,
-                    g => g
-                        .GroupBy(x => x.Codigo)
-                        .ToDictionary(
-                            gr => gr.Key,
-                            gr => gr.Sum(x => x.Valor)
-                        )
-                );
+     .GroupBy(x => x.Ano) // agrupa pelo ano real, não por bool
+     .ToDictionary(
+         g => g.Key ?? 0, // ou algum valor padrão se Ano puder ser null
+         g => g
+             .GroupBy(x => x.Codigo) // garante unicidade
+             .Select(gr => gr.First()) // pega o primeiro se houver duplicados
+             .ToDictionary(x => x.Codigo, x => x.Valor)
+
+     );
+
+
+            //var valoresPorAno = consolidados
+            //    .GroupBy(x => x.Ano)
+            //    .ToDictionary(
+            //        g => g.Key ?? 0,
+            //        g => g
+            //            .GroupBy(x => x.Codigo)
+            //            .ToDictionary(
+            //                gr => gr.Key,
+            //                gr => gr.Sum(x => x.Valor)
+            //            )
+            //    );
 
             //        var valoresPorAno = consolidados
-            
+
 
 
             var basePath = AppContext.BaseDirectory;
