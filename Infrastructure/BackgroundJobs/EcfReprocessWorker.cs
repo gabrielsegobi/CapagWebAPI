@@ -41,34 +41,6 @@ namespace Infrastructure.BackgroundJobs
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            //Console.WriteLine("🚀 ECF Worker iniciado");
-            //while (!stoppingToken.IsCancellationRequested)
-            //{
-            //    try
-            //    {
-            //        await _signal.WaitAsync(stoppingToken);
-
-            //        bool hasMore;
-
-            //        do
-            //        {
-            //            hasMore = await ProcessAsync(stoppingToken);
-            //        }
-            //        while (hasMore && !stoppingToken.IsCancellationRequested);
-
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _logger.LogError(ex, "Erro no worker ECF");
-            //    }
-            //    finally
-            //    {
-            //        Interlocked.Exchange(ref _isRunning, 0);
-            //    }
-            //}
-
-            Console.WriteLine("🚀 ECF Reprocess Worker iniciado");
-
             // Lê os itens da fila e processa um por um
             await foreach (var idEmpresa in _queue.Reader.ReadAllAsync(stoppingToken))
             {

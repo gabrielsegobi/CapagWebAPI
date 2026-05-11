@@ -216,7 +216,6 @@ namespace WebAPI.Controllers
                 return formula;
             }
 
-
             // 🔹 Função para avaliar a expressão usando NCalc
             double AvaliarExpressao(string expressao)
             {
@@ -260,8 +259,8 @@ namespace WebAPI.Controllers
                 }
             }
             return resultadosPorIndicador;
-
         }
+
         private class FormulaDto
         {
             public string Nome { get; set; }

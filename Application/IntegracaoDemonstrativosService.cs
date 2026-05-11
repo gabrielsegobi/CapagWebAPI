@@ -26,9 +26,10 @@ namespace Application
             _baseUrl = _configuration["ApiGmaster:BaseUrl"] ?? throw new ArgumentNullException("ApiGmaster:BaseUrl");
 
         }
+        
         public async Task<List<CreateDRERequest>> ObterDreAsync(Empresa empresa, CancellationToken cancellationToken)
         {
-            var url = $"{_baseUrl}/dre?ano=2022,2023,2024&cnpj={empresa.Cnpj}";
+            var url = $"{_baseUrl}/dre?ano=2021,2022,2023,2024&cnpj={empresa.Cnpj}";
             var json = await _apiService.ObterDadosApiAsync<DREJson>(url, cancellationToken);
 
 
@@ -55,7 +56,7 @@ namespace Application
 
         public async Task<List<CreateBalancoRequest>> ObterBalancoAsync(Empresa empresa, CancellationToken cancellationToken)
         {
-            var url = $"{_baseUrl}/balanco?ano=2022,2023,2024&cnpj={empresa.Cnpj}";
+            var url = $"{_baseUrl}/balanco?ano=2021,2022,2023,2024&cnpj={empresa.Cnpj}";
             var json = await _apiService.ObterDadosApiAsync<BalancoJson>(url, cancellationToken);
             var culture = CultureInfo.GetCultureInfo("en-US");
 

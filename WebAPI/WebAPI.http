@@ -1,6 +1,8 @@
 ### Variables
 @baseUrl = http://localhost:5174
 @token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhbmFsaXN0YUBjbGllbnRlLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJBbmFsaXN0YSBGaW5hbmNlaXJvIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiQWRtaW4iLCJ0ZW5hbnRJZCI6IjIiLCJleHAiOjE3NjM1NjE5MTgsImlzcyI6IkNhcGFnQXBpIiwiYXVkIjoiQXVkaWVuY2lhIn0.qk4xvk36MUko68_dHaDmTysa6dQyqsVsaz9h06t5_iI
+@tenantId = 2
+@idEmpresa = 1
 
 ### ========== AUTH ==========
 
@@ -24,7 +26,7 @@ Content-Type: application/json
 
 ### ========== VIEWS ==========
 
-### Get BalanÁo Patrimonial
+### Get Balanùo Patrimonial
 GET {{baseUrl}}/api/Views/balanco-patrimonial?IdEmpresa=1&Ano=2024&Page=1&PageSize=10
 Authorization: Bearer {{token}}
 
@@ -60,11 +62,11 @@ Content-Type: application/json
   "id_empresa_matriz": null,
   "ativa": true,
   "cnae": "1234-5/00",
-  "municipio_estado": "S„o Paulo/SP",
+  "municipio_estado": "Sùo Paulo/SP",
   "data_abertura": "2020-01-01",
   "capital_social": "100000.00",
   "segmento": "Tecnologia",
-  "porte": "MÈdio"
+  "porte": "Mùdio"
 }
 
 ### Update Empresa
@@ -81,20 +83,57 @@ Content-Type: application/json
   "id_empresa_matriz": null,
   "ativa": true,
   "cnae": "1234-5/00",
-  "municipio_estado": "S„o Paulo/SP",
+  "municipio_estado": "Sùo Paulo/SP",
   "data_abertura": "2020-01-01",
   "capital_social": "150000.00",
   "segmento": "Tecnologia",
-  "porte": "MÈdio"
+  "porte": "Mùdio"
 }
 
 ### Delete Empresa
 DELETE {{baseUrl}}/api/Empresas/1
 Authorization: Bearer {{token}}
 
-### Get Demonstrativos Cont·beis
+### Get Demonstrativos Contùbeis
 GET {{baseUrl}}/api/Empresas/demonstrativos-contabeis?idEmpresa=1&ano=true
 Authorization: Bearer {{token}}
+X-Tenant-Id: {{tenantId}}
+
+### ========== DEMONSTRATIVOS (DEFIS + PGDASD) ==========
+
+### Anos disponiveis (merge DEFIS + PGDASD + demonstrativos gerados)
+GET {{baseUrl}}/api/demonstrativos/anos-disponiveis?id_empresa={{idEmpresa}}
+Authorization: Bearer {{token}}
+X-Tenant-Id: {{tenantId}}
+
+### Construir demonstrativos (transacao por ano, sobrescrever opcional)
+POST {{baseUrl}}/api/demonstrativos/construir
+Authorization: Bearer {{token}}
+X-Tenant-Id: {{tenantId}}
+Content-Type: application/json
+
+{
+  "id_empresa": {{idEmpresa}},
+  "anos": [2022, 2023, 2024],
+  "sobrescrever": true
+}
+
+### Exemplo de response esperado (referencia)
+# {
+#   "sucesso": true,
+#   "totalInseridos": 54,
+#   "possuiAlertas": true,
+#   "resultados": {
+#     "2024": {
+#       "inseridos": 33,
+#       "deletados": 0,
+#       "erros": [],
+#       "alertas": [
+#         "CMV_NEGATIVO: O CMV calculado para 2024 resultou em R$ -386.428,96. Registrado como R$ 0,00. Verifique se o estoque inicial foi declarado corretamente."
+#       ]
+#     }
+#   }
+# }
 
 ### ========== USUARIOS ==========
 

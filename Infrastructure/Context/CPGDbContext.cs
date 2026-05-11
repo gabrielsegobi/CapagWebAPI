@@ -21,44 +21,13 @@ namespace Infrastructure.Context
             {
             }
         }
+        
         public DbSet<BalancoPatrimonialVw> BalancoPatrimonial { get; set; }
         public DbSet<DashboardEmpresaAnualVw> DashboardEmpresaAnual { get; set; }
         public DbSet<DREVw> DRE { get; set; }
         public DbSet<UsuariosAcessosVw> UsuariosAcessos { get; set; }
 
         public DbSet<AuditLog> AuditLogs { get; set; } = null!;
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    base.OnModelCreating(modelBuilder);
-        //    modelBuilder.ApplyConfigurationsFromAssembly(typeof(CPGDbContext).Assembly);
-        //}
-
-
-        //protected override void OnModelCreating(ModelBuilder modelBuilder)
-        //{
-        //    base.OnModelCreating(modelBuilder);
-        //    modelBuilder.ApplyConfigurationsFromAssembly(typeof(CPGDbContext).Assembly);
-
-        //    var tenantId = _currentUserService.TenantId;
-
-        //    Console.WriteLine($"[CPGDbContext] TenantId atual: {tenantId?.ToString() ?? "null"}");
-
-        //    if (!tenantId.HasValue)
-        //        return;
-
-        //    foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        //    {
-        //        if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
-        //        {
-        //            var parameter = Expression.Parameter(entityType.ClrType, "e");
-        //            var property = Expression.Property(parameter, nameof(ITenantEntity.IdTenant));
-        //            var constant = Expression.Constant(tenantId.Value);
-        //            var body = Expression.Equal(property, constant);
-        //            var lambda = Expression.Lambda(body, parameter);
-        //            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
-        //        }
-        //    }
-        //}
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

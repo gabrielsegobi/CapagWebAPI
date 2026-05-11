@@ -29,20 +29,6 @@ namespace Infrastructure.Repositories
                 if (list.Count == 0)
                     continue;
 
-                //foreach (var item in list)
-                //{
-                //    Console.WriteLine($"Preparando insert: {string.Join(", ", item.GetType().GetProperties().Select(p => $"{p.Name}={p.GetValue(item)}"))}");
-                //}
-
-                //var bulkConfig = new BulkConfig
-                //{
-                //    BatchSize = 2000,
-                //    PreserveInsertOrder = true, // garante que pais sejam inseridos antes de filhos
-                //    TrackingEntities = true,       // captura melhor erros de relacionamento
-                //    SetOutputIdentity = true,
-                //    UseTempDB = false,             // MySQL
-                //    CalculateStats = false// atualiza IDs gerados se houver identity
-                //};
                 var bulkConfig = new BulkConfig
                 {
                     BatchSize = 5000,                 // MySQL aguenta bem 5k–10k
@@ -54,37 +40,12 @@ namespace Infrastructure.Repositories
                     EnableStreaming = true            // 🔥 reduz uso de memória
                 };
 
-
-
-
-                //await _context.BulkInsertAsync(
-                //    list,
-                //    new BulkConfig
-                //    {
-                //        BatchSize = 3000,            // MySQL-friendly
-                //        PreserveInsertOrder = true,    // evita bugs com FK
-                //        TrackingEntities = true,      // performance
-                //        UseTempDB = false,             // MySQL
-                //        CalculateStats = false
-
-                //    },
-                //    cancellationToken: cancellationToken
-                //);
-                //for (int i = 0; i < list.Count; i++)
-                //{
-                //    var item = list[i];
-                //    Console.WriteLine($"[ORDEM {i}] ID:{item.Id} Chave:{item}");
-                //}
-
-
                 try
                 {
                     await _context.BulkInsertAsync(list, bulkConfig);
                 }
                 catch (MySqlConnector.MySqlException ex)
                 {
-                    Console.WriteLine("🚨 MySQL Bulk Insert Falhou!");
-                    Console.WriteLine($"Mensagem principal: {ex.Message}");
                     if (ex.InnerException != null)
                         Console.WriteLine($"InnerException: {ex.InnerException.Message}");
 

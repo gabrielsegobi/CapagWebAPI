@@ -59,7 +59,6 @@ public class GetEmpresaByIdHandler : IRequestHandler<GetEmpresaByIdQuery, GetApi
 
                 _taskQueue.Enqueue(async (sp, token) =>
                 {
-                    Console.WriteLine($"[Fila] Iniciando processamento da empresa {empresa.IdEmpresa}");
                     try
                     {
                         var currentUser = sp.GetRequiredService<ICurrentUserService>();
@@ -77,8 +76,6 @@ public class GetEmpresaByIdHandler : IRequestHandler<GetEmpresaByIdQuery, GetApi
                             repo.Update(empresaProcessada);
                             await repo.SaveChangesAsync();
 
-                            Console.WriteLine($"[Fila] Empresa {empresa.IdEmpresa} marcada como processada com sucesso");
-
                             var log = new CreateProcessLogRequest
                             {
                                 Acao = "Processamento terminado",
@@ -92,8 +89,6 @@ public class GetEmpresaByIdHandler : IRequestHandler<GetEmpresaByIdQuery, GetApi
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[Fila] Erro ao processar empresa {empresa.IdEmpresa}: {ex.Message}, {ex}");
-
                         var log = new CreateProcessLogRequest
                         {
                             Acao = "Erro ao processar Empresa",

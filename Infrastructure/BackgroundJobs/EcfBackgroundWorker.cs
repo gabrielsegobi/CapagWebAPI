@@ -36,7 +36,6 @@ namespace Infrastructure.BackgroundJobs
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Console.WriteLine("🚀 ECF Worker iniciado");
             while (!stoppingToken.IsCancellationRequested)
             {
                 try

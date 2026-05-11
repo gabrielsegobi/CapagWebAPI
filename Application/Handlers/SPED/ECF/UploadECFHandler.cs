@@ -63,44 +63,8 @@ namespace Application.Handlers.SPED.ECF
 
                 var operationFile = new OperationFile(idOp, uniqueName, OperationFileStatus.AguardandoProcessamento);
                 await _operationFileRepository.AddAsync(operationFile);
-
-                // 5️⃣ publica evento por arquivo
-                //await _mediator.Publish(
-                //    new EcfNotification(
-                //        cnpjRaiz!,
-                //        competencia!,
-                //        idOp,
-                //        1,
-                //        idEmpresa
-                //    ),
-                //    cancellationToken
-                //);
             }
             await _operationFileRepository.SaveChangesAsync();
-
-
-            //using var stream = request.Request.File.OpenReadStream();
-            //using var reader = new StreamReader(stream);
-
-            //var primeiraLinha = await reader.ReadLineAsync();
-
-            //Console.WriteLine(primeiraLinha);
-
-
-            //var competencia = ExtrairCompetencia(primeiraLinha);
-            //var cnpjRaiz = ExtrairCnpjRaiz(primeiraLinha);
-
-            ////Console.WriteLine("receba");
-            ////Console.WriteLine($"cnpj:{cnpjRaiz ?? "test1"}");
-            //Console.WriteLine(competencia);
-            //stream.Position = 0;
-
-            //await _objectStorage.SaveAsync($"{cnpjRaiz}-{competencia}", stream);
-
-            //await _mediator.Publish(new EcfNotification(cnpjRaiz!, competencia!, idOp, 1, idEmpresa), cancellationToken);
-
-
-            //throw new NotImplementedException();
 
             var operation = await _operationRepository.GetByIdAsync(idOp) ?? throw new Exception();
 

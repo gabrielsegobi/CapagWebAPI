@@ -134,7 +134,6 @@ namespace Domain.Resources.Sped
                 }
             }
 
-            Console.WriteLine($"[INFO] {cache.Count} layouts carregados de {_pastaLayouts}");
             return cache;
         }
     }

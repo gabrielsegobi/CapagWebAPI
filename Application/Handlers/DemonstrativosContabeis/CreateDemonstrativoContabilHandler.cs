@@ -89,13 +89,9 @@ namespace Application.Handlers.DemonstrativosContabeis
                 {
                     IdEmpresa = request.IdEmpresa
                 });
-
-
-                Console.WriteLine($"[Handler] Empresa {empresa.IdEmpresa} processada com sucesso!");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Handler] Erro: {ex.Message}, {ex}");
                 throw new Exception($"Falha ao gerar demonstrativos contábeis. Nenhum dado foi salvo. Erro: {ex.Message}.");
             }
         }
