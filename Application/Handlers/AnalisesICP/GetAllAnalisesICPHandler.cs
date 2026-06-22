@@ -20,7 +20,7 @@ namespace Application.Handlers.AnalisesICP
         }
         public async Task<PagedApiResponse<AnaliseICPDto>> Handle(GetAllAnalisesICPQuery request, CancellationToken cancellationToken)
         {
-            var query = _baseRepository.Query();
+            var query = _baseRepository.Query(a => a.DeletedAt == null);
 
             var pagedResult = await query.ReadPage<AnaliseICP, AnaliseICPDto>(
                 request.Filter,

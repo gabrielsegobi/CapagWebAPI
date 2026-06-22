@@ -22,6 +22,10 @@ namespace Application.Handlers.Views.BalancoPatrimonial
         {
             var query = _viewRepository.Query();
 
+            // Balanço por empresa costuma trazer dezenas de contas × anos; evita página padrão (10) incompleta.
+            if (request.Filter.IdEmpresa > 0 && request.Filter.PageSize is null or 10)
+                request.Filter.PageSize = 500;
+
             var pagedResult = await query.ReadPage<BalancoPatrimonialVw, BPViewDto>(
                 request.Filter,
                 applyFilters: q =>
@@ -33,8 +37,8 @@ namespace Application.Handlers.Views.BalancoPatrimonial
                         q = q.Where(e => e.Ano == request.Filter.Ano);
 
                     q = request.Filter.OrderByDescending
-                        ? q.OrderByDescending(e => e.Descricao)
-                        : q.OrderBy(e => e.Descricao);
+                        ? q.OrderByDescending(e => e.Codigo).ThenByDescending(e => e.Ano)
+                        : q.OrderBy(e => e.Codigo).ThenBy(e => e.Ano);
 
                     return q;
                 },

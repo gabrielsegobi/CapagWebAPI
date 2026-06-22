@@ -22,7 +22,7 @@ namespace Application.Handlers.AnalisesICP
         {
             var analise = await _baseRepository.GetByIdAsync(request.Id);
 
-            if (analise == null)
+            if (analise == null || analise.DeletedAt != null)
             {
                 throw new RegimeTributarioNotFoundException(request.Id);
             }

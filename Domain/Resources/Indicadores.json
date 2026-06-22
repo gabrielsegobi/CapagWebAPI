@@ -51,7 +51,7 @@
   },
   {
     "nome": "Giro do Estoque",
-    "desc_formula": " (Custo dos Produtos Vendidos - CPV) / (Estoque Médio)",
+    "desc_formula": "(Custo dos Produtos Vendidos - CPV) / (Estoque Médio)",
     "formula": "{3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)"
   },
   {
@@ -76,12 +76,12 @@
   },
   {
     "nome": "Necessidade de Capital de Giro (NCG)",
-    "desc_formula": "(Ativo Circulante Operacional (ACO) – Passivo Circulante Operacional (PCO))/Receita Líquida",
+    "desc_formula": "(Ativo Circulante Operacional (ACO) - Passivo Circulante Operacional (PCO))/Receita Líquida",
     "formula": "(({1.01} - {1.01.01}) - ({2.01} - {2.01.01.07} - {2.01.01.09.09} - {2.01.01.09.10} - {2.01.01.17.13})) / {3.01.01.01}"
   },
   {
     "nome": "Capital de Giro de Longo Prazo (CGLP)",
-    "desc_formula": "(Passivo Não Circulante + Patrimônio Líquido) – Ativo Não Circulante/Ativo Total",
+    "desc_formula": "(Passivo Não Circulante + Patrimônio Líquido) - Ativo Não Circulante/Ativo Total",
     "formula": "(({2.02} + {2.03}) - {1.02}) / {1}"
   }
 ]

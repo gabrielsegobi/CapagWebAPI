@@ -17,6 +17,7 @@ namespace Application.Handlers.ResultadosIndicesICP
     public class CalcResultadosIndicesICPHandler : IRequestHandler<CalcResultadosIndicesICPCommand, Dictionary<string, double>>
     {
         private readonly IBaseRepository<ResultadoIndiceICP> _resultadoIndiceICPRepo;
+        private readonly IBaseRepository<AnaliseICP> _analiseIcpRepo;
         private readonly IBaseRepository<ModeloIndiceICP> _modelosIndicesRepo;
         private readonly IMediator _mediator;
         private readonly ICurrentUserService _currentUserService;
@@ -24,11 +25,13 @@ namespace Application.Handlers.ResultadosIndicesICP
         public CalcResultadosIndicesICPHandler(
            IBaseRepository<ModeloIndiceICP> modelosIndicesRepo,
            IBaseRepository<ResultadoIndiceICP> resultadoIndiceICPRepo,
+           IBaseRepository<AnaliseICP> analiseIcpRepo,
            IMediator mediator,
            ICurrentUserService currentUserService)
         {
             _modelosIndicesRepo = modelosIndicesRepo;
             _resultadoIndiceICPRepo = resultadoIndiceICPRepo;
+            _analiseIcpRepo = analiseIcpRepo;
             _mediator = mediator;
             _currentUserService = currentUserService;
         }
@@ -36,7 +39,18 @@ namespace Application.Handlers.ResultadosIndicesICP
         public async Task<Dictionary<string, double>> Handle(CalcResultadosIndicesICPCommand request, CancellationToken cancellationToken)
         {
             var modelosDb = await _modelosIndicesRepo.Query().ToListAsync();
-            var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery { IdEmpresa = request.IdEmpresa, Ano = false });
+
+            var anosCalculo = await _mediator.Send(new GetAnosCalculoDemonstrativoQuery
+            {
+                IdEmpresa = request.IdEmpresa
+            }, cancellationToken);
+
+            var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery
+            {
+                IdEmpresa = request.IdEmpresa,
+                Ano = true,
+                AnosFiltro = anosCalculo
+            }, cancellationToken);
 
             var basePath = AppContext.BaseDirectory;
             var jsonPath = Path.Combine(basePath, "Domain", "Resources", "ModelosIndicesICp.json");
@@ -62,7 +76,14 @@ namespace Application.Handlers.ResultadosIndicesICP
                 }
             }
 
-            var valoresTotais = consolidados.ToDictionary(x => x.Codigo, x => (double)x.Valor);
+            var valoresTotais = consolidados
+                .Where(x => x.Ano.HasValue && anosCalculo.Contains(x.Ano.Value))
+                .GroupBy(x => x.Ano)
+                .SelectMany(anoGrupo => anoGrupo
+                    .GroupBy(x => x.Codigo)
+                    .Select(gr => gr.First()))
+                .GroupBy(x => x.Codigo)
+                .ToDictionary(g => g.Key, g => (double)g.Sum(x => x.Valor));
             var resultadosPorIndicador = new Dictionary<string, double>();
             var resultados = new List<CreateResultadoIndiceICPRequest>();
             var listaSubScores = new List<(decimal SubScore, decimal Peso)>();
@@ -71,6 +92,13 @@ namespace Application.Handlers.ResultadosIndicesICP
 
             if (tenantId == null)
                 throw new UnauthorizedAccessException("Tenant não identificado.");
+
+            await LimparCalculosEmpresaHelper.LimparResultadosIcpAnterioresAsync(
+                _resultadoIndiceICPRepo,
+                _analiseIcpRepo,
+                request.IdEmpresa,
+                tenantId.Value,
+                cancellationToken);
 
             foreach (var formula in formulas)
             {

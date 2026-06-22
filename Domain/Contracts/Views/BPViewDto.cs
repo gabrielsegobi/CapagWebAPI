@@ -40,6 +40,14 @@ namespace Domain.Contracts.Views
         public decimal? ValCtaRefFin { get; set; }
         [JsonPropertyName("ind_val_cta_ref_fin")]
         public char? IndValCtaRefFin { get; set; }
+
+        /// <summary>Saldo de fechamento do exercício — usar na coluna do ano no balanço.</summary>
+        [JsonPropertyName("valor")]
+        public decimal? Valor => ValCtaRefFin;
+
+        /// <summary>Saldo de abertura do exercício (equivalente a {codigo}[I] nos indicadores).</summary>
+        [JsonPropertyName("valor_inicial")]
+        public decimal? ValorInicial => ValCtaRefIni;
         [JsonPropertyName("tipo_trib")]
         public string? TipoTrib { get; set; }
         [JsonPropertyName("created_at")]

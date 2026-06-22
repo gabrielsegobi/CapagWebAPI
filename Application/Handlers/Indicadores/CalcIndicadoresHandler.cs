@@ -30,15 +30,29 @@ namespace Application.Handlers.Indicadores
 
         public async Task<Dictionary<string, List<object>>> Handle(CalcIndicadoresCommand request, CancellationToken cancellationToken)
         {
-            var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery { IdEmpresa = request.IdEmpresa, Ano = true });
+            var anosCalculo = await _mediator.Send(new GetAnosCalculoDemonstrativoQuery
+            {
+                IdEmpresa = request.IdEmpresa
+            }, cancellationToken);
 
-            var valoresPorAno = consolidados.GroupBy(x => x.Ano) // agrupa pelo ano real, não por bool
-                                            .ToDictionary(
-                                                                g => g.Key ?? 0, 
-                                                                g => g.GroupBy(x => x.Codigo) 
-                                            .Select(gr => gr.First()) 
-                                            .ToDictionary(x => x.Codigo, x => x.Valor)
-                                            );
+            // Indicadores são calculados por exercício: saldo final/inicial do BP (T04/A00)
+            // e fluxo anual da DRE — não somar períodos do balanço (SomarPeriodosNoAno).
+            var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery
+            {
+                IdEmpresa = request.IdEmpresa,
+                Ano = true,
+                AnosFiltro = anosCalculo
+            }, cancellationToken);
+
+            var valoresPorAno = consolidados
+                .Where(x => x.Ano.HasValue && anosCalculo.Contains(x.Ano.Value))
+                .GroupBy(x => x.Ano)
+                .ToDictionary(
+                    g => g.Key ?? 0,
+                    g => g.GroupBy(x => x.Codigo)
+                        .Select(gr => gr.First())
+                        .ToDictionary(x => x.Codigo, x => x.Valor)
+                );
 
             var basePath = AppContext.BaseDirectory;
             var jsonPath = Path.Combine(basePath, "Domain", "Resources", "Indicadores.json");
@@ -50,11 +64,12 @@ namespace Application.Handlers.Indicadores
             });
 
             var resultadosPorIndicador = new Dictionary<string, List<object>>();
-            var keysValoresPorAno = valoresPorAno.Keys.Count() == 4 ? valoresPorAno.Keys.Skip(1) : valoresPorAno.Keys;
 
-            foreach (var ano in keysValoresPorAno)
+            foreach (var ano in anosCalculo)
             {
-                var valoresAnoDouble = valoresPorAno[ano].ToDictionary(kv => kv.Key, kv => (double)kv.Value);
+                var valoresAnoDouble = valoresPorAno.TryGetValue(ano, out var valoresAno)
+                    ? valoresAno.ToDictionary(kv => kv.Key, kv => (double)kv.Value)
+                    : new Dictionary<string, double>();
 
                 foreach (var formula in formulas)
                 {
@@ -80,6 +95,13 @@ namespace Application.Handlers.Indicadores
 
             if (tenantId == null)
                 throw new UnauthorizedAccessException("Tenant não identificado.");
+
+            await LimparCalculosEmpresaHelper.LimparIndicadoresAnterioresAsync(
+                _indicadorRepo,
+                _valorAnualRepo,
+                request.IdEmpresa,
+                tenantId.Value,
+                cancellationToken);
 
             foreach (var kv in resultadosPorIndicador)
             {

@@ -26,7 +26,7 @@ namespace Application.Handlers.AnalisesICP
             GetAnaliseIcpRelatorioQuery request,
             CancellationToken cancellationToken)
         {
-            var query = _analiseIcpRepository.Query();
+            var query = _analiseIcpRepository.Query(a => a.DeletedAt == null);
 
             var pagedResult = await query.ReadPage<
                 AnaliseICP,

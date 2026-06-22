@@ -37,7 +37,7 @@ namespace Application.Handlers.Indicadores
 
             var query = _indicadorRepository
                 .Query()
-                .Where(i => i.IdEmpresa == request.IdEmpresa);
+                .Where(i => i.IdEmpresa == request.IdEmpresa && i.DeletedAt == null);
 
             if (request.Filter.Ano.HasValue)
             {

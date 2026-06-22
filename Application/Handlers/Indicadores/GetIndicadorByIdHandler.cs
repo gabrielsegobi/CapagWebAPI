@@ -22,7 +22,7 @@ namespace Application.Handlers.Indicadores
         {
             var indicador = await _baseRepository.GetByIdAsync(request.Id);
 
-            if (indicador == null)
+            if (indicador == null || indicador.DeletedAt != null)
             {
                 throw new IndicadorNotFoundException(request.Id);
             }

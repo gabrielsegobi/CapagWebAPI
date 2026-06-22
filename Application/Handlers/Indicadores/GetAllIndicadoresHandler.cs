@@ -23,7 +23,9 @@ namespace Application.Handlers.Indicadores
 
         public async Task<PagedApiResponse<IndicadorDto>> Handle(GetAllIndicadoresQuery request, CancellationToken cancellationToken)
         {
-            var query = _baseRepository.Query().Include(i => i.ValoresAnuais);
+            var query = _baseRepository
+                .Query(i => i.DeletedAt == null)
+                .Include(i => i.ValoresAnuais);
 
             var pagedResult = await query.ReadPage<Indicador, IndicadorDto>(
                 request.Filter,

@@ -14,6 +14,22 @@ namespace WebAPI.Controllers
     {
         public DemonstrativosController(IMediator mediator) : base(mediator) { }
 
+        [HttpGet("contas")]
+        public async Task<IActionResult> GetContas([FromQuery] long? id_empresa)
+        {
+            if (!Request.Headers.TryGetValue("X-Tenant-Id", out var tenantHeader) ||
+                !long.TryParse(tenantHeader, out var idTenant))
+                return BadRequest("Tenant não informado.");
+
+            var response = await mediator.Send(new GetContasContabeisQuery
+            {
+                IdTenant = idTenant,
+                IdEmpresa = id_empresa
+            });
+
+            return Ok(response);
+        }
+
         [HttpGet("anos-disponiveis")]
         public async Task<IActionResult> GetAnosDisponiveis([FromQuery] long id_empresa)
         {
@@ -42,6 +58,30 @@ namespace WebAPI.Controllers
             request.IdTenant = idTenant;
 
             var response = await mediator.Send(new ConstruirDemonstrativosCommand(request));
+            return Ok(response);
+        }
+
+        [HttpPost("cadastrar")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> Cadastrar([FromBody] CadastrarDemonstrativosContabeisRequest request)
+        {
+            if (!Request.Headers.TryGetValue("X-Tenant-Id", out var tenantHeader) ||
+                !long.TryParse(tenantHeader, out var idTenant))
+                return BadRequest("Tenant não informado.");
+
+            if (request?.Contas == null || request.Contas.Count == 0)
+                return BadRequest("Lista de contas inválida.");
+
+            var response = await mediator.Send(new CadastrarDemonstrativosContabeisCommand
+            {
+                IdTenant = idTenant,
+                Sobrescrever = request.Sobrescrever,
+                Contas = request.Contas
+            });
+
+            if (!response.Sucesso)
+                return BadRequest(response);
+
             return Ok(response);
         }
     }
