@@ -26,7 +26,7 @@ Content-Type: application/json
 
 ### ========== VIEWS ==========
 
-### Get Balanùo Patrimonial
+### Get Balan?o Patrimonial
 GET {{baseUrl}}/api/Views/balanco-patrimonial?IdEmpresa=1&Ano=2024&Page=1&PageSize=10
 Authorization: Bearer {{token}}
 
@@ -62,11 +62,11 @@ Content-Type: application/json
   "id_empresa_matriz": null,
   "ativa": true,
   "cnae": "1234-5/00",
-  "municipio_estado": "Sùo Paulo/SP",
+  "municipio_estado": "S?o Paulo/SP",
   "data_abertura": "2020-01-01",
   "capital_social": "100000.00",
   "segmento": "Tecnologia",
-  "porte": "Mùdio"
+  "porte": "M?dio"
 }
 
 ### Update Empresa
@@ -83,28 +83,65 @@ Content-Type: application/json
   "id_empresa_matriz": null,
   "ativa": true,
   "cnae": "1234-5/00",
-  "municipio_estado": "Sùo Paulo/SP",
+  "municipio_estado": "S?o Paulo/SP",
   "data_abertura": "2020-01-01",
   "capital_social": "150000.00",
   "segmento": "Tecnologia",
-  "porte": "Mùdio"
+  "porte": "M?dio"
 }
 
 ### Delete Empresa
 DELETE {{baseUrl}}/api/Empresas/1
 Authorization: Bearer {{token}}
 
-### Get Demonstrativos Contùbeis
+### Get Demonstrativos Cont?beis
 GET {{baseUrl}}/api/Empresas/demonstrativos-contabeis?idEmpresa=1&ano=true
 Authorization: Bearer {{token}}
 X-Tenant-Id: {{tenantId}}
 
 ### ========== DEMONSTRATIVOS (DEFIS + PGDASD) ==========
 
+### Contas contabeis distintas (codigo + descricao)
+GET {{baseUrl}}/api/demonstrativos/contas
+Authorization: Bearer {{token}}
+X-Tenant-Id: {{tenantId}}
+
+### Contas contabeis distintas por empresa
+GET {{baseUrl}}/api/demonstrativos/contas?id_empresa={{idEmpresa}}
+Authorization: Bearer {{token}}
+X-Tenant-Id: {{tenantId}}
+
 ### Anos disponiveis (merge DEFIS + PGDASD + demonstrativos gerados)
 GET {{baseUrl}}/api/demonstrativos/anos-disponiveis?id_empresa={{idEmpresa}}
 Authorization: Bearer {{token}}
 X-Tenant-Id: {{tenantId}}
+
+### Cadastrar demonstrativos contabeis (JSON de contas + recalculo indicadores/ICP)
+POST {{baseUrl}}/api/demonstrativos/cadastrar
+Authorization: Bearer {{token}}
+X-Tenant-Id: {{tenantId}}
+Content-Type: application/json
+
+{
+  "sobrescrever": true,
+  "contas": [
+  {
+    "id_empresa": {{idEmpresa}},
+    "dt_ini": "2024-01-01",
+    "dt_ini_apur": "2024-01-01",
+    "dt_fin_apur": "2024-03-31",
+    "per_apur": "T01",
+    "ano": 2024,
+    "codigo": "3",
+    "descricao": "RESULTADO L?QUIDO DO PER?ODO",
+    "tipo": "S",
+    "nivel": 1,
+    "val_cta_ref_fin": 1504098.41,
+    "ind_val_cta_ref_fin": "C",
+    "tipo_trib": "Lucro Real"
+    }
+  ]
+}
 
 ### Construir demonstrativos (transacao por ano, sobrescrever opcional)
 POST {{baseUrl}}/api/demonstrativos/construir
