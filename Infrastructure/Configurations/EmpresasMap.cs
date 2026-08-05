@@ -32,6 +32,8 @@ namespace Infrastructure.Configurations
             builder.Property(e => e.CapitalSocial).HasColumnName("capital_social").HasColumnType("VARCHAR(50)").IsRequired();
             builder.Property(e => e.Segmento).HasColumnName("segmento").HasColumnType("VARCHAR(100)").IsRequired();
             builder.Property(e => e.Porte).HasColumnName("porte").HasColumnType("VARCHAR(30)").IsRequired();
+            builder.Property(e => e.DataImpedimento).HasColumnName("data_impedimento").HasColumnType("TIMESTAMP");
+            builder.Property(e => e.IdUsuarioResponsavel).HasColumnName("id_usuario_responsavel").HasColumnType("BIGINT");
         }
     }
 }

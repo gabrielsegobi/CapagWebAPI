@@ -1,4 +1,5 @@
-﻿using Application.Queries.Indicadores;
+﻿using Application.Helpers;
+using Application.Queries.Indicadores;
 using AutoMapper;
 using Domain.Contracts.Indicadores;
 using Domain.Contracts.Responses;
@@ -70,6 +71,9 @@ namespace Application.Handlers.Indicadores
                     return dtos;
                 }
             );
+
+            var formulas = await IndicadoresFormulaHelper.CarregarFormulasAsync(cancellationToken);
+            IndicadoresFormulaHelper.EnriquecerIndicadores(pagedResult.Data, formulas);
 
             return pagedResult;
         }

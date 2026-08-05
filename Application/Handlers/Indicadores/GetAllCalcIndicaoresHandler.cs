@@ -1,14 +1,13 @@
 ﻿using Application.Exceptions.Empresas;
+using Application.Helpers;
 using Application.Queries.Indicadores;
 using AutoMapper;
 using Domain.Contracts.Indicadores;
-using Domain.Contracts.Json;
 using Domain.Contracts.Responses;
 using Domain.Entities;
 using Infrastructure.Interface;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace Application.Handlers.Indicadores
 {
@@ -82,31 +81,9 @@ namespace Application.Handlers.Indicadores
                 mapFunc: data => _mapper.Map<IEnumerable<CalcIndicadoresDto>>(data)
             );
 
-            var basePath = AppContext.BaseDirectory;
-            var jsonPath = Path.Combine(basePath, "Domain", "Resources", "Indicadores.json");
-            var jsonContent = await System.IO.File.ReadAllTextAsync(jsonPath);
-            var formulas = JsonSerializer.Deserialize<List<FormulaJson>>(jsonContent, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var formulas = await IndicadoresFormulaHelper.CarregarFormulasAsync(cancellationToken);
+            IndicadoresFormulaHelper.EnriquecerCalculos(pagedResult.Data, formulas);
 
-            if (formulas != null)
-            {
-                var formulasDict = formulas.ToDictionary(f => f.Nome, f => f.Desc_Formula);
-
-                foreach (var indicador in pagedResult.Data)
-                {
-                    foreach (var valorAnual in indicador.ValoresAnuais)
-                    {
-                        if (formulasDict.TryGetValue(indicador.Nome, out var valorFormula))
-                        {
-                            valorAnual.Formula = valorFormula;
-                            continue;
-                        }
-                        valorAnual.Formula = "Fórmula não encontrada";
-                    }
-                }
-            }
             return pagedResult;
         }
     }

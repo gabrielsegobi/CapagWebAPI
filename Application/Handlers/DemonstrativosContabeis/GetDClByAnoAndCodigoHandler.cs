@@ -26,6 +26,7 @@ namespace Application.Handlers.DemonstrativosContabeis
 
             var query = _baseRepository.Query(x =>
                 x.IdEmpresa == request.IdEmpresa &&
+                x.DeletedAt == null &&
                 !string.IsNullOrWhiteSpace(x.Codigo) &&
                 (!anosFiltroAtivo || request.AnosFiltro!.Contains(x.Ano)));
 
@@ -92,44 +93,69 @@ namespace Application.Handlers.DemonstrativosContabeis
                     .Distinct()
                     .ToList();
 
-                var t04AnoAnterior = await query
-                    .Where(x => x.PerApur == "T04"
-                            && codigosComTrimestral.Contains(x.Codigo)
-                            && anosAnterioresNecessarios.Contains(x.Ano))
-                    .ToListAsync(cancellationToken);
+                // Fechamento do ano anterior para [I]: fora do AnosFiltro (senão o ano N-1
+                // fica invisível quando a janela começa em N). Aceita T04 ou A00.
+                var fechamentoAnteriorLookup = new Dictionary<(string Codigo, int Ano), DemonstrativoContabil>();
+                if (codigosComTrimestral.Count > 0 && anosAnterioresNecessarios.Count > 0)
+                {
+                    var fechamentosAnoAnterior = await _baseRepository
+                        .Query(x =>
+                            x.IdEmpresa == request.IdEmpresa &&
+                            x.DeletedAt == null &&
+                            !string.IsNullOrWhiteSpace(x.Codigo) &&
+                            codigosComTrimestral.Contains(x.Codigo) &&
+                            anosAnterioresNecessarios.Contains(x.Ano) &&
+                            (x.PerApur == "T04" || x.PerApur == "A00"))
+                        .ToListAsync(cancellationToken);
 
-                var t04Lookup = t04AnoAnterior
-                    .ToDictionary(x => (x.Codigo, x.Ano));
+                    fechamentoAnteriorLookup = fechamentosAnoAnterior
+                        .GroupBy(x => (x.Codigo, x.Ano))
+                        .ToDictionary(
+                            g => g.Key,
+                            g => g.FirstOrDefault(x => x.PerApur == "T04")
+                                 ?? g.First(x => x.PerApur == "A00"));
+                }
 
                 var reagrupado = agrupado.Select(g =>
                 {
-                    t04Lookup.TryGetValue((g.Codigo, g.Ano - 1), out var t04Ant);
+                    fechamentoAnteriorLookup.TryGetValue((g.Codigo, g.Ano - 1), out var fechamentoAnterior);
 
                     var a00 = g.Items.FirstOrDefault(x => x.PerApur == "A00");
                     var t04 = g.Items.FirstOrDefault(x => x.PerApur == "T04");
 
                     var isDre = g.Items.All(x => x.ValCtaRefIni == null);
 
+                    // Fórmulas de indicadores usam apenas magnitudes positivas: o indicador
+                    // ECD (D/C) nunca entra no cálculo.
+                    // [I] = fechamento do exercício anterior (T04 ou A00).
+                    // Se não houver N-1, [I] permanece ausente e a fórmula trata como 0.
                     decimal? valorIni = null;
                     if (!isDre)
                     {
-                        if (g.IsTrimestral && t04Ant != null)
-                            valorIni = SaldoContabilHelper.SaldoAssinado(t04Ant);
-                        else if (!g.IsTrimestral && a00 != null)
-                            valorIni = SaldoContabilHelper.SaldoAssinado(a00, usarInicial: true);
+                        if (g.IsTrimestral)
+                        {
+                            if (fechamentoAnterior != null)
+                                valorIni = SaldoContabilHelper.Magnitude(fechamentoAnterior);
+                        }
+                        else if (a00 != null)
+                        {
+                            valorIni = SaldoContabilHelper.Magnitude(a00, usarInicial: true);
+                        }
                     }
 
                     decimal valorFin;
                     if (isDre)
                     {
+                        // DRE trimestral: soma das magnitudes (val_cta_ref_fin), alinhada à dre-analise.
+                        // DRE anual (A00): também magnitude — indicador D/C ignorado nas fórmulas.
                         valorFin = g.IsTrimestral
-                            ? g.Items.Sum(x => SaldoContabilHelper.SaldoAssinado(x.ValCtaRefFin, x.IndValCtaRefFin))
-                            : SaldoContabilHelper.SaldoAssinado(a00);
+                            ? g.Items.Sum(x => SaldoContabilHelper.Magnitude(x.ValCtaRefFin))
+                            : SaldoContabilHelper.Magnitude(a00);
                     }
                     else
                     {
                         var fonteFechamento = g.IsTrimestral ? t04 : a00;
-                        valorFin = SaldoContabilHelper.SaldoAssinado(fonteFechamento);
+                        valorFin = SaldoContabilHelper.Magnitude(fonteFechamento);
                     }
 
                     return new
@@ -158,6 +184,39 @@ namespace Application.Handlers.DemonstrativosContabeis
                             Ano = item.Ano,
                             Valor = item.ValorIni.Value
                         });
+                    }
+                }
+
+                // Síntese do exercício anterior sem lançamentos próprios: o saldo de abertura
+                // (val_cta_ref_ini) do primeiro exercício com dados equivale ao fechamento do
+                // exercício anterior. Permite que indicadores de balanço tenham valor no ano mais
+                // antigo da janela mesmo sem ECD próprio. DRE (fluxo) não é sintetizada, pois a
+                // abertura patrimonial não representa resultado do período.
+                if (anosFiltroAtivo && agrupado.Count > 0)
+                {
+                    var anoMin = agrupado.Min(x => x.Ano);
+                    var anoSintetico = anoMin - 1;
+
+                    if (request.AnosFiltro!.Contains(anoSintetico) &&
+                        agrupado.All(x => x.Ano != anoSintetico))
+                    {
+                        foreach (var g in agrupado.Where(x => x.Ano == anoMin))
+                        {
+                            var isDre = g.Items.All(x => x.ValCtaRefIni == null);
+                            if (isDre)
+                                continue;
+
+                            var abertura = ObterAberturaExercicio(g.Items, g.IsTrimestral);
+                            if (!abertura.HasValue)
+                                continue;
+
+                            resultado.Add(new DClByAnoAndCodigoDto
+                            {
+                                Codigo = g.Codigo,
+                                Ano = anoSintetico,
+                                Valor = abertura.Value
+                            });
+                        }
                     }
                 }
             }
@@ -193,6 +252,30 @@ namespace Application.Handlers.DemonstrativosContabeis
             }
 
             return resultado;
+        }
+
+        /// <summary>
+        /// Magnitude de abertura do exercício: T01 no regime trimestral, A00 no anual.
+        /// Corresponde ao fechamento do exercício imediatamente anterior (sem sinal D/C).
+        /// </summary>
+        private static decimal? ObterAberturaExercicio(List<DemonstrativoContabil> items, bool isTrimestral)
+        {
+            if (isTrimestral)
+            {
+                var abertura = items
+                    .Where(x => x.PerApur != null && x.PerApur.StartsWith("T0"))
+                    .OrderBy(x => x.PerApur)
+                    .FirstOrDefault();
+
+                return abertura != null
+                    ? SaldoContabilHelper.Magnitude(abertura, usarInicial: true)
+                    : null;
+            }
+
+            var a00 = items.FirstOrDefault(x => x.PerApur == "A00");
+            return a00 != null
+                ? SaldoContabilHelper.Magnitude(a00, usarInicial: true)
+                : null;
         }
     }
 }

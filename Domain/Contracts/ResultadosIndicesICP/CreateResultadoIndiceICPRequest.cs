@@ -16,6 +16,9 @@ namespace Domain.Contracts.ResultadosIndicesICP
         [JsonPropertyName("valor_calculado")]
         public decimal ValorCalculado { get; set; }
 
+        [JsonPropertyName("valores_calc")]
+        public string ValoresCalc { get; set; } = string.Empty;
+
         [JsonPropertyName("sub_score_normalizado")]
         public decimal SubScoreNormalizado { get; set; }
     }

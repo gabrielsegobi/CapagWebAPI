@@ -16,6 +16,7 @@ namespace Infrastructure.Configurations
             builder.Property(ri => ri.IdEmpresa).HasColumnName("id_empresa").HasColumnType("BIGINT").IsRequired();
 
             builder.Property(ri => ri.ValorCalculado).HasColumnName("valor_calculado").HasColumnType("DECIMAL(12,2)");
+            builder.Property(ri => ri.ValoresCalc).HasColumnName("valores_calc").HasColumnType("VARCHAR(500)");
             builder.Property(ri => ri.SubScoreNormalizado).HasColumnName("sub_score_normalizado").HasColumnType("DECIMAL(7,4)");
             builder.Property(ri => ri.CreatedAt).HasColumnName("created_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(ri => ri.UpdatedAt).HasColumnName("updated_at").HasColumnType("TIMESTAMP").IsRequired();

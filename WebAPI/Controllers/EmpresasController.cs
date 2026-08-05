@@ -59,12 +59,36 @@ namespace WebAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPut("{id}/impedimento")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> UpdateEmpresaImpedimento(long id, [FromBody] UpdateEmpresaImpedimentoRequest request)
+        {
+            var response = await mediator.Send(new UpdateEmpresaImpedimentoCommand
+            {
+                EmpresaId = id,
+                UpdateEmpresaImpedimentoRequest = request
+            });
+
+            return Ok(response);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,editor")]
         public async Task<IActionResult> DeleteEmpresa(long id)
         {
             var response = await mediator.Send(new DeleteEmpresaCommand { IdEmpresa = id });
             return Ok(response);
+        }
+
+        /// <summary>
+        /// Limpa dados processados via sp_clear_empresa_recalc e dispara o recálculo em background.
+        /// </summary>
+        [HttpPost("{id}/reprocessar")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> ReprocessarEmpresa(long id)
+        {
+            var response = await mediator.Send(new ReprocessarEmpresaCommand { IdEmpresa = id });
+            return Accepted(response);
         }
 
         [HttpGet("demonstrativos-contabeis")]

@@ -22,5 +22,7 @@ namespace Domain.Entities
         public string CapitalSocial  { get; set; } = string.Empty;
         public string Segmento  { get; set; } = string.Empty;
         public string Porte  { get; set; } = string.Empty;
+        public DateTime? DataImpedimento { get; set; }
+        public long? IdUsuarioResponsavel { get; set; }
     }
 }

@@ -6,8 +6,8 @@ namespace Application
 {
     public interface IIntegracaoDemonstrativosService
     {
-        Task<List<CreateDRERequest>> ObterDreAsync(Empresa empresa, CancellationToken cancellationToken);
-        Task<List<CreateBalancoRequest>> ObterBalancoAsync(Empresa empresa, CancellationToken cancellationToken);
+        Task<List<CreateDRERequest>> ObterDreAsync(Empresa empresa, IReadOnlyList<int> anos, CancellationToken cancellationToken);
+        Task<List<CreateBalancoRequest>> ObterBalancoAsync(Empresa empresa, IReadOnlyList<int> anos, CancellationToken cancellationToken);
         Task<List<CreateRegimeTributarioRequest>> ObterTributacoesAsync(Empresa empresa, CancellationToken cancellationToken);
     }
 }

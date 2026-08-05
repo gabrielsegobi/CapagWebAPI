@@ -39,5 +39,9 @@ namespace Domain.Contracts.Empresas
         public string Segmento { get; set; } = string.Empty;
         [JsonPropertyName("porte")]
         public string Porte { get; set; } = string.Empty;
+        [JsonPropertyName("data_impedimento")]
+        public DateTime? DataImpedimento { get; set; }
+        [JsonPropertyName("id_usuario_responsavel")]
+        public long? IdUsuarioResponsavel { get; set; }
     }
 }

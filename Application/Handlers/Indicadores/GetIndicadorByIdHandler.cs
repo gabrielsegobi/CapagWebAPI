@@ -1,4 +1,5 @@
 ﻿using Application.Exceptions.Indicadores;
+using Application.Helpers;
 using Application.Queries.Indicadores;
 using AutoMapper;
 using Domain.Contracts.Indicadores;
@@ -6,6 +7,7 @@ using Domain.Contracts.Responses;
 using Domain.Entities;
 using Infrastructure.Interface;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers.Indicadores
 {
@@ -20,7 +22,10 @@ namespace Application.Handlers.Indicadores
         }
         public async Task<GetApiResponse> Handle(GetIndicadorByIdQuery request, CancellationToken cancellationToken)
         {
-            var indicador = await _baseRepository.GetByIdAsync(request.Id);
+            var indicador = await _baseRepository
+                .Query()
+                .Include(i => i.ValoresAnuais)
+                .FirstOrDefaultAsync(i => i.IdIndicador == request.Id, cancellationToken);
 
             if (indicador == null || indicador.DeletedAt != null)
             {
@@ -28,6 +33,9 @@ namespace Application.Handlers.Indicadores
             }
 
             var result = _mapper.Map<IndicadorDto>(indicador);
+            var formulas = await IndicadoresFormulaHelper.CarregarFormulasAsync(cancellationToken);
+            IndicadoresFormulaHelper.EnriquecerIndicadores([result], formulas);
+
             return new GetApiResponse
             {
                 Data = result,

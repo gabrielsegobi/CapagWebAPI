@@ -1,5 +1,5 @@
-﻿using Application.Exceptions;
-using Application.Exceptions.ModelosIndicesICP;
+﻿using Application.Exceptions.ModelosIndicesICP;
+using Application.Helpers;
 using Application.Queries.ModelosIndicesICP;
 using AutoMapper;
 using Domain.Contracts.ModelosIndicesICP;
@@ -30,6 +30,9 @@ namespace Application.Handlers.ModelosIndicesICP
             }
 
             var result = _mapper.Map<ModeloIndiceICPDto>(modelo);
+            var formulas = await ModelosIndicesIcpFormulaHelper.CarregarFormulasAsync(cancellationToken);
+            ModelosIndicesIcpFormulaHelper.EnriquecerModelos([result], formulas);
+
             return new GetApiResponse
             {
                 Data = result,

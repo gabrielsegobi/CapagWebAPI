@@ -14,6 +14,10 @@ namespace Domain.Contracts.ModelosIndicesICP
         public string Nome { get; set; } = string.Empty;
         [JsonPropertyName("formula")]
         public string Formula { get; set; } = string.Empty;
+        [JsonPropertyName("desc_formula")]
+        public string DescFormula { get; set; } = string.Empty;
+        [JsonPropertyName("formula_contas")]
+        public string FormulaContas { get; set; } = string.Empty;
         [JsonPropertyName("meta")]
         public decimal Meta { get; set; }
         [JsonPropertyName("pior_caso")]

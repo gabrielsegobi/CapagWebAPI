@@ -21,6 +21,18 @@ namespace Infrastructure.Configurations
             builder.Property(ir => ir.CreatedAt).HasColumnName("created_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(ir => ir.UpdatedAt).HasColumnName("updated_at").HasColumnType("TIMESTAMP").IsRequired();
             builder.Property(ir => ir.DeletedAt).HasColumnName("deleted_at").HasColumnType("TIMESTAMP");
+            builder.Property<byte?>("AtivoUnico")
+                .HasColumnName("ativo_unico")
+                .HasColumnType("TINYINT")
+                .HasComputedColumnSql("CASE WHEN `deleted_at` IS NULL THEN 1 ELSE NULL END", stored: true);
+
+            builder.HasIndex(
+                    nameof(Indicador.IdTenant),
+                    nameof(Indicador.IdEmpresa),
+                    nameof(Indicador.Nome),
+                    "AtivoUnico")
+                .IsUnique()
+                .HasDatabaseName("uk_indicadores_ativo");
 
             builder.HasMany(ind => ind.ValoresAnuais).WithOne(val => val.Indicador).HasForeignKey(val => val.IdIndicador);
         }

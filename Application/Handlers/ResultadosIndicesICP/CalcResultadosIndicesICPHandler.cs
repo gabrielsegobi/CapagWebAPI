@@ -61,21 +61,6 @@ namespace Application.Handlers.ResultadosIndicesICP
                 PropertyNameCaseInsensitive = true
             });
 
-            foreach (var modeloDb in modelosDb)
-            {
-                var formulaJson = formulas.FirstOrDefault(f =>
-                    f.Nome.Trim().Equals(modeloDb.Nome.Trim(), StringComparison.OrdinalIgnoreCase));
-
-                if (formulaJson != null)
-                {
-                    modeloDb.Formula = formulaJson.Formula;
-                }
-                else
-                {
-                    Console.WriteLine($"[AVISO] Nenhuma fórmula encontrada no JSON para o modelo '{modeloDb.Nome}'");
-                }
-            }
-
             var valoresTotais = consolidados
                 .Where(x => x.Ano.HasValue && anosCalculo.Contains(x.Ano.Value))
                 .GroupBy(x => x.Ano)
@@ -100,7 +85,7 @@ namespace Application.Handlers.ResultadosIndicesICP
                 tenantId.Value,
                 cancellationToken);
 
-            foreach (var formula in formulas)
+            foreach (var formula in formulas ?? [])
             {
                 var modeloDb = modelosDb.FirstOrDefault(m =>
                     m.Nome.Trim().Equals(formula.Nome.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -111,12 +96,21 @@ namespace Application.Handlers.ResultadosIndicesICP
                     continue;
                 }
 
-                var expressao = ExpressionHelper.SubstituirCodigos(modeloDb.Formula, valoresTotais);
+                var formulaContas = formula.Formula;
+                var expressao = ExpressionHelper.SubstituirCodigos(formulaContas, valoresTotais);
+
+                var memoriaCalc = expressao.Length > 500
+                    ? expressao[..500]
+                    : expressao;
 
                 double valorCalculado;
                 try
                 {
                     valorCalculado = ExpressionHelper.AvaliarExpressao(expressao);
+                    Console.WriteLine($"teste - Name: {formula.Nome}");
+                    Console.WriteLine($"teste - Formula: {formulaContas}");
+                    Console.WriteLine($"teste - Valor calculado: {valorCalculado}");
+                    Console.WriteLine($"teste - Expressão: {expressao}");
                 }
                 catch (Exception ex)
                 {
@@ -134,6 +128,7 @@ namespace Application.Handlers.ResultadosIndicesICP
                 {
                     IdModeloIndice = modeloDb.IdModeloIndice,
                     ValorCalculado = (decimal)valorCalculado,
+                    ValoresCalc = memoriaCalc,
                     SubScoreNormalizado = subScore,
                     IdEmpresa = request.IdEmpresa,
                     IdTenant = tenantId.Value

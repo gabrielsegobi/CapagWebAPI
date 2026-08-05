@@ -1,4 +1,5 @@
-﻿using Application.Queries.ModelosIndicesICP;
+﻿using Application.Helpers;
+using Application.Queries.ModelosIndicesICP;
 using AutoMapper;
 using Domain.Contracts.ModelosIndicesICP;
 using Domain.Contracts.Responses;
@@ -57,6 +58,9 @@ namespace Application.Handlers.ModelosIndicesICP
                     return mapped;
                 }
             );
+
+            var formulas = await ModelosIndicesIcpFormulaHelper.CarregarFormulasAsync(cancellationToken);
+            ModelosIndicesIcpFormulaHelper.EnriquecerModelos(pagedResult.Data, formulas);
 
             return pagedResult;
         }

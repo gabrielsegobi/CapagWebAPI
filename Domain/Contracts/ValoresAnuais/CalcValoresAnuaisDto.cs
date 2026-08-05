@@ -12,6 +12,8 @@ namespace Domain.Contracts.ValoresAnuais
         public decimal Valor { get; set; }
         [JsonPropertyName("formula")]
         public string Formula { get; set; } = string.Empty;
+        [JsonPropertyName("formula_contas")]
+        public string FormulaContas { get; set; } = string.Empty;
         [JsonPropertyName("valores_calc_ano")]
         public string ValoresCalcAno { get; set; } = string.Empty;
     }

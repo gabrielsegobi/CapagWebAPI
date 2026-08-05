@@ -2,6 +2,7 @@
 using Application.Commands.Indicadores;
 using Application.Commands.ResultadosIndicesICP;
 using Application.Exceptions.Empresas;
+using Application.Helpers;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Interface;
@@ -39,26 +40,29 @@ namespace Application.Handlers.DemonstrativosContabeis
         {
             var empresa = await _empresaRepository.GetByIdAsync(request.IdEmpresa);
 
-            //var resultados2 = await _mediator.Send(new GetEmpresaByIdQuery
-            //{
-            //    Id = request.IdEmpresa
-            //});
-
             if (empresa == null)
                 throw new EmpresaNotFoundException(request.IdEmpresa);
 
             try
             {
+                // Tributação primeiro: define os 3 anos mais recentes para DRE/balanço.
+                var dadosTributacao = await _integracaoService.ObterTributacoesAsync(empresa, cancellationToken);
+                if (dadosTributacao == null || !dadosTributacao.Any())
+                    throw new Exception("Nenhum regime tributário retornado pela API GMaster.");
 
-                var taskDre = _integracaoService.ObterDreAsync(empresa, cancellationToken);
-                var taskBalanco = _integracaoService.ObterBalancoAsync(empresa, cancellationToken);
-                var taskTributacao = _integracaoService.ObterTributacoesAsync(empresa, cancellationToken);
+                var anosImportacao = DemonstrativosAnosHelper.ObterAnosImportacaoComAnterior(
+                    dadosTributacao.Select(t => t.Ano));
 
-                await Task.WhenAll(taskDre, taskBalanco, taskTributacao);
+                if (anosImportacao.Count == 0)
+                    throw new Exception("Não foi possível determinar anos de importação a partir da tributação.");
 
-                var dadosDRE = taskDre.Result;
-                var dadosBalanco = taskBalanco.Result;
-                var dadosTributacao = taskTributacao.Result;
+                var taskDre = _integracaoService.ObterDreAsync(empresa, anosImportacao, cancellationToken);
+                var taskBalanco = _integracaoService.ObterBalancoAsync(empresa, anosImportacao, cancellationToken);
+
+                await Task.WhenAll(taskDre, taskBalanco);
+
+                var dadosDRE = await taskDre;
+                var dadosBalanco = await taskBalanco;
 
                 if ((dadosDRE == null || !dadosDRE.Any()) ||
                     (dadosBalanco == null || !dadosBalanco.Any()))
@@ -79,16 +83,15 @@ namespace Application.Handlers.DemonstrativosContabeis
                     transaction.Complete();
                 }
 
-
-                var resultados = await _mediator.Send(new CalcIndicadoresCommand
+                await _mediator.Send(new CalcIndicadoresCommand
                 {
                     IdEmpresa = request.IdEmpresa
-                });
+                }, cancellationToken);
 
-                var resultadoss = await _mediator.Send(new CalcResultadosIndicesICPCommand
+                await _mediator.Send(new CalcResultadosIndicesICPCommand
                 {
                     IdEmpresa = request.IdEmpresa
-                });
+                }, cancellationToken);
             }
             catch (Exception ex)
             {

@@ -12,6 +12,12 @@ namespace Domain.Contracts.ValoresAnuais
         public int Ano { get; set; }
         [JsonPropertyName("valor")]
         public decimal? Valor { get; set; }
+        [JsonPropertyName("formula")]
+        public string Formula { get; set; } = string.Empty;
+        [JsonPropertyName("formula_contas")]
+        public string FormulaContas { get; set; } = string.Empty;
+        [JsonPropertyName("valores_calc_ano")]
+        public string? ValoresCalcAno { get; set; }
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
         [JsonPropertyName("updated_at")]

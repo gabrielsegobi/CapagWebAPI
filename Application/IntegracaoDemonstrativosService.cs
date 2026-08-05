@@ -6,7 +6,6 @@ using Domain.Entities;
 using Infrastructure.Interface;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 
 namespace Application
@@ -26,10 +25,14 @@ namespace Application
             _baseUrl = _configuration["ApiGmaster:BaseUrl"] ?? throw new ArgumentNullException("ApiGmaster:BaseUrl");
 
         }
-        
-        public async Task<List<CreateDRERequest>> ObterDreAsync(Empresa empresa, CancellationToken cancellationToken)
+
+        public async Task<List<CreateDRERequest>> ObterDreAsync(Empresa empresa, IReadOnlyList<int> anos, CancellationToken cancellationToken)
         {
-            var url = $"{_baseUrl}/dre?ano=2021,2022,2023,2024&cnpj={empresa.Cnpj}";
+            if (anos == null || anos.Count == 0)
+                throw new ArgumentException("Lista de anos inválida para importação de DRE.", nameof(anos));
+
+            var anosQuery = string.Join(",", anos);
+            var url = $"{_baseUrl}/dre?ano={anosQuery}&cnpj={empresa.Cnpj}";
             var json = await _apiService.ObterDadosApiAsync<DREJson>(url, cancellationToken);
 
 
@@ -54,9 +57,13 @@ namespace Application
             return mapped;
         }
 
-        public async Task<List<CreateBalancoRequest>> ObterBalancoAsync(Empresa empresa, CancellationToken cancellationToken)
+        public async Task<List<CreateBalancoRequest>> ObterBalancoAsync(Empresa empresa, IReadOnlyList<int> anos, CancellationToken cancellationToken)
         {
-            var url = $"{_baseUrl}/balanco?ano=2021,2022,2023,2024&cnpj={empresa.Cnpj}";
+            if (anos == null || anos.Count == 0)
+                throw new ArgumentException("Lista de anos inválida para importação de balanço.", nameof(anos));
+
+            var anosQuery = string.Join(",", anos);
+            var url = $"{_baseUrl}/balanco?ano={anosQuery}&cnpj={empresa.Cnpj}";
             var json = await _apiService.ObterDadosApiAsync<BalancoJson>(url, cancellationToken);
             var culture = CultureInfo.GetCultureInfo("en-US");
 
@@ -76,9 +83,11 @@ namespace Application
                 DtFinApur = DateOnly.FromDateTime(DateTime.Parse(d.DT_FIN_APUR)),
 
                 ValCtaRefIni = decimal.TryParse(d.VAL_CTA_REF_INI, NumberStyles.Any, culture, out var ini) ? ini : 0,
+                IndValCtaRefIni = string.IsNullOrWhiteSpace(d.IND_VAL_CTA_REF_INI) ? null : d.IND_VAL_CTA_REF_INI.Trim().ToUpper()[0],
                 ValCtaRefDeb = decimal.TryParse(d.VAL_CTA_REF_DEB, NumberStyles.Any, culture, out var deb) ? deb : 0,
                 ValCtaRefCred = decimal.TryParse(d.VAL_CTA_REF_CRED, NumberStyles.Any, culture, out var cred) ? cred : 0,
                 ValCtaRefFin = decimal.TryParse(d.VAL_CTA_REF_FIN, NumberStyles.Any, culture, out var fin) ? fin : 0,
+                IndValCtaRefFin = string.IsNullOrWhiteSpace(d.IND_VAL_CTA_REF_FIN) ? null : d.IND_VAL_CTA_REF_FIN.Trim().ToUpper()[0],
             }).ToList();
 
             return mapped;

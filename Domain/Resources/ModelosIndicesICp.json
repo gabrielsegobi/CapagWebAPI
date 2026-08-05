@@ -1,22 +1,27 @@
 [
   {
     "nome": "Liquidez Corrente (LC)",
+    "desc_formula": "(Ativo Circulante) / (Passivo Circulante)",
     "formula": "{1.01} / {2.01}"
   },
   {
     "nome": "Liquidez Seca (LS)",
+    "desc_formula": "(Ativo Circulante - Estoques) / (Passivo Circulante)",
     "formula": "({1.01} - {1.01.03}) / {2.01}"
   },
   {
     "nome": "Margem Líquida (ML)",
+    "desc_formula": "(Lucro Líquido) / (Receita Líquida)",
     "formula": "{3} / {3.01.01.01}"
   },
   {
     "nome": "Cobertura de Juros (CJ)",
+    "desc_formula": "(EBIT) / (Despesas Financeiras)",
     "formula": "({3.01.01}) / ({3.01.01.09.01.05} + {3.01.01.09.01.06} + {3.01.01.09.01.07} + {3.01.01.09.01.08} + {3.01.01.09.01.15} + {3.01.01.09.01.22} + {3.01.01.09.01.23} + {3.01.01.09.01.24} + {3.01.01.09.01.25} - {3.01.01.05.01.04} - {3.01.01.05.01.05} - {3.01.01.05.01.16})"
   },
   {
     "nome": "Endividamento Geral (EG)",
+    "desc_formula": "(Passivo Total) / (Ativo Total)",
     "formula": "({2.01} + {2.02}) / {1}"
   }
 ]
