@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System.Text;
 using WebAPI.Middleware;
 
@@ -46,8 +47,60 @@ builder.Services.AddCors(options =>
               .AllowCredentials(); // se usar cookies ou JWT via header
     });
 });
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "cApAG API",
+        Version = "v1",
+        Description = "Documentação da API cApAG. Para endpoints autenticados, informe o JWT e o header X-Tenant-Id."
+    });
+
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Insira o token JWT. Exemplo: Bearer {seu token}"
+    });
+
+    c.AddSecurityDefinition("Tenant", new OpenApiSecurityScheme
+    {
+        Name = "X-Tenant-Id",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "ID do tenant (obrigatório nas rotas autenticadas)"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        },
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Tenant"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddDbContext<CPGDbContext>(options =>
 {
@@ -175,35 +228,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-//builder.Services.AddSwaggerGen(c =>
-//{
-//    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//    {
-//        Name = "Authorization",
-//        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-//        Scheme = "Bearer",
-//        BearerFormat = "JWT",
-//        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-//        Description = "Insira o token JWT assim: Bearer {seu token}"
-//    });
-
-//    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-//    {
-//        {
-//            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-//            {
-//                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-//                {
-//                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-//                    Id = "Bearer"
-//                }
-//            },
-//            Array.Empty<string>()
-//        }
-//    });
-//});
-
-
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
@@ -223,8 +247,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "cApAG"));
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "cApAG API v1");
+        options.DocumentTitle = "cApAG API";
+    });
 }
 
 app.UseHttpsRedirection();

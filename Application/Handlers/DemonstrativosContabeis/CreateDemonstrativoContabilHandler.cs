@@ -45,7 +45,7 @@ namespace Application.Handlers.DemonstrativosContabeis
 
             try
             {
-                // Tributação primeiro: define os 3 anos mais recentes para DRE/balanço.
+                // Tributação primeiro: define os 4 anos mais recentes para DRE/balanço.
                 var dadosTributacao = await _integracaoService.ObterTributacoesAsync(empresa, cancellationToken);
                 if (dadosTributacao == null || !dadosTributacao.Any())
                     throw new Exception("Nenhum regime tributário retornado pela API GMaster.");

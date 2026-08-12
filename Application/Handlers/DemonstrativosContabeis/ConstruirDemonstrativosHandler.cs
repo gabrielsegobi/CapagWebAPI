@@ -64,6 +64,8 @@ namespace Application.Handlers.DemonstrativosContabeis
 
         private readonly IBaseRepository<DemonstrativoContabil> _demonstrativoRepository;
 
+        private readonly IBaseRepository<Empresa> _empresaRepository;
+
         private readonly ICurrentUserService _currentUser;
 
         private readonly Infrastructure.Context.CPGDbContext _db;
@@ -80,6 +82,8 @@ namespace Application.Handlers.DemonstrativosContabeis
 
             IBaseRepository<DemonstrativoContabil> demonstrativoRepository,
 
+            IBaseRepository<Empresa> empresaRepository,
+
             ICurrentUserService currentUser,
 
             Infrastructure.Context.CPGDbContext db,
@@ -93,6 +97,8 @@ namespace Application.Handlers.DemonstrativosContabeis
             _pgdasdRepository = pgdasdRepository;
 
             _demonstrativoRepository = demonstrativoRepository;
+
+            _empresaRepository = empresaRepository;
 
             _currentUser = currentUser;
 
@@ -413,6 +419,30 @@ namespace Application.Handlers.DemonstrativosContabeis
                 IdEmpresa = request.IdEmpresa
 
             }, cancellationToken);
+
+
+
+            if (response.Sucesso)
+
+            {
+
+                var empresa = await _empresaRepository.GetByIdAsync(request.IdEmpresa);
+
+                if (empresa != null && empresa.IdTenant == idTenant)
+
+                {
+
+                    empresa.DadosProcessados = true;
+
+                    empresa.UpdatedAt = DateTimeHelper.GetDateTimeNow();
+
+                    _empresaRepository.Update(empresa);
+
+                    await _empresaRepository.SaveChangesAsync();
+
+                }
+
+            }
 
 
 
@@ -788,7 +818,11 @@ namespace Application.Handlers.DemonstrativosContabeis
 
         /// alinhados ao layout do modelo CAPAG (Simples Nacional / DEFIS + PGDASD).
 
-        /// Passivo circulante = Ativo − Patrimônio líquido (plug de equilíbrio); DAS permanece em 2.01.01.09.28.
+        /// Balanço: Ativo = soma da natureza ativo; Passivo = soma das obrigações
+
+        /// (fornecedores, despesas do período, despesas financeiras, dívidas, DAS, etc.);
+
+        /// PL = Ativo − Passivo (pode ser negativo). Não usar o resultado da DRE como plug do PL.
 
         /// </summary>
 
@@ -854,6 +888,34 @@ namespace Application.Handlers.DemonstrativosContabeis
 
                 "despesas no periodo");
 
+            decimal despesasFinanceiras = GetValorDefis(
+
+                defisRows,
+
+                "Despesas financeiras",
+
+                "despesas financeiras");
+
+            decimal fornecedores = GetValorDefis(
+
+                defisRows,
+
+                "Fornecedores",
+
+                "fornecedores");
+
+            decimal dividasBancos = GetValorDefis(
+
+                defisRows,
+
+                "Dívidas bancos",
+
+                "Dividas bancos",
+
+                "dívidas banc",
+
+                "dividas banc");
+
 
 
             var totalReceita = 0m;
@@ -906,25 +968,13 @@ namespace Application.Handlers.DemonstrativosContabeis
 
 
 
-            var patrimonioLiquidoFinal = patrimonioLiquidoInicial + lucroLiquido;
+            // Obrigações do modelo CAPAG Simples: natureza passivo (não plug via DRE).
 
-            var passivoCircFin = ativoFin - patrimonioLiquidoFinal;
+            var outrosPassivosCirc = despesas + despesasFinanceiras + dividasBancos;
 
-            if (passivoCircFin < 0)
+            var passivoCircFin = fornecedores + outrosPassivosCirc + totalDas;
 
-            {
-
-                alertas.Add(
-
-                    $"PASSIVO_NEGATIVO: Passivo circulante calculado para {ano} resultou em R$ {passivoCircFin:N2} " +
-
-                    $"(Ativo R$ {ativoFin:N2}, PL R$ {patrimonioLiquidoFinal:N2}). Registrado como R$ 0,00."
-
-                );
-
-                passivoCircFin = 0;
-
-            }
+            var patrimonioLiquidoFinal = ativoFin - passivoCircFin;
 
 
 
@@ -940,7 +990,9 @@ namespace Application.Handlers.DemonstrativosContabeis
 
                 NovaLinhaBalancoZeradaA00(idTenant, idEmpresa, ano, "1.02", "ATIVO NÃO CIRCULANTE", now),
 
-                NovaLinhaBalancoZeradaA00(idTenant, idEmpresa, ano, "2.01.01.03", "FORNECEDORES - CIRCULANTE", now),
+                NovaLinhaBalancoSinteticoA00(idTenant, idEmpresa, ano, "2.01.01.03", "FORNECEDORES - CIRCULANTE", 'S', null, null, fornecedores, 'D', now),
+
+                NovaLinhaBalancoSinteticoA00(idTenant, idEmpresa, ano, "2.01.01.07", "OUTROS PASSIVOS CIRCULANTES", 'S', null, null, outrosPassivosCirc, 'D', now),
 
                 NovaLinhaBalancoZeradaA00(idTenant, idEmpresa, ano, "2.02", "PASSIVO NÃO-CIRCULANTE", now),
 
@@ -1173,8 +1225,6 @@ namespace Application.Handlers.DemonstrativosContabeis
         {
 
             ("1.01.02.02", "DUPLICATAS A RECEBER"),
-
-            ("2.01.01.07", "OUTROS PASSIVOS CIRCULANTES"),
 
             ("2.01.01.09.09", "TRIBUTOS FEDERAIS A RECOLHER"),
 

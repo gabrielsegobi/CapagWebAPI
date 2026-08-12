@@ -1,0 +1,16 @@
+using System.Text.Json.Serialization;
+
+namespace Domain.Contracts.CodigosRegistroDescricao
+{
+    public class CreateCodigoRegistroDescricaoRequest
+    {
+        [JsonPropertyName("id_empresa")]
+        public long IdEmpresa { get; set; }
+
+        [JsonPropertyName("codigo")]
+        public string Codigo { get; set; } = string.Empty;
+
+        [JsonPropertyName("expressao_regular")]
+        public string ExpressaoRegular { get; set; } = string.Empty;
+    }
+}

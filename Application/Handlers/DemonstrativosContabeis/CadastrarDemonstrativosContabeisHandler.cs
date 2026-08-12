@@ -111,7 +111,14 @@ namespace Application.Handlers.DemonstrativosContabeis
                     response.TotalDeletados = paraDeletar.Count;
                 }
 
-                var entidades = command.Contas
+                await EnriquecerValCtaRefIniAsync(command.Contas, idTenant, idEmpresa, cancellationToken);
+
+                // Descarta registros sem dados úteis: ambos val_cta_ref_ini e val_cta_ref_fin zerados/nulos.
+                var contasValidas = command.Contas
+                    .Where(c => !AmbosZerados(c.ValCtaRefIni, c.ValCtaRefFin))
+                    .ToList();
+
+                var entidades = contasValidas
                     .Select(item => MapToEntity(item, idTenant, now))
                     .ToList();
 
@@ -133,7 +140,111 @@ namespace Application.Handlers.DemonstrativosContabeis
             await _mediator.Send(new CalcIndicadoresCommand { IdEmpresa = idEmpresa }, cancellationToken);
             await _mediator.Send(new CalcResultadosIndicesICPCommand { IdEmpresa = idEmpresa }, cancellationToken);
 
+            empresa.DadosProcessados = true;
+            empresa.UpdatedAt = DateTimeHelper.GetDateTimeNow();
+            _empresaRepository.Update(empresa);
+            await _empresaRepository.SaveChangesAsync();
+
             return response;
+        }
+
+        /// <summary>
+        /// Para itens de balanço (código não começa com "3") que chegaram sem val_cta_ref_ini,
+        /// tenta preencher com o fechamento (val_cta_ref_fin / ind) do ano N-1.
+        /// Prioridade: payload primeiro, banco em seguida.
+        /// </summary>
+        private async Task EnriquecerValCtaRefIniAsync(
+            List<CadastrarDemonstrativosContabeisItem> contas,
+            long idTenant,
+            long idEmpresa,
+            CancellationToken cancellationToken)
+        {
+            var elegíveis = contas
+                .Where(c => c.ValCtaRefIni == null && !c.Codigo.TrimStart().StartsWith("3"))
+                .ToList();
+
+            if (elegíveis.Count == 0)
+                return;
+
+            // Fechamento disponível no próprio payload: (Ano, Codigo) -> item
+            // Inclui val_cta_ref_fin = 0 (0 é saldo válido de fechamento).
+            var fechamentoPayload = contas
+                .Where(c => c.ValCtaRefFin.HasValue && !c.Codigo.TrimStart().StartsWith("3"))
+                .GroupBy(c => (c.Ano, Codigo: c.Codigo.Trim()))
+                .ToDictionary(g => g.Key, g => SelecionarFechamento(g.ToList()));
+
+            // Anos N-1 que ainda precisamos buscar no banco
+            var anosNecessariosDb = elegíveis
+                .Select(c => c.Ano - 1)
+                .Distinct()
+                .Where(ano => !fechamentoPayload.Keys.Any(k => k.Ano == ano))
+                .ToList();
+
+            // Fechamento do banco por (Ano, Codigo)
+            var fechamentoDb = new Dictionary<(int Ano, string Codigo), CadastrarDemonstrativosContabeisItem>();
+
+            if (anosNecessariosDb.Count > 0)
+            {
+                var registrosBanco = await _demonstrativoRepository
+                    .Query(dc => dc.IdTenant == idTenant &&
+                                 dc.IdEmpresa == idEmpresa &&
+                                 dc.DeletedAt == null &&
+                                 anosNecessariosDb.Contains(dc.Ano) &&
+                                 dc.ValCtaRefFin.HasValue &&
+                                 !dc.Codigo.StartsWith("3"))
+                    .Select(dc => new CadastrarDemonstrativosContabeisItem
+                    {
+                        Ano = dc.Ano,
+                        Codigo = dc.Codigo,
+                        PerApur = dc.PerApur ?? string.Empty,
+                        ValCtaRefFin = dc.ValCtaRefFin,
+                        IndValCtaRefFin = dc.IndValCtaRefFin
+                    })
+                    .ToListAsync(cancellationToken);
+
+                fechamentoDb = registrosBanco
+                    .GroupBy(dc => (dc.Ano, Codigo: dc.Codigo.Trim()))
+                    .ToDictionary(g => g.Key, g => SelecionarFechamento(g.ToList()));
+            }
+
+            foreach (var item in elegíveis)
+            {
+                var chaveAnterior = (Ano: item.Ano - 1, Codigo: item.Codigo.Trim());
+
+                CadastrarDemonstrativosContabeisItem? fonte = null;
+                if (fechamentoPayload.TryGetValue(chaveAnterior, out var fp))
+                    fonte = fp;
+                else if (fechamentoDb.TryGetValue(chaveAnterior, out var fd))
+                    fonte = fd;
+
+                if (fonte == null)
+                {
+                    // Sem dado de N-1: abertura zerada.
+                    item.ValCtaRefIni = 0m;
+                    continue;
+                }
+
+                item.ValCtaRefIni = fonte.ValCtaRefFin ?? 0m;
+                item.IndValCtaRefIni = fonte.IndValCtaRefFin;
+            }
+        }
+
+        /// <summary>
+        /// Retorna true quando ambos os saldos são nulos ou zero — registro sem dado útil.
+        /// </summary>
+        private static bool AmbosZerados(decimal? ini, decimal? fin) =>
+            (ini == null || ini == 0m) && (fin == null || fin == 0m);
+
+        /// <summary>
+        /// Seleciona o registro representativo do fechamento de um exercício entre vários períodos:
+        /// A00 > T04 > maior per_apur disponível.
+        /// </summary>
+        private static CadastrarDemonstrativosContabeisItem SelecionarFechamento(
+            List<CadastrarDemonstrativosContabeisItem> itens)
+        {
+            return itens.FirstOrDefault(x => x.PerApur.Trim() == "A00")
+                ?? itens.FirstOrDefault(x => x.PerApur.Trim() == "T04")
+                ?? itens.OrderByDescending(x => x.PerApur.Trim()).First();
         }
 
         private static void ValidarContas(IReadOnlyList<CadastrarDemonstrativosContabeisItem> contas)

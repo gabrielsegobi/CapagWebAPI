@@ -77,6 +77,26 @@ BEGIN
     DELETE FROM gsaas.icp_anterior
      WHERE id_tenant = p_tenant AND id_empresa = p_empresa;
 
+    -- Declaração Simples Nacional + valores manuais DRE/Balanço
+    -- simples_exercise_year cascateia via FK; delete explícito cobre schemas sem cascade
+    DELETE sey
+      FROM gsaas.simples_exercise_year sey
+      INNER JOIN gsaas.simples_declaration sd ON sd.id = sey.id_simples_declaration
+     WHERE sd.id_tenant = p_tenant
+       AND sd.id_empresa = p_empresa;
+
+    DELETE FROM gsaas.simples_declaration
+     WHERE id_tenant = p_tenant AND id_empresa = p_empresa;
+
+    DELETE FROM gsaas.manual_demonstrative_value
+     WHERE id_tenant = p_tenant AND id_empresa = p_empresa;
+
+    DELETE FROM gsaas.codigos_registro_descricao
+     WHERE id_tenant = p_tenant AND id_empresa = p_empresa;
+
+    DELETE FROM gsaas.capag_calculadora_resultado
+     WHERE id_tenant = p_tenant AND id_empresa = p_empresa;
+
     UPDATE gsaas.empresas
        SET dados_processados = 0,
            updated_at = CURRENT_TIMESTAMP

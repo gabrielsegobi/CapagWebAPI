@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Domain.Contracts.AnalisesICP;
+using Domain.Contracts.CapagCalculadoraResultados;
+using Domain.Contracts.CodigosRegistroDescricao;
 using Domain.Contracts.DemonstrativosContabeis;
 using Domain.Contracts.DescricaoDebitos;
 using Domain.Contracts.DocumentsLayouts;
@@ -307,6 +309,21 @@ namespace Application.Mapping
             CreateMap<UpdateDescricaoDebitoRequest, DescricaoDebito>()
                  .ForMember(d => d.UpdatedAt, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
 
+            #endregion
+
+            #region CodigoRegistroDescricao
+            CreateMap<CodigoRegistroDescricao, CodigoRegistroDescricaoDto>();
+            CreateMap<CreateCodigoRegistroDescricaoRequest, CodigoRegistroDescricao>();
+            CreateMap<UpdateCodigoRegistroDescricaoRequest, CodigoRegistroDescricao>();
+            #endregion
+
+            #region CapagCalculadoraResultado
+            CreateMap<CapagCalculadoraResultado, CapagCalculadoraResultadoDto>();
+            CreateMap<CreateCapagCalculadoraResultadoRequest, CapagCalculadoraResultado>()
+                .ForMember(e => e.DateCreate, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()))
+                .ForMember(e => e.DateUpdate, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
+            CreateMap<UpdateCapagCalculadoraResultadoRequest, CapagCalculadoraResultado>()
+                .ForMember(e => e.DateUpdate, opt => opt.MapFrom(src => DateTimeHelper.GetDateTimeNow()));
             #endregion
 
 

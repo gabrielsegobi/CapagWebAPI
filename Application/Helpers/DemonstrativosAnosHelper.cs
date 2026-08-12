@@ -2,7 +2,7 @@ namespace Application.Helpers
 {
     public static class DemonstrativosAnosHelper
     {
-        public const int QuantidadeAnosCalculo = 3;
+        public const int QuantidadeAnosCalculo = 4;
 
         /// <summary>
         /// Janela contígua de N anos terminando no maior ano disponível.
