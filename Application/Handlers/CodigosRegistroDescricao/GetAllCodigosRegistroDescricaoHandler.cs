@@ -36,6 +36,9 @@ namespace Application.Handlers.CodigosRegistroDescricao
                     if (!string.IsNullOrWhiteSpace(request.Filter.ExpressaoRegular))
                         q = q.Where(e => e.ExpressaoRegular.Contains(request.Filter.ExpressaoRegular.Trim()));
 
+                    if (request.Filter.IsValid.HasValue)
+                        q = q.Where(e => e.IsValid == request.Filter.IsValid);
+
                     var sort = request.Filter.Sort?.Trim().ToLower();
 
                     q = sort switch
@@ -51,6 +54,10 @@ namespace Application.Handlers.CodigosRegistroDescricao
                         "expressaoregular" => request.Filter.OrderByDescending
                             ? q.OrderByDescending(e => e.ExpressaoRegular)
                             : q.OrderBy(e => e.ExpressaoRegular),
+
+                        "isvalid" => request.Filter.OrderByDescending
+                            ? q.OrderByDescending(e => e.IsValid)
+                            : q.OrderBy(e => e.IsValid),
 
                         _ => request.Filter.OrderByDescending
                             ? q.OrderByDescending(e => e.Id)

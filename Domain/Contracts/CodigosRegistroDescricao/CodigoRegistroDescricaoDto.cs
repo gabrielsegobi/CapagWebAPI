@@ -15,5 +15,8 @@ namespace Domain.Contracts.CodigosRegistroDescricao
 
         [JsonPropertyName("expressao_regular")]
         public string ExpressaoRegular { get; set; } = string.Empty;
+
+        [JsonPropertyName("is_valid")]
+        public bool IsValid { get; set; } = true;
     }
 }

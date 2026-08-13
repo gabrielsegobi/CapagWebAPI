@@ -2,11 +2,16 @@ namespace Application.Helpers
 {
     public static class DemonstrativosAnosHelper
     {
-        public const int QuantidadeAnosCalculo = 4;
+        /// <summary>
+        /// Quantidade de exercícios na janela de cálculo (indicadores e ICP).
+        /// O ano imediatamente anterior à janela só entra na importação para alimentar [I]
+        /// (saldo inicial = fechamento do exercício anterior); não entra na média/soma.
+        /// </summary>
+        public const int QuantidadeAnosCalculo = 3;
 
         /// <summary>
         /// Janela contígua de N anos terminando no maior ano disponível.
-        /// Usada no cálculo de indicadores a partir dos demonstrativos já gravados.
+        /// Usada no cálculo de indicadores e ICP a partir dos demonstrativos já gravados.
         /// </summary>
         public static IReadOnlyList<int> ObterJanelaUltimosAnos(IEnumerable<int> anosDisponiveis, int quantidade = QuantidadeAnosCalculo)
         {
@@ -34,10 +39,10 @@ namespace Application.Helpers
         }
 
         /// <summary>
-        /// Anos de importação: os N mais recentes da tributação, mais o ano imediatamente
-        /// anterior ao mais antigo deles quando esse ano também existir na tributação.
-        /// O ano extra alimenta o saldo inicial [I] do primeiro exercício da janela de cálculo
-        /// sem alterar a janela de indicadores (sempre centrada no Max).
+        /// Anos de importação: os N mais recentes da tributação (janela de cálculo), mais o ano
+        /// imediatamente anterior ao mais antigo deles quando esse ano também existir na tributação.
+        /// O ano extra alimenta o saldo inicial [I] do primeiro exercício da janela
+        /// sem alterar a janela de indicadores/ICP (sempre os N anos terminando no Max).
         /// </summary>
         public static IReadOnlyList<int> ObterAnosImportacaoComAnterior(
             IEnumerable<int> anosTributacao,

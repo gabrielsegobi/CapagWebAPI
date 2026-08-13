@@ -23,8 +23,8 @@ namespace Application.Validators.CodigosRegistroDescricao
                 .WithMessage("O código deve ter no máximo 20 caracteres.");
 
             RuleFor(x => x.Request.ExpressaoRegular)
-                .MaximumLength(30)
-                .WithMessage("A expressão regular deve ter no máximo 30 caracteres.");
+                .MaximumLength(150)
+                .WithMessage("A expressão regular deve ter no máximo 150 caracteres.");
         }
     }
 }

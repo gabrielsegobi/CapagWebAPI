@@ -33,9 +33,15 @@ namespace Infrastructure.Configurations
 
             builder.Property(e => e.ExpressaoRegular)
                 .HasColumnName("expressao_regular")
-                .HasColumnType("VARCHAR(30)")
+                .HasColumnType("VARCHAR(150)")
                 .IsRequired()
                 .HasDefaultValue(string.Empty);
+
+            builder.Property(e => e.IsValid)
+                .HasColumnName("is_valid")
+                .HasColumnType("TINYINT(1)")
+                .IsRequired()
+                .HasDefaultValue(true);
         }
     }
 }
