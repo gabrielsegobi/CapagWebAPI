@@ -23,6 +23,8 @@ namespace Domain.Entities
         public string Segmento  { get; set; } = string.Empty;
         public string Porte  { get; set; } = string.Empty;
         public DateTime? DataImpedimento { get; set; }
+        public string? Status { get; set; }
+        public decimal? ValorContrato { get; set; }
         public long? IdUsuarioResponsavel { get; set; }
     }
 }

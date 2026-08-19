@@ -1,6 +1,7 @@
 ﻿using Application.Commands.Indicadores;
 using Application.Helpers;
 using Application.Queries.DemonstrativosContabeis;
+using Application.Services.Demonstrativos;
 using AutoMapper;
 using Domain.Contracts.Indicadores;
 using Domain.Contracts.Json;
@@ -14,18 +15,30 @@ namespace Application.Handlers.Indicadores
 {
     public class CalcIndicadoresHandler : IRequestHandler<CalcIndicadoresCommand, Dictionary<string, List<object>>>
     {
+        public const string NomeRoe = IndicadorAlertaPlHelper.NomeRoe;
+        public const string MensagemPlNegativo = IndicadorAlertaPlHelper.Mensagem;
+
         private readonly IBaseRepository<Indicador> _indicadorRepo;
         private readonly IBaseRepository<ValorAnual> _valorAnualRepo;
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly ICurrentUserService _currentUserService;
-        public CalcIndicadoresHandler(IMediator mediator, IMapper mapper, IBaseRepository<Indicador> indicadorRepo, IBaseRepository<ValorAnual> valorAnualRepo, ICurrentUserService currentUserService)
+        private readonly DemonstrativoConsultaService _consulta;
+
+        public CalcIndicadoresHandler(
+            IMediator mediator,
+            IMapper mapper,
+            IBaseRepository<Indicador> indicadorRepo,
+            IBaseRepository<ValorAnual> valorAnualRepo,
+            ICurrentUserService currentUserService,
+            DemonstrativoConsultaService consulta)
         {
             _indicadorRepo = indicadorRepo;
             _valorAnualRepo = valorAnualRepo;
             _mediator = mediator;
             _mapper = mapper;
             _currentUserService = currentUserService;
+            _consulta = consulta;
         }
 
         public async Task<Dictionary<string, List<object>>> Handle(CalcIndicadoresCommand request, CancellationToken cancellationToken)
@@ -35,24 +48,8 @@ namespace Application.Handlers.Indicadores
                 IdEmpresa = request.IdEmpresa
             }, cancellationToken);
 
-            // Indicadores são calculados por exercício: saldo final/inicial do BP (T04/A00)
-            // e fluxo anual da DRE — não somar períodos do balanço (SomarPeriodosNoAno).
-            var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery
-            {
-                IdEmpresa = request.IdEmpresa,
-                Ano = true,
-                AnosFiltro = anosCalculo
-            }, cancellationToken);
-
-            var valoresPorAno = consolidados
-                .Where(x => x.Ano.HasValue && anosCalculo.Contains(x.Ano.Value))
-                .GroupBy(x => x.Ano)
-                .ToDictionary(
-                    g => g.Key ?? 0,
-                    g => g.GroupBy(x => x.Codigo)
-                        .Select(gr => gr.First())
-                        .ToDictionary(x => x.Codigo, x => x.Valor)
-                );
+            // Mesma fonte de /api/balanco e /api/dre; PL e DRE 3 com sinal C/D.
+            var valoresPorAno = await _consulta.ObterValoresComoNasApis(request.IdEmpresa, cancellationToken);
 
             var basePath = AppContext.BaseDirectory;
             var jsonPath = Path.Combine(basePath, "Domain", "Resources", "Indicadores.json");
@@ -73,20 +70,34 @@ namespace Application.Handlers.Indicadores
 
                 foreach (var formula in formulas)
                 {
-                    var expressao = ExpressionHelper.SubstituirCodigos(formula.Formula, valoresAnoDouble);
+                    if (!resultadosPorIndicador.ContainsKey(formula.Nome))
+                        resultadosPorIndicador[formula.Nome] = new List<object>();
+
+                    if (IndicadorAlertaPlHelper.DeveOmitirCalculo(formula.Nome, valoresAnoDouble))
+                    {
+                        resultadosPorIndicador[formula.Nome].Add(new
+                        {
+                            Ano = ano,
+                            Valor = (decimal?)null,
+                            Expressao = IndicadorAlertaPlHelper.Mensagem,
+                            Mensagem = IndicadorAlertaPlHelper.Mensagem
+                        });
+                        continue;
+                    }
+
+                    var valoresFormula = SaldoContabilHelper.ComMagnitude30101(valoresAnoDouble);
+                    var expressao = ExpressionHelper.SubstituirCodigos(formula.Formula, valoresFormula);
                     var valorCalculado = ExpressionHelper.AvaliarExpressao(expressao);
 
                     if (double.IsNaN(valorCalculado) || double.IsInfinity(valorCalculado))
                         valorCalculado = 0;
 
-                    if (!resultadosPorIndicador.ContainsKey(formula.Nome))
-                        resultadosPorIndicador[formula.Nome] = new List<object>();
-
                     resultadosPorIndicador[formula.Nome].Add(new
                     {
                         Ano = ano,
-                        Valor = Math.Round(valorCalculado, 6),
-                        Expressao = expressao
+                        Valor = (decimal?)Math.Round(valorCalculado, 6),
+                        Expressao = expressao,
+                        Mensagem = (string?)null
                     });
                 }
             }
@@ -156,6 +167,7 @@ namespace Application.Handlers.Indicadores
                         Ano = valorDin.Ano,
                         Valor = (decimal?)valorDin.Valor,
                         valoresCalcAno = valorDin.Expressao,
+                        Mensagem = (string?)valorDin.Mensagem
                     };
 
                     var valorAnual = _mapper.Map<ValorAnual>(createValorRequest);

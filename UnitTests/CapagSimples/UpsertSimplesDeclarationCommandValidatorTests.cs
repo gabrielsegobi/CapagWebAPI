@@ -23,7 +23,7 @@ namespace UnitTests.CapagSimples
             };
 
             var result = _validator.TestValidate(command);
-            result.ShouldHaveAnyValidationError();
+            Assert.False(result.IsValid);
         }
 
         [Fact]

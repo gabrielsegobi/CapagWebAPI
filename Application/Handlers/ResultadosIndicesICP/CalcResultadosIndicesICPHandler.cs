@@ -2,6 +2,7 @@
 using Application.Commands.ResultadosIndicesICP;
 using Application.Helpers;
 using Application.Queries.DemonstrativosContabeis;
+using Application.Services.Demonstrativos;
 using Domain.Contracts.AnalisesICP;
 using Domain.Contracts.Json;
 using Domain.Contracts.ResultadosIndicesICP;
@@ -21,19 +22,22 @@ namespace Application.Handlers.ResultadosIndicesICP
         private readonly IBaseRepository<ModeloIndiceICP> _modelosIndicesRepo;
         private readonly IMediator _mediator;
         private readonly ICurrentUserService _currentUserService;
+        private readonly DemonstrativoConsultaService _consulta;
 
         public CalcResultadosIndicesICPHandler(
            IBaseRepository<ModeloIndiceICP> modelosIndicesRepo,
            IBaseRepository<ResultadoIndiceICP> resultadoIndiceICPRepo,
            IBaseRepository<AnaliseICP> analiseIcpRepo,
            IMediator mediator,
-           ICurrentUserService currentUserService)
+           ICurrentUserService currentUserService,
+           DemonstrativoConsultaService consulta)
         {
             _modelosIndicesRepo = modelosIndicesRepo;
             _resultadoIndiceICPRepo = resultadoIndiceICPRepo;
             _analiseIcpRepo = analiseIcpRepo;
             _mediator = mediator;
             _currentUserService = currentUserService;
+            _consulta = consulta;
         }
 
         public async Task<Dictionary<string, double>> Handle(CalcResultadosIndicesICPCommand request, CancellationToken cancellationToken)
@@ -45,12 +49,13 @@ namespace Application.Handlers.ResultadosIndicesICP
                 IdEmpresa = request.IdEmpresa
             }, cancellationToken);
 
-            var consolidados = await _mediator.Send(new GetDClByAnoAndCodigoQuery
-            {
-                IdEmpresa = request.IdEmpresa,
-                Ano = true,
-                AnosFiltro = anosCalculo
-            }, cancellationToken);
+            var valoresPorAno = await _consulta.ObterValoresComoNasApis(request.IdEmpresa, cancellationToken);
+
+            var valoresTotais = valoresPorAno
+                .Where(kv => anosCalculo.Contains(kv.Key))
+                .SelectMany(kv => kv.Value)
+                .GroupBy(kv => kv.Key, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => (double)g.Sum(x => x.Value));
 
             var basePath = AppContext.BaseDirectory;
             var jsonPath = Path.Combine(basePath, "Domain", "Resources", "ModelosIndicesICp.json");
@@ -61,14 +66,6 @@ namespace Application.Handlers.ResultadosIndicesICP
                 PropertyNameCaseInsensitive = true
             });
 
-            var valoresTotais = consolidados
-                .Where(x => x.Ano.HasValue && anosCalculo.Contains(x.Ano.Value))
-                .GroupBy(x => x.Ano)
-                .SelectMany(anoGrupo => anoGrupo
-                    .GroupBy(x => x.Codigo)
-                    .Select(gr => gr.First()))
-                .GroupBy(x => x.Codigo)
-                .ToDictionary(g => g.Key, g => (double)g.Sum(x => x.Valor));
             var resultadosPorIndicador = new Dictionary<string, double>();
             var resultados = new List<CreateResultadoIndiceICPRequest>();
             var listaSubScores = new List<(decimal SubScore, decimal Peso)>();
@@ -97,7 +94,8 @@ namespace Application.Handlers.ResultadosIndicesICP
                 }
 
                 var formulaContas = formula.Formula;
-                var expressao = ExpressionHelper.SubstituirCodigos(formulaContas, valoresTotais);
+                var valoresFormula = SaldoContabilHelper.ComMagnitude30101(valoresTotais);
+                var expressao = ExpressionHelper.SubstituirCodigos(formulaContas, valoresFormula);
 
                 var memoriaCalc = expressao.Length > 500
                     ? expressao[..500]

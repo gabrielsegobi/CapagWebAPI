@@ -4,6 +4,8 @@ using Application.Exceptions.Empresas;
 using AutoMapper;
 using Domain.Contracts.Responses;
 using Domain.Entities;
+using Domain.Enums;
+using Infrastructure.Helpers;
 using Infrastructure.Interface;
 using MediatR;
 
@@ -33,7 +35,7 @@ namespace Application.Handlers.CapagCalculadoraResultados
             var entity = _mapper.Map<CapagCalculadoraResultado>(request.Request)
                 ?? throw new InvalidDataException("Invalid data");
 
-            _ = await _empresaRepository.GetByIdAsync(request.Request.IdEmpresa)
+            var empresa = await _empresaRepository.GetByIdAsync(request.Request.IdEmpresa)
                 ?? throw new EmpresaNotFoundException(request.Request.IdEmpresa);
 
             var modelo = request.Request.Modelo.Trim();
@@ -48,6 +50,15 @@ namespace Application.Handlers.CapagCalculadoraResultados
             entity.IdUsuario = _currentUser.UserId;
 
             await _baseRepository.AddAsync(entity);
+
+            // Ao concluir o cálculo, seta status comercial se ainda não definido
+            if (!request.Request.Parcial && empresa.Status == null)
+            {
+                empresa.Status = StatusComercialEmpresa.CalculoEfetuado;
+                empresa.UpdatedAt = DateTimeHelper.GetDateTimeNow();
+                _empresaRepository.Update(empresa);
+            }
+
             await _baseRepository.SaveChangesAsync();
 
             return new CreateApiResponse("Resultado da calculadora CAPAG criado com sucesso", entity.Id);

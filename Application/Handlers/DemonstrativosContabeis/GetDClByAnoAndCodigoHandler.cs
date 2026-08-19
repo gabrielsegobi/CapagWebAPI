@@ -1,5 +1,7 @@
 ﻿using Application.Helpers;
+using Application.Interfaces;
 using Application.Queries.DemonstrativosContabeis;
+using Application.Services.Demonstrativos;
 using AutoMapper;
 using Domain.Contracts.DemonstrativosContabeis;
 using Domain.Entities;
@@ -13,11 +15,16 @@ namespace Application.Handlers.DemonstrativosContabeis
     {
         private readonly IBaseRepository<DemonstrativoContabil> _baseRepository;
         private readonly IMapper _mapper;
+        private readonly INormalizadorSinalService _normalizador;
 
-        public GetDClByAnoAndCodigoHandler(IBaseRepository<DemonstrativoContabil> baseRepository, IMapper mapper)
+        public GetDClByAnoAndCodigoHandler(
+            IBaseRepository<DemonstrativoContabil> baseRepository,
+            IMapper mapper,
+            INormalizadorSinalService normalizador)
         {
             _baseRepository = baseRepository;
             _mapper = mapper;
+            _normalizador = normalizador;
         }
 
         public async Task<List<DClByAnoAndCodigoDto>> Handle(GetDClByAnoAndCodigoQuery request, CancellationToken cancellationToken)
@@ -81,81 +88,61 @@ namespace Application.Handlers.DemonstrativosContabeis
                     })
                     .ToListAsync(cancellationToken);
 
-                var codigosComTrimestral = agrupado
-                    .Where(x => x.IsTrimestral)
+                var anosAnterioresNecessarios = agrupado
+                    .Select(x => x.Ano - 1)
+                    .Distinct()
+                    .ToList();
+                var codigos = agrupado
                     .Select(x => x.Codigo)
                     .Distinct()
                     .ToList();
 
-                var anosAnterioresNecessarios = agrupado
-                    .Where(x => x.IsTrimestral)
-                    .Select(x => x.Ano - 1)
-                    .Distinct()
-                    .ToList();
-
-                // Fechamento do ano anterior para [I]: fora do AnosFiltro (senão o ano N-1
-                // fica invisível quando a janela começa em N). Aceita T04 ou A00.
-                var fechamentoAnteriorLookup = new Dictionary<(string Codigo, int Ano), DemonstrativoContabil>();
-                if (codigosComTrimestral.Count > 0 && anosAnterioresNecessarios.Count > 0)
+                // [I] = fechamento do ano anterior (T04 ou A00), fora do AnosFiltro.
+                var fechamentoAnteriorPorConta = new Dictionary<(string Codigo, int Ano), List<DemonstrativoContabil>>();
+                if (codigos.Count > 0 && anosAnterioresNecessarios.Count > 0)
                 {
                     var fechamentosAnoAnterior = await _baseRepository
                         .Query(x =>
                             x.IdEmpresa == request.IdEmpresa &&
                             x.DeletedAt == null &&
                             !string.IsNullOrWhiteSpace(x.Codigo) &&
-                            codigosComTrimestral.Contains(x.Codigo) &&
+                            codigos.Contains(x.Codigo) &&
                             anosAnterioresNecessarios.Contains(x.Ano) &&
                             (x.PerApur == "T04" || x.PerApur == "A00"))
                         .ToListAsync(cancellationToken);
 
-                    fechamentoAnteriorLookup = fechamentosAnoAnterior
+                    fechamentoAnteriorPorConta = fechamentosAnoAnterior
                         .GroupBy(x => (x.Codigo, x.Ano))
-                        .ToDictionary(
-                            g => g.Key,
-                            g => g.FirstOrDefault(x => x.PerApur == "T04")
-                                 ?? g.First(x => x.PerApur == "A00"));
+                        .ToDictionary(g => g.Key, g => g.ToList());
                 }
 
                 var reagrupado = agrupado.Select(g =>
                 {
-                    fechamentoAnteriorLookup.TryGetValue((g.Codigo, g.Ano - 1), out var fechamentoAnterior);
-
-                    var a00 = g.Items.FirstOrDefault(x => x.PerApur == "A00");
-                    var t04 = g.Items.FirstOrDefault(x => x.PerApur == "T04");
-
                     var isDre = g.Items.All(x => x.ValCtaRefIni == null);
 
-                    // Fórmulas de indicadores usam apenas magnitudes positivas: o indicador
-                    // ECD (D/C) nunca entra no cálculo.
-                    // [I] = fechamento do exercício anterior (T04 ou A00).
-                    // Se não houver N-1, [I] permanece ausente e a fórmula trata como 0.
+                    // [I] = saldo final do ano anterior (T04 trimestral, A00 anual). Sem o ano N-1 → 0.
                     decimal? valorIni = null;
                     if (!isDre)
                     {
-                        if (g.IsTrimestral)
-                        {
-                            if (fechamentoAnterior != null)
-                                valorIni = SaldoContabilHelper.Magnitude(fechamentoAnterior);
-                        }
-                        else if (a00 != null)
-                        {
-                            valorIni = SaldoContabilHelper.Magnitude(a00, usarInicial: true);
-                        }
+                        fechamentoAnteriorPorConta.TryGetValue((g.Codigo, g.Ano - 1), out var anteriores);
+                        var fechamentoAnterior = anteriores != null
+                            ? DemonstrativoPeriodoHelper.FechamentoParaSaldoInicial(anteriores, x => x.PerApur)
+                            : null;
+                        valorIni = fechamentoAnterior != null
+                            ? NormalizarRegistro(fechamentoAnterior, g.Codigo)
+                            : 0m;
                     }
 
                     decimal valorFin;
-                    if (isDre)
+                    if (isDre && g.IsTrimestral)
                     {
-                        // DRE trimestral: soma das magnitudes (val_cta_ref_fin), alinhada à dre-analise.
-                        // DRE anual (A00): também magnitude — indicador D/C ignorado nas fórmulas.
-                        valorFin = g.IsTrimestral
-                            ? g.Items.Sum(x => SaldoContabilHelper.Magnitude(x.ValCtaRefFin))
-                            : SaldoContabilHelper.Magnitude(a00);
+                        valorFin = DemonstrativoLeituraService.ConsolidarDreTrimestral(
+                            g.Codigo, g.Items, _normalizador).Normalizado;
                     }
                     else
                     {
-                        var fonteFechamento = g.IsTrimestral ? t04 : a00;
-                        valorFin = SaldoContabilHelper.Magnitude(fonteFechamento);
+                        var fonteFechamento = DemonstrativoPeriodoHelper.FechamentoDoExercicio(g.Items, x => x.PerApur);
+                        valorFin = NormalizarRegistro(fonteFechamento, g.Codigo);
                     }
 
                     return new
@@ -206,7 +193,7 @@ namespace Application.Handlers.DemonstrativosContabeis
                             if (isDre)
                                 continue;
 
-                            var abertura = ObterAberturaExercicio(g.Items, g.IsTrimestral);
+                            var abertura = ObterAberturaExercicio(g.Items, g.IsTrimestral, g.Codigo);
                             if (!abertura.HasValue)
                                 continue;
 
@@ -255,10 +242,10 @@ namespace Application.Handlers.DemonstrativosContabeis
         }
 
         /// <summary>
-        /// Magnitude de abertura do exercício: T01 no regime trimestral, A00 no anual.
-        /// Corresponde ao fechamento do exercício imediatamente anterior (sem sinal D/C).
+        /// Abertura do exercício: T01 no regime trimestral, A00 no anual.
+        /// Corresponde ao fechamento do exercício imediatamente anterior (política ValorParaFormula).
         /// </summary>
-        private static decimal? ObterAberturaExercicio(List<DemonstrativoContabil> items, bool isTrimestral)
+        private decimal? ObterAberturaExercicio(List<DemonstrativoContabil> items, bool isTrimestral, string codigo)
         {
             if (isTrimestral)
             {
@@ -268,14 +255,24 @@ namespace Application.Handlers.DemonstrativosContabeis
                     .FirstOrDefault();
 
                 return abertura != null
-                    ? SaldoContabilHelper.Magnitude(abertura, usarInicial: true)
+                    ? NormalizarRegistro(abertura, codigo, usarInicial: true)
                     : null;
             }
 
             var a00 = items.FirstOrDefault(x => x.PerApur == "A00");
             return a00 != null
-                ? SaldoContabilHelper.Magnitude(a00, usarInicial: true)
+                ? NormalizarRegistro(a00, codigo, usarInicial: true)
                 : null;
+        }
+
+        private decimal NormalizarRegistro(DemonstrativoContabil? registro, string codigo, bool usarInicial = false)
+        {
+            if (registro == null)
+                return 0m;
+
+            return usarInicial
+                ? _normalizador.Normalizar(codigo, registro.ValCtaRefIni, registro.IndValCtaRefIni)
+                : _normalizador.Normalizar(codigo, registro.ValCtaRefFin, registro.IndValCtaRefFin);
         }
     }
 }

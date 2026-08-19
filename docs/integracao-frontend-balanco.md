@@ -204,14 +204,14 @@ O Capag usa `GetDClByAnoAndCodigoHandler` (`Ano=true`, sem `SomarPeriodosNoAno`)
 
 | Tipo de conta | Consolidação anual |
 |---------------|--------------------|
-| **DRE trimestral** (T01…T04) | Soma das **magnitudes** (`val_cta_ref_fin`), alinhada à `dre-analise` |
-| **DRE anual** (A00) | Magnitude de `val_cta_ref_fin` (indicador D/C **ignorado** nas fórmulas) |
-| **BP trimestral** | Magnitude do saldo de fechamento = `T04`; `[I]` = magnitude do `T04` do ano anterior |
-| **BP anual** | Magnitude de `val_cta_ref_fin` do `A00`; `[I]` = magnitude de `val_cta_ref_ini` do `A00` |
+| **DRE trimestral** (T01…T04) | Soma por período via `ValorParaFormula` (sinal econômico C→+, D→−) |
+| **DRE anual** (A00) | `ValorParaFormula` de `val_cta_ref_fin` |
+| **BP trimestral** | Fechamento = `T04` via `ValorParaFormula`; `[I]` = mesmo do `T04` do ano anterior |
+| **BP anual** | Fechamento/`[I]` do `A00` via `ValorParaFormula` |
 
-**Regra das fórmulas:** o motor de indicadores (`GetDClByAnoAndCodigoHandler` → `CalcIndicadoresHandler`) **nunca aplica o indicador ECD (D/C)**. Todo valor substituído na fórmula é a magnitude positiva (`|val_cta_ref_*|`). O sinal patrimonial fica só no armazenamento e nas telas de BP/DRE.
+**Regra das fórmulas:** igual ao plano de contas — **crédito (azul) → positivo**, **débito → negativo**. Não inverter o Ativo de novo (o D/C do balanço já vem invertido em relação à DRE). Exceção: `3.01.01` e filhos em magnitude. PMP/Giro/PME/Ciclo e Cobertura de Juros (ICP) usam magnitude em todos os códigos da equação. **ROE** com PL (`2.03`) ≤ 0: `valor` nulo e `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"`. Demais indicadores calculam com o PL negativo.
 
-**Exemplo — CNPJ 29140121, código `3` (Resultado Líquido), 2022:**
+**Exemplo — código `3.01.01` (Resultado Operacional / EBIT), sempre magnitude:**
 
 | Período | Magnitude | Indicador | Efeito (Capag) |
 |---------|-----------|-----------|----------------|
@@ -221,11 +221,11 @@ O Capag usa `GetDClByAnoAndCodigoHandler` (`Ano=true`, sem `SomarPeriodosNoAno`)
 | T04 | 33.724,67 | C | +33.724,67 |
 | **Total** | | | **250.719,93** |
 
-Esse valor converge com o exibido pela `dre-analise` e é o que alimenta indicadores como ROA, ROE e margens.
+Resultado líquido (`3`) com ind `D` entra **negativo** nas margens/ROA/ROE. Contas `3.01.01*` entram em magnitude (não são excluídas da DRE).
 
 ### Alinhamento com `dre-analise`
 
-Os indicadores Capag são calculados com os mesmos totais DRE apresentados pela `GET /api/dre-analise`. Para DRE trimestral, ambos somam as magnitudes dos períodos sem aplicar o sinal D/C individualmente.
+Os indicadores Capag usam a consolidação de `GetDClByAnoAndCodigoHandler` com sinal econômico. Exceções de magnitude (ciclo/PMR/CJ) são aplicadas na avaliação da fórmula, não na consolidação.
 
 ### Endpoint de consolidados anuais (conferência)
 
@@ -237,8 +237,8 @@ Headers: Authorization, X-Tenant-Id
 ```
 
 Retorna lista de `{ codigo, ano, valor }` onde:
-- `{codigo}` → magnitude positiva do saldo/resultado final do exercício (indicador D/C ignorado)
-- `{codigo}[I]` → magnitude positiva do saldo inicial (abertura do exercício ou T04 do ano anterior)
+- `{codigo}` → valor para fórmula (C/azul → +; D → −; magnitude em `3.01.01*`)
+- `{codigo}[I]` → saldo inicial com a mesma política
 
 Esse endpoint é a mesma consolidação usada por `CalcIndicadoresHandler`. Usar para auditoria/debug — a grade detalhada de DRE continua em `GET /api/Views/dre`.
 
@@ -250,7 +250,7 @@ Esse endpoint é a mesma consolidação usada por `CalcIndicadoresHandler`. Usar
 |------------------|---------|
 | Construção DEFIS → demonstrativos | `Application/Handlers/DemonstrativosContabeis/ConstruirDemonstrativosHandler.cs` |
 | Consolidação ECD (fonte única) | `Application/Handlers/DemonstrativosContabeis/GetDClByAnoAndCodigoHandler.cs` |
-| Sinal D/C | `Application/Helpers/SaldoContabilHelper.cs` (`SaldoAssinado` para PL/construção; `Magnitude` para fórmulas) |
+| Sinal D/C | `Application/Helpers/SaldoContabilHelper.cs` (C/azul → +; Magnitude em `3.01.01*`, PMP e CJ) |
 | Motor de indicadores | `Application/Handlers/Indicadores/CalcIndicadoresHandler.cs` |
 | Fórmulas dos indicadores | `Domain/Resources/Indicadores.json` |
 | DTO da view de balanço | `Domain/Contracts/Views/BPViewDto.cs` |

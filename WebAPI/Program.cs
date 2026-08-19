@@ -110,6 +110,7 @@ builder.Services.AddDbContext<CPGDbContext>(options =>
 
 builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
 builder.Services.AddScoped(typeof(IBaseViewRepository<>), typeof(BaseViewRepository<>));
+builder.Services.AddSinalContabilServices();
 
 var basePath = builder.Configuration["Storage:BasePath"];
 

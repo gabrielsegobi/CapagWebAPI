@@ -1,8 +1,10 @@
-﻿using Application.Queries.Views.DRE;
+﻿using Application.Interfaces;
+using Application.Queries.Views.DRE;
 using AutoMapper;
 using Domain.Contracts.Responses;
 using Domain.Contracts.Views;
 using Domain.Entities.Views;
+using Infrastructure.Interface;
 using MediatR;
 
 namespace Application.Handlers.Views.DRE
@@ -11,11 +13,16 @@ namespace Application.Handlers.Views.DRE
     {
         private readonly IBaseViewRepository<DREVw> _viewRepository;
         private readonly IMapper _mapper;
+        private readonly INormalizadorSinalService _normalizador;
 
-        public GetAllDReViewHandler(IBaseViewRepository<DREVw> viewRepository, IMapper mapper)
+        public GetAllDReViewHandler(
+            IBaseViewRepository<DREVw> viewRepository,
+            IMapper mapper,
+            INormalizadorSinalService normalizador)
         {
             _viewRepository = viewRepository;
             _mapper = mapper;
+            _normalizador = normalizador;
         }
         public async Task<PagedApiResponse<DREViewDto>> Handle(GetAllDREViewQuery request, CancellationToken cancellationToken)
         {
@@ -32,12 +39,20 @@ namespace Application.Handlers.Views.DRE
                         q = q.Where(e => e.Ano == request.Filter.Ano);
 
                     q = request.Filter.OrderByDescending
-                        ? q.OrderByDescending(e => e.Descricao)
-                        : q.OrderBy(e => e.Descricao);
+                        ? q.OrderByDescending(e => e.Codigo)
+                        : q.OrderBy(e => e.Codigo);
 
                     return q;
                 },
-                mapFunc: data => _mapper.Map<IEnumerable<DREViewDto>>(data)
+                mapFunc: data =>
+                {
+                    var dtos = _mapper.Map<List<DREViewDto>>(data);
+                    foreach (var dto in dtos)
+                    {
+                        dto.ValorNormalizado = _normalizador.Normalizar(dto.Codigo, dto.ValCtaRefFin, dto.IndValCtaRefFin);
+                    }
+                    return dtos;
+                }
             );
 
             return pagedResult;

@@ -45,9 +45,17 @@ namespace Domain.Contracts.Views
         [JsonPropertyName("valor")]
         public decimal? Valor => ValCtaRefFin;
 
-        /// <summary>Saldo de abertura do exercício (equivalente a {codigo}[I] nos indicadores).</summary>
+        /// <summary>Saldo de fechamento já normalizado (D/C da própria conta).</summary>
+        [JsonPropertyName("valor_normalizado")]
+        public decimal? ValorNormalizado { get; set; }
+
+        /// <summary>Saldo de abertura do exercício na view (<c>val_cta_ref_ini</c>). Nos indicadores, <c>{codigo}[I]</c> é o fechamento do ano anterior.</summary>
         [JsonPropertyName("valor_inicial")]
         public decimal? ValorInicial => ValCtaRefIni;
+
+        /// <summary>Saldo de abertura já normalizado (D/C da própria conta).</summary>
+        [JsonPropertyName("valor_inicial_normalizado")]
+        public decimal? ValorInicialNormalizado { get; set; }
         [JsonPropertyName("tipo_trib")]
         public string? TipoTrib { get; set; }
         [JsonPropertyName("created_at")]

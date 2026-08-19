@@ -484,7 +484,7 @@ namespace Application.Handlers.DemonstrativosContabeis
 
 
 
-            return SaldoContabilHelper.SaldoAssinado(registro?.ValCtaRefFin, registro?.IndValCtaRefFin);
+            return SaldoContabilHelper.ValorParaFormula(registro, CodigoPatrimonioLiquido);
 
         }
 

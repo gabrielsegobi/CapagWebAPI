@@ -248,10 +248,10 @@ Indicador ECD: **`D` = débito**, **`C` = crédito**. Armazenamento: valor sempr
 
 `SaldoContabilHelper`:
 
-- `SaldoAssinado`: `D` → negativo, `C` → positivo. Usado na **construção** do PL (Ativo − Passivo) e no encadeamento de PL entre anos.
-- `Magnitude`: `|valor|`, **ignora D/C**. Usado em **todas as fórmulas** de indicadores e ICP.
+- `SaldoAssinado` / `ValorParaFormula`: **crédito (azul na tela) → positivo**, **débito → negativo**, inclusive no Ativo. O D/C do balanço já chega invertido em relação à DRE; inverter de novo deixava `1.01.01` negativo na liquidez. Exceção: `3.01.01` e `3.01.01.*` em magnitude.
+- `Magnitude`: também no **PMP** (Giro/PME/Ciclo) e na **Cobertura de Juros (ICP)**.
 
-Decisão deliberada: o motor de fórmulas nunca aplica o indicador patrimonial. Prejuízo (DRE com `D`) e PL negativo entram nas razões como **número positivo** (`|LL|`, `|PL|`). O sinal fica nas telas de BP/DRE e no armazenamento. No Simples, quase todo o BP (ativo e passivo) é gravado com `'D'`; só PL/resultado ≥ 0 usam `'C'`.
+ROE com PL (`2.03`) ≤ 0 não calcula a razão — grava `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"` e `valor` nulo. Os demais indicadores usam o PL negativo na fórmula.
 
 ### 6.3 Balanço vs DRE
 
@@ -259,8 +259,8 @@ Decisão deliberada: o motor de fórmulas nunca aplica o indicador patrimonial. 
 |--|--------------------------------|-----------------------------|
 | Natureza | Posição (estoque) | Fluxo do período |
 | `val_cta_ref_ini` | Obrigatório (0 se não houver) | Sempre `null` |
-| Consolidação anual trimestral | Usar **T04** (não somar T01…T04) | **Somar magnitudes** dos trimestres |
-| Consolidação anual `A00` | Magnitude de `val_cta_ref_fin` | Magnitude de `val_cta_ref_fin` |
+| Consolidação anual trimestral | Usar **T04** (não somar T01…T04) | **Somar** trimestres via `ValorParaFormula` |
+| Consolidação anual `A00` | `ValorParaFormula` de `val_cta_ref_fin` | `ValorParaFormula` de `val_cta_ref_fin` |
 | `{codigo}[I]` | Trimestral: T04 (ou A00) do **ano anterior**; anual: `val_cta_ref_ini` do A00 | Não se aplica |
 
 Identificação de DRE no consolidator: **todas** as linhas do grupo `(codigo, ano)` têm `val_cta_ref_ini == null`.
@@ -583,7 +583,7 @@ Views:
 
 1. **Três pipelines de demonstrativo**, um recálculo comum (indicadores → ICP).
 2. **Fórmulas em JSON**, parâmetros de scoring ICP no banco (meta, pior caso, peso).
-3. **Magnitude nas fórmulas, D/C só no armazenamento** — alinhamento com `dre-analise`.
+3. **Sinais nas fórmulas**: crédito (azul) → + e débito → − em todas as contas (Ativo incluso); `3.01.01*` e PMP/CJ usam Magnitude. ROE com PL ≤ 0 → `Não Analisar: Informação Comprometida`.
 4. **PL do Simples = Ativo − Passivo**, nunca plug da DRE.
 5. **CMV: DEFIS tem prioridade** sobre estoque; CMV negativo vira 0.
 6. **Janela de 3 anos contíguos até o Max**, inventando anos zerados — média inclui zero.

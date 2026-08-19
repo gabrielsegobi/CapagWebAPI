@@ -1,8 +1,10 @@
-﻿using Application.Queries.Views.BalancoPatrimonial;
+﻿using Application.Interfaces;
+using Application.Queries.Views.BalancoPatrimonial;
 using AutoMapper;
 using Domain.Contracts.Responses;
 using Domain.Contracts.Views;
 using Domain.Entities.Views;
+using Infrastructure.Interface;
 using MediatR;
 
 namespace Application.Handlers.Views.BalancoPatrimonial
@@ -11,11 +13,16 @@ namespace Application.Handlers.Views.BalancoPatrimonial
     {
         private readonly IBaseViewRepository<BalancoPatrimonialVw> _viewRepository;
         private readonly IMapper _mapper;
+        private readonly INormalizadorSinalService _normalizador;
 
-        public GetAllBPViewHandler(IBaseViewRepository<BalancoPatrimonialVw> viewRepository, IMapper mapper)
+        public GetAllBPViewHandler(
+            IBaseViewRepository<BalancoPatrimonialVw> viewRepository,
+            IMapper mapper,
+            INormalizadorSinalService normalizador)
         {
             _viewRepository = viewRepository;
             _mapper = mapper;
+            _normalizador = normalizador;
         }
 
         public async Task<PagedApiResponse<BPViewDto>> Handle(GetAllBPViewQuery request, CancellationToken cancellationToken)
@@ -42,7 +49,17 @@ namespace Application.Handlers.Views.BalancoPatrimonial
 
                     return q;
                 },
-                mapFunc: data => _mapper.Map<IEnumerable<BPViewDto>>(data)
+                mapFunc: data =>
+                {
+                    var dtos = _mapper.Map<List<BPViewDto>>(data);
+                    foreach (var dto in dtos)
+                    {
+                        dto.ValorNormalizado = _normalizador.Normalizar(dto.Codigo, dto.ValCtaRefFin, dto.IndValCtaRefFin);
+                        if (dto.ValCtaRefIni.HasValue)
+                            dto.ValorInicialNormalizado = _normalizador.Normalizar(dto.Codigo, dto.ValCtaRefIni, dto.IndValCtaRefIni);
+                    }
+                    return dtos;
+                }
             );
 
             return pagedResult;

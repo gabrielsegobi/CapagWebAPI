@@ -1,4 +1,5 @@
-﻿using Application.Handlers.ValorCalcVariaveis;
+﻿using Application;
+using Application.Handlers.ValorCalcVariaveis;
 using Application.Mapping;
 using Infrastructure.Context;
 using Infrastructure.Interface;
@@ -37,6 +38,7 @@ namespace IntegrationTests
 
             // Registrar repositórios
             services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+            services.AddSinalContabilServices();
 
             //// Registrar AutoMapper
             //var mappingConfig = new MapperConfiguration(cfg =>

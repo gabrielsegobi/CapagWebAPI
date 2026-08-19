@@ -73,10 +73,12 @@ Atenção às duas convenções de nome coexistindo: os campos com `[JsonPropert
 | `saude_empresa` | number | Média aritmética dos `valor` de todos os anos retornados |
 | `valores_calc_saude_empresa` | string | Memória de cálculo da média, para tooltip/auditoria |
 | `valoresAnuais[].ano` | **string** | Exercício. Serializado como texto porque o DTO expõe `string` |
-| `valoresAnuais[].valor` | number | Valor do indicador no exercício, arredondado em 6 casas |
+| `valoresAnuais[].valor` | number \| null | Valor do indicador no exercício (6 casas). **Null** quando há `mensagem`/`alerta` (ROE com PL ≤ 0) |
 | `valoresAnuais[].formula` | string | Descrição textual da fórmula (`Desc_Formula` do JSON de fórmulas) |
 | `valoresAnuais[].formula_contas` | string | Fórmula com códigos de conta (`Formula` do JSON, ex.: `{1.01.01} / {2.01}`) |
-| `valoresAnuais[].valores_calc_ano` | string | Expressão já com os números substituídos (sempre magnitudes positivas; indicador D/C não entra) |
+| `valoresAnuais[].valores_calc_ano` | string | Expressão com números substituídos ou o texto do alerta de não análise |
+| `valoresAnuais[].mensagem` | string \| null | Mesmo conteúdo de `alerta` |
+| `valoresAnuais[].alerta` | string \| null | Aviso de negócio. ROE: `"Não Analisar: Informação Comprometida"` quando PL (`2.03`) ≤ 0. Demais indicadores **não** recebem alerta e calculam com o PL negativo |
 
 ---
 
@@ -111,11 +113,19 @@ const anos = [
 ```ts
 function valorDoAno(indicador: CalcIndicadorDto, ano: number): number | null {
   const item = indicador.valoresAnuais.find((v) => Number(v.ano) === ano);
-  return item ? item.valor : null;
+  if (!item) return null;
+  if (item.alerta || item.mensagem) return null; // exibir o alerta na célula (só ROE / PL ≤ 0)
+  return item.valor;
 }
 ```
 
-Use `null` (renderizado como `-`) apenas quando o ano **não existir** na resposta. Um ano que veio com `valor: 0` é um zero calculado e deve ser exibido como `0,0000`.
+Use `null` (renderizado como `-`) quando o ano **não existir** na resposta **ou** quando `mensagem` estiver preenchida (exibir o texto da mensagem). Um ano que veio com `valor: 0` é um zero calculado e deve ser exibido como `0,0000`.
+
+### ROE com PL negativo
+
+Quando o Patrimônio Líquido (`2.03`) do exercício é ≤ 0, o backend **não calcula** o ROE naquele ano: `valor` vem `null` e `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"`. A `saude_empresa` média ignora esses anos.
+
+CGLP, grau de endividamento e os demais indicadores **continuam calculando** com o `{2.03}` negativo; não recebem alerta.
 
 ### Erro que gerou o bug relatado
 

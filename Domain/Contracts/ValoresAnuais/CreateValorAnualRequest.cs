@@ -18,5 +18,8 @@ namespace Domain.Contracts.ValoresAnuais
 
         [JsonPropertyName("valores_calc_ano")]
         public string valoresCalcAno { get; set; } = string.Empty;
+
+        [JsonPropertyName("mensagem")]
+        public string? Mensagem { get; set; }
     }
 }

@@ -18,6 +18,11 @@ namespace Domain.Contracts.ValoresAnuais
         public string FormulaContas { get; set; } = string.Empty;
         [JsonPropertyName("valores_calc_ano")]
         public string? ValoresCalcAno { get; set; }
+        [JsonPropertyName("mensagem")]
+        public string? Mensagem { get; set; }
+
+        [JsonPropertyName("alerta")]
+        public string? Alerta => Mensagem;
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
         [JsonPropertyName("updated_at")]

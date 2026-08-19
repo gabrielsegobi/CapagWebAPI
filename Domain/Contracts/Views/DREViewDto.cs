@@ -40,6 +40,11 @@ namespace Domain.Contracts.Views
         public decimal? ValCtaRefFin { get; set; }
         [JsonPropertyName("ind_val_cta_ref_fin")]
         public char? IndValCtaRefFin { get; set; }
+
+        /// <summary>Saldo de fechamento já normalizado (D/C da própria conta).</summary>
+        [JsonPropertyName("valor_normalizado")]
+        public decimal? ValorNormalizado { get; set; }
+
         [JsonPropertyName("tipo_trib")]
         public string? TipoTrib { get; set; }
         [JsonPropertyName("created_at")]
