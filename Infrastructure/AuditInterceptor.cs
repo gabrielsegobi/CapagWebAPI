@@ -40,10 +40,13 @@ namespace Infrastructure
             if (context == null) return;
 
 
+            // Demonstrativos são importados em massa (milhares de linhas); auditar cada uma
+            // estoura a transação/pacote MySQL e derruba o reprocessamento.
             var entries = context.ChangeTracker.Entries()
                 .Where(e =>
                     e.Entity != null &&
-                    !(e.Entity is AuditLog) && 
+                    !(e.Entity is AuditLog) &&
+                    !(e.Entity is DemonstrativoContabil) &&
                     (e.State == EntityState.Added ||
                      e.State == EntityState.Modified ||
                      e.State == EntityState.Deleted))

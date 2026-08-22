@@ -36,8 +36,8 @@ namespace Application.Handlers.ProcessLogs
                         q = q.Where(e => e.IdTenant == request.Filter.IdTenant);
 
                     q = request.Filter.OrderByDescending
-                        ? q.OrderByDescending(e => e.Acao)
-                        : q.OrderBy(e => e.Acao);
+                        ? q.OrderByDescending(e => e.CreatedAt)
+                        : q.OrderBy(e => e.CreatedAt);
 
                     return q;
                 },

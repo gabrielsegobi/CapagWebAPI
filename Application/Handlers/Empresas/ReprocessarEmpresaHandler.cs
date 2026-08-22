@@ -2,6 +2,8 @@ using Application.Commands.DemonstrativosContabeis;
 using Application.Commands.Empresas;
 using Application.Commands.ProcessLog;
 using Application.Exceptions.Empresas;
+using Application.Filters;
+using Application.Queries.ProcessLog;
 using Application.teste;
 using Domain.Contracts.ProcessLog;
 using Domain.Contracts.Responses;
@@ -43,6 +45,29 @@ namespace Application.Handlers.Empresas
 
             var idEmpresa = empresa.IdEmpresa;
             var idTenant = empresa.IdTenant;
+
+            var processLogs = await _mediator.Send(new GetAllProcessLogQuery(new ProcessLogFilter
+            {
+                IdEmpresa = idEmpresa,
+                PageSize = 50,
+                OrderByDescending = true
+            }), cancellationToken);
+
+            var ultimoStatus = processLogs.Data?
+                .OrderByDescending(pl => pl.CreatedAt)
+                .Select(pl => pl.Acao)
+                .FirstOrDefault(acao =>
+                    acao is "Processamento iniciado"
+                        or "Processamento terminado"
+                        or "Erro ao processar Empresa");
+
+            if (ultimoStatus == "Processamento iniciado" && !empresa.DadosProcessados)
+            {
+                return new UpdateApiResponse
+                {
+                    Message = "Já existe um reprocessamento em andamento para esta empresa."
+                };
+            }
 
             await ExecutarClearRecalcAsync(idTenant, idEmpresa, cancellationToken);
 
@@ -93,13 +118,20 @@ namespace Application.Handlers.Empresas
                 catch (Exception ex)
                 {
                     var mediator = sp.GetRequiredService<IMediator>();
+                    var partes = new List<string>();
+                    for (var atual = ex; atual != null; atual = atual.InnerException)
+                    {
+                        if (!string.IsNullOrWhiteSpace(atual.Message))
+                            partes.Add(atual.Message);
+                    }
+
                     await mediator.Send(new CreateProcessLogCommand
                     {
                         CreateProcessLogRequest = new CreateProcessLogRequest
                         {
                             Acao = "Erro ao processar Empresa",
                             IdEmpresa = idEmpresa,
-                            Mensagem = ex.Message
+                            Mensagem = string.Join(" | ", partes.Distinct())
                         }
                     }, token);
                 }

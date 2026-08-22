@@ -72,6 +72,7 @@ namespace Application.Services.Demonstrativos
         /// <summary>
         /// Plano codigo→valor por ano, alinhado a <c>/api/balanco</c> e <c>/api/dre</c>.
         /// PL e resultado líquido entram com o D/C da ECF (C = +, D = −).
+        /// Grupo de custos <c>3.01.01.03</c> (somente ela) entra sempre positivo.
         /// <c>{codigo}[I]</c> é o saldo final do ano anterior (T04 trimestral, A00 anual); sem o ano N-1, 0.
         /// </summary>
         public async Task<Dictionary<int, Dictionary<string, decimal>>> ObterValoresComoNasApis(

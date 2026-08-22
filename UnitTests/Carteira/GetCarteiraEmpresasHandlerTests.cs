@@ -22,30 +22,23 @@ namespace UnitTests.Carteira
             _demonstrativoRepoMock.Object,
             _usuarioRepoMock.Object);
 
-        private static void SetupCapag(Mock<IBaseRepository<CapagCalculadoraResultado>> mock,
-            IQueryable<CapagCalculadoraResultado> data)
+        private static void SetupQuery<T>(Mock<IBaseRepository<T>> mock, IQueryable<T> data) where T : class
         {
-            mock.Setup(r => r.Query(It.IsAny<Expression<Func<CapagCalculadoraResultado, bool>>>(), It.IsAny<bool>()))
-                .Returns(data);
+            mock.Setup(r => r.Query(It.IsAny<Expression<Func<T, bool>>>(), It.IsAny<bool>()))
+                .Returns((Expression<Func<T, bool>>? pred, bool _) =>
+                    pred == null ? data : data.Where(pred));
         }
 
-        private static void SetupDemonstrativos(Mock<IBaseRepository<DemonstrativoContabil>> mock,
-            IQueryable<DemonstrativoContabil> data)
+        private void SetupDefaults(
+            IQueryable<Empresa> empresas,
+            IQueryable<CapagCalculadoraResultado>? ratings = null,
+            IQueryable<DemonstrativoContabil>? demonstrativos = null,
+            IQueryable<Usuario>? usuarios = null)
         {
-            mock.Setup(r => r.Query(It.IsAny<Expression<Func<DemonstrativoContabil, bool>>>(), It.IsAny<bool>()))
-                .Returns(data);
-        }
-
-        private static void SetupUsuarios(Mock<IBaseRepository<Usuario>> mock, IQueryable<Usuario> data)
-        {
-            mock.Setup(r => r.Query(It.IsAny<Expression<Func<Usuario, bool>>>(), It.IsAny<bool>()))
-                .Returns(data);
-        }
-
-        private static void SetupEmpresas(Mock<IBaseRepository<Empresa>> mock, IQueryable<Empresa> data)
-        {
-            mock.Setup(r => r.Query(It.IsAny<Expression<Func<Empresa, bool>>>(), It.IsAny<bool>()))
-                .Returns(data);
+            SetupQuery(_empresaRepoMock, empresas);
+            SetupQuery(_capagRepoMock, ratings ?? Enumerable.Empty<CapagCalculadoraResultado>().AsQueryable());
+            SetupQuery(_demonstrativoRepoMock, demonstrativos ?? Enumerable.Empty<DemonstrativoContabil>().AsQueryable());
+            SetupQuery(_usuarioRepoMock, usuarios ?? Enumerable.Empty<Usuario>().AsQueryable());
         }
 
         [Fact]
@@ -57,16 +50,14 @@ namespace UnitTests.Carteira
                 new() { IdEmpresa = 2, RazaoSocial = "Beta",  Cnpj = "00000000000002", DataImpedimento = DateTime.Today }
             }.AsQueryable();
 
-            SetupEmpresas(_empresaRepoMock, empresas);
-            SetupCapag(_capagRepoMock, Enumerable.Empty<CapagCalculadoraResultado>().AsQueryable());
-            SetupDemonstrativos(_demonstrativoRepoMock, Enumerable.Empty<DemonstrativoContabil>().AsQueryable());
-            SetupUsuarios(_usuarioRepoMock, Enumerable.Empty<Usuario>().AsQueryable());
+            SetupDefaults(empresas);
 
             var handler = BuildHandler();
             var result = await handler.Handle(new GetCarteiraEmpresasQuery(new CarteiraEmpresaFilter()), CancellationToken.None);
 
             result.Should().NotBeNull();
             result.Data.Should().HaveCount(2);
+            result.Paging.Total.Should().Be(2);
             result.Data.First(d => d.IdEmpresa == 1).StatusBloqueio.Should().Be("liberado");
             result.Data.First(d => d.IdEmpresa == 2).StatusBloqueio.Should().Be("bloqueado");
         }
@@ -81,17 +72,34 @@ namespace UnitTests.Carteira
                 new() { IdEmpresa = 3, RazaoSocial = "Sem",    Cnpj = "00000000000003", DataImpedimento = null }
             }.AsQueryable();
 
-            SetupEmpresas(_empresaRepoMock, empresas);
-            SetupCapag(_capagRepoMock, Enumerable.Empty<CapagCalculadoraResultado>().AsQueryable());
-            SetupDemonstrativos(_demonstrativoRepoMock, Enumerable.Empty<DemonstrativoContabil>().AsQueryable());
-            SetupUsuarios(_usuarioRepoMock, Enumerable.Empty<Usuario>().AsQueryable());
+            SetupDefaults(empresas);
+
+            var filter = new CarteiraEmpresaFilter { DataImpedimentoAte = new DateTime(2026, 6, 30) };
+            var handler = BuildHandler();
+            var result = await handler.Handle(new GetCarteiraEmpresasQuery(filter), CancellationToken.None);
+
+            result.Data.Should().ContainSingle(d => d.IdEmpresa == 1);
+            result.Paging.Total.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Handle_filtro_data_impedimento_exata_traz_apenas_o_dia_informado()
+        {
+            var empresas = new List<Empresa>
+            {
+                new() { IdEmpresa = 1, RazaoSocial = "Antes",  Cnpj = "00000000000001", DataImpedimento = new DateTime(2026, 6, 29, 23, 59, 0) },
+                new() { IdEmpresa = 2, RazaoSocial = "NoDia",  Cnpj = "00000000000002", DataImpedimento = new DateTime(2026, 6, 30, 14, 30, 0) },
+                new() { IdEmpresa = 3, RazaoSocial = "Depois", Cnpj = "00000000000003", DataImpedimento = new DateTime(2026, 7, 1, 0, 0, 0) }
+            }.AsQueryable();
+
+            SetupDefaults(empresas);
 
             var filter = new CarteiraEmpresaFilter { DataImpedimento = new DateTime(2026, 6, 30) };
             var handler = BuildHandler();
             var result = await handler.Handle(new GetCarteiraEmpresasQuery(filter), CancellationToken.None);
 
-            // Apenas empresa 1 tem impedimento até 30/06/2026
-            result.Data.Should().ContainSingle(d => d.IdEmpresa == 1);
+            result.Data.Should().ContainSingle(d => d.IdEmpresa == 2);
+            result.Paging.Total.Should().Be(1);
         }
 
         [Fact]
@@ -99,22 +107,18 @@ namespace UnitTests.Carteira
         {
             var empresa = new Empresa { IdEmpresa = 10, RazaoSocial = "Corp", Cnpj = "11111111111111" };
 
-            SetupEmpresas(_empresaRepoMock, new[] { empresa }.AsQueryable());
-
             var ratings = new List<CapagCalculadoraResultado>
             {
                 new() { IdEmpresa = 10, Parcial = false, Classificacao = "A", DateUpdate = new DateTime(2026, 1, 1) },
                 new() { IdEmpresa = 10, Parcial = false, Classificacao = "B", DateUpdate = new DateTime(2026, 6, 1) }
             }.AsQueryable();
 
-            SetupCapag(_capagRepoMock, ratings);
-            SetupDemonstrativos(_demonstrativoRepoMock, Enumerable.Empty<DemonstrativoContabil>().AsQueryable());
-            SetupUsuarios(_usuarioRepoMock, Enumerable.Empty<Usuario>().AsQueryable());
+            SetupDefaults(new[] { empresa }.AsQueryable(), ratings);
 
             var handler = BuildHandler();
             var result = await handler.Handle(new GetCarteiraEmpresasQuery(new CarteiraEmpresaFilter()), CancellationToken.None);
 
-            result.Data.Single().RatingCapag.Should().Be("B"); // mais recente
+            result.Data.Single().RatingCapag.Should().Be("B");
         }
 
         [Fact]
@@ -126,16 +130,62 @@ namespace UnitTests.Carteira
                 new() { IdEmpresa = 2, RazaoSocial = "Bloqueada", Cnpj = "00000000000002", DataImpedimento = DateTime.Today }
             }.AsQueryable();
 
-            SetupEmpresas(_empresaRepoMock, empresas);
-            SetupCapag(_capagRepoMock, Enumerable.Empty<CapagCalculadoraResultado>().AsQueryable());
-            SetupDemonstrativos(_demonstrativoRepoMock, Enumerable.Empty<DemonstrativoContabil>().AsQueryable());
-            SetupUsuarios(_usuarioRepoMock, Enumerable.Empty<Usuario>().AsQueryable());
+            SetupDefaults(empresas);
 
             var filter = new CarteiraEmpresaFilter { StatusBloqueio = "liberado" };
             var handler = BuildHandler();
             var result = await handler.Handle(new GetCarteiraEmpresasQuery(filter), CancellationToken.None);
 
             result.Data.Should().ContainSingle(d => d.IdEmpresa == 1);
+            result.Paging.Total.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Handle_filtro_rating_pagina_sobre_o_conjunto_filtrado()
+        {
+            var empresas = Enumerable.Range(1, 15)
+                .Select(i => new Empresa
+                {
+                    IdEmpresa = i,
+                    RazaoSocial = $"Empresa {i:00}",
+                    Cnpj = i.ToString("00000000000000")
+                })
+                .AsQueryable();
+
+            var ratings = new List<CapagCalculadoraResultado>
+            {
+                new() { IdEmpresa = 1,  Parcial = false, Classificacao = "A", DateUpdate = new DateTime(2026, 1, 1) },
+                new() { IdEmpresa = 12, Parcial = false, Classificacao = "a", DateUpdate = new DateTime(2026, 2, 1) },
+                new() { IdEmpresa = 13, Parcial = false, Classificacao = "B", DateUpdate = new DateTime(2026, 3, 1) }
+            }.AsQueryable();
+
+            SetupDefaults(empresas, ratings);
+
+            var filter = new CarteiraEmpresaFilter { RatingCapag = "a", Page = 1, PageSize = 10 };
+            var handler = BuildHandler();
+            var result = await handler.Handle(new GetCarteiraEmpresasQuery(filter), CancellationToken.None);
+
+            result.Paging.Total.Should().Be(2);
+            result.Data.Should().HaveCount(2);
+            result.Data.Select(d => d.IdEmpresa).Should().BeEquivalentTo([1L, 12L]);
+        }
+
+        [Fact]
+        public async Task Handle_exclui_empresas_com_deleted_at()
+        {
+            var empresas = new List<Empresa>
+            {
+                new() { IdEmpresa = 1, RazaoSocial = "Ativa", Cnpj = "00000000000001" },
+                new() { IdEmpresa = 2, RazaoSocial = "Excluida", Cnpj = "00000000000002", DeletedAt = DateTime.UtcNow }
+            }.AsQueryable();
+
+            SetupDefaults(empresas);
+
+            var handler = BuildHandler();
+            var result = await handler.Handle(new GetCarteiraEmpresasQuery(new CarteiraEmpresaFilter()), CancellationToken.None);
+
+            result.Data.Should().ContainSingle(d => d.IdEmpresa == 1);
+            result.Paging.Total.Should().Be(1);
         }
     }
 }

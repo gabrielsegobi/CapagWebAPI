@@ -45,8 +45,26 @@ public class GetEmpresaByIdHandler : IRequestHandler<GetEmpresaByIdQuery, GetApi
 
         if (!empresa.DadosProcessados)
         {
-            var processLogs = await _mediator.Send(new GetAllProcessLogQuery(new ProcessLogFilter { IdEmpresa = empresa.IdEmpresa, }));
-            if (!processLogs.Data.Any(pl => pl.Acao == "Processamento iniciado"))
+            var processLogs = await _mediator.Send(new GetAllProcessLogQuery(new ProcessLogFilter
+            {
+                IdEmpresa = empresa.IdEmpresa,
+                PageSize = 100,
+                OrderByDescending = true
+            }));
+
+            var ultimoStatus = processLogs.Data?
+                .OrderByDescending(pl => pl.CreatedAt)
+                .Select(pl => pl.Acao)
+                .FirstOrDefault(acao =>
+                    acao is "Processamento iniciado"
+                        or "Processamento terminado"
+                        or "Erro ao processar Empresa");
+
+            // Em andamento só se o último status relevante for "iniciado".
+            // Após erro (ou sem log), permite nova tentativa.
+            var emAndamento = ultimoStatus == "Processamento iniciado";
+
+            if (!emAndamento)
             {
                 var log = new CreateProcessLogRequest
                 {
@@ -89,11 +107,18 @@ public class GetEmpresaByIdHandler : IRequestHandler<GetEmpresaByIdQuery, GetApi
                     }
                     catch (Exception ex)
                     {
+                        var partes = new List<string>();
+                        for (var atual = ex; atual != null; atual = atual.InnerException)
+                        {
+                            if (!string.IsNullOrWhiteSpace(atual.Message))
+                                partes.Add(atual.Message);
+                        }
+
                         var log = new CreateProcessLogRequest
                         {
                             Acao = "Erro ao processar Empresa",
                             IdEmpresa = empresa.IdEmpresa,
-                            Mensagem = $"{ex.Message}"
+                            Mensagem = string.Join(" | ", partes.Distinct())
                         };
                         var mediator = sp.GetRequiredService<IMediator>();
                         await mediator.Send(new CreateProcessLogCommand { CreateProcessLogRequest = log });

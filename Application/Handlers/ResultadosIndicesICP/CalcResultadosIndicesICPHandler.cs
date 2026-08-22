@@ -94,7 +94,7 @@ namespace Application.Handlers.ResultadosIndicesICP
                 }
 
                 var formulaContas = formula.Formula;
-                var valoresFormula = SaldoContabilHelper.ComMagnitude30101(valoresTotais);
+                var valoresFormula = SaldoContabilHelper.ValoresParaFormula(valoresTotais, formula.Nome);
                 var expressao = ExpressionHelper.SubstituirCodigos(formulaContas, valoresFormula);
 
                 var memoriaCalc = expressao.Length > 500

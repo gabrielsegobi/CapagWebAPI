@@ -32,27 +32,34 @@ namespace Application.Handlers.Carteira
             CancellationToken cancellationToken)
         {
             var filter = request.Filter;
+            int page = filter.Page ?? 1;
+            int pageSize = filter.PageSize ?? 10;
 
-            // Rating mais recente por empresa (parcial = false, maior date_update)
-            var ratingPorEmpresa = await _capagRepository
+            var ratings = await _capagRepository
                 .Query(r => !r.Parcial)
-                .GroupBy(r => r.IdEmpresa)
-                .Select(g => new
-                {
-                    IdEmpresa = g.Key,
-                    Classificacao = g.OrderByDescending(r => r.DateUpdate).First().Classificacao,
-                    DataCalculo = g.OrderByDescending(r => r.DateUpdate).First().DateUpdate
-                })
+                .Select(r => new { r.IdEmpresa, r.Classificacao, r.DateUpdate })
                 .ToListAsync(cancellationToken);
 
-            // Último ano ECF por empresa
+            var ratingPorEmpresa = ratings
+                .GroupBy(r => r.IdEmpresa)
+                .Select(g =>
+                {
+                    var latest = g.OrderByDescending(r => r.DateUpdate).First();
+                    return new
+                    {
+                        IdEmpresa = g.Key,
+                        latest.Classificacao,
+                        DataCalculo = latest.DateUpdate
+                    };
+                })
+                .ToList();
+
             var anoPorEmpresa = await _demonstrativoRepository
                 .Query(d => d.DeletedAt == null)
                 .GroupBy(d => d.IdEmpresa)
                 .Select(g => new { IdEmpresa = g.Key, UltimoAno = g.Max(d => d.Ano) })
                 .ToListAsync(cancellationToken);
 
-            // Usuários para lookup de nome do responsável
             var usuarios = await _usuarioRepository
                 .Query()
                 .Select(u => new { u.IdUsuario, u.Nome })
@@ -62,8 +69,7 @@ namespace Application.Handlers.Carteira
             var anoLookup = anoPorEmpresa.ToDictionary(x => x.IdEmpresa, x => x.UltimoAno);
             var usuarioLookup = usuarios.ToDictionary(u => u.IdUsuario, u => u.Nome);
 
-            // Projeta query de empresas com filtros
-            var query = _empresaRepository.Query();
+            var query = _empresaRepository.Query(e => e.DeletedAt == null);
 
             if (!string.IsNullOrWhiteSpace(filter.NomeEmpresa))
                 query = query.Where(e => e.RazaoSocial.Contains(filter.NomeEmpresa.Trim()));
@@ -76,30 +82,81 @@ namespace Application.Handlers.Carteira
 
             if (filter.DataImpedimento.HasValue)
             {
-                var ate = filter.DataImpedimento.Value.Date.AddDays(1).AddTicks(-1);
-                query = query.Where(e => e.DataImpedimento != null && e.DataImpedimento <= ate);
+                var inicio = filter.DataImpedimento.Value.Date;
+                var fim = inicio.AddDays(1);
+                query = query.Where(e => e.DataImpedimento != null && e.DataImpedimento >= inicio && e.DataImpedimento < fim);
+            }
+
+            if (filter.DataImpedimentoAte.HasValue)
+            {
+                var ate = filter.DataImpedimentoAte.Value.Date.AddDays(1);
+                query = query.Where(e => e.DataImpedimento != null && e.DataImpedimento < ate);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.StatusBloqueio))
+            {
+                var statusBloqueio = filter.StatusBloqueio.Trim().ToLowerInvariant();
+                if (statusBloqueio == "bloqueado")
+                    query = query.Where(e => e.DataImpedimento != null);
+                else if (statusBloqueio == "liberado")
+                    query = query.Where(e => e.DataImpedimento == null);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filter.RatingCapag))
+            {
+                var ratingFiltro = filter.RatingCapag.Trim().ToUpperInvariant();
+                var idsRating = ratingPorEmpresa
+                    .Where(r => (r.Classificacao ?? string.Empty).Trim().ToUpperInvariant() == ratingFiltro)
+                    .Select(r => r.IdEmpresa)
+                    .ToList();
+
+                if (idsRating.Count == 0)
+                    return EmptyPage(page, pageSize);
+
+                query = query.Where(e => idsRating.Contains(e.IdEmpresa));
+            }
+
+            if (filter.UltimoAnoEcf.HasValue)
+            {
+                var idsAno = anoPorEmpresa
+                    .Where(a => a.UltimoAno == filter.UltimoAnoEcf.Value)
+                    .Select(a => a.IdEmpresa)
+                    .ToList();
+
+                if (idsAno.Count == 0)
+                    return EmptyPage(page, pageSize);
+
+                query = query.Where(e => idsAno.Contains(e.IdEmpresa));
+            }
+
+            if (filter.DataCalculo.HasValue)
+            {
+                var dia = filter.DataCalculo.Value.Date;
+                var idsData = ratingPorEmpresa
+                    .Where(r => r.DataCalculo.Date == dia)
+                    .Select(r => r.IdEmpresa)
+                    .ToList();
+
+                if (idsData.Count == 0)
+                    return EmptyPage(page, pageSize);
+
+                query = query.Where(e => idsData.Contains(e.IdEmpresa));
             }
 
             var total = await query.CountAsync(cancellationToken);
 
-            int skip = ((filter.Page ?? 1) - 1) * (filter.PageSize ?? 10);
-            int take = filter.PageSize ?? 10;
-
             var empresas = await query
                 .OrderBy(e => e.RazaoSocial)
-                .Skip(skip)
-                .Take(take)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync(cancellationToken);
 
-            // Monta DTOs em memória (joins com lookup)
-            var dtos = empresas.Select(e =>
+            var lista = empresas.Select(e =>
             {
                 ratingLookup.TryGetValue(e.IdEmpresa, out var rating);
                 anoLookup.TryGetValue(e.IdEmpresa, out var ano);
                 string? nomeResponsavel = e.IdUsuarioResponsavel.HasValue && usuarioLookup.TryGetValue(e.IdUsuarioResponsavel.Value, out var nome)
                     ? nome : null;
-
-                var statusBloqueio = e.DataImpedimento.HasValue ? "bloqueado" : "liberado";
 
                 return new CarteiraEmpresaDto
                 {
@@ -109,40 +166,20 @@ namespace Application.Handlers.Carteira
                     Status = e.Status,
                     ValorContrato = e.ValorContrato,
                     DataImpedimento = e.DataImpedimento,
-                    StatusBloqueio = statusBloqueio,
-                    RatingCapag = rating?.Classificacao,
+                    StatusBloqueio = e.DataImpedimento.HasValue ? "bloqueado" : "liberado",
+                    RatingCapag = rating?.Classificacao?.Trim(),
                     UltimoAnoEcf = ano == 0 ? null : ano,
                     DataCalculo = rating?.DataCalculo,
                     Responsavel = nomeResponsavel
                 };
-            }).AsEnumerable();
+            }).ToList();
 
-            // Filtros em memória (dependem dos dados dos joins)
-            if (!string.IsNullOrWhiteSpace(filter.StatusBloqueio))
-                dtos = dtos.Where(d => d.StatusBloqueio == filter.StatusBloqueio.Trim().ToLower());
-
-            if (!string.IsNullOrWhiteSpace(filter.RatingCapag))
-                dtos = dtos.Where(d => d.RatingCapag == filter.RatingCapag.Trim().ToUpperInvariant());
-
-            if (filter.UltimoAnoEcf.HasValue)
-                dtos = dtos.Where(d => d.UltimoAnoEcf == filter.UltimoAnoEcf.Value);
-
-            if (filter.DataCalculo.HasValue)
-            {
-                var dia = filter.DataCalculo.Value.Date;
-                dtos = dtos.Where(d => d.DataCalculo.HasValue && d.DataCalculo.Value.Date == dia);
-            }
-
-            var lista = dtos.ToList();
-
-            var pageData = new PageData
-            {
-                Page = filter.Page ?? 1,
-                PageSize = filter.PageSize ?? 10,
-                Total = total
-            };
-
-            return new PagedApiResponse<CarteiraEmpresaDto>(pageData, lista);
+            return new PagedApiResponse<CarteiraEmpresaDto>(
+                new PageData { Page = page, PageSize = pageSize, Total = total },
+                lista);
         }
+
+        private static PagedApiResponse<CarteiraEmpresaDto> EmptyPage(int page, int pageSize) =>
+            new(new PageData { Page = page, PageSize = pageSize, Total = 0 }, []);
     }
 }

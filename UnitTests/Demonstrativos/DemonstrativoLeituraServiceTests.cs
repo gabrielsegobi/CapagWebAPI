@@ -44,7 +44,7 @@ namespace UnitTests.Demonstrativos
         }
 
         [Fact]
-        public void ConsolidarDreTrimestral_30101_SomaComSinalDc()
+        public void ConsolidarDreTrimestral_3010103_IgnoraDcESomaMagnitudes()
         {
             var items = new[]
             {
@@ -55,8 +55,8 @@ namespace UnitTests.Demonstrativos
             var (normalizado, indicador, magnitude) =
                 DemonstrativoLeituraService.ConsolidarDreTrimestral("3.01.01.03", items, _normalizador);
 
-            Assert.Equal(10m, normalizado);
-            Assert.Equal(10m, magnitude);
+            Assert.Equal(30m, normalizado);
+            Assert.Equal(30m, magnitude);
             Assert.Equal('C', indicador);
         }
     }

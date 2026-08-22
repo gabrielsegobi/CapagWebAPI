@@ -18,7 +18,7 @@ namespace IntegrationTests
         {
             var services = new ServiceCollection();
             services.AddLogging();
-            var connectionString = "server=192.168.0.184;port=3306;database=gsaas;user=user;password=password; Persist Security Info=false;";
+            var connectionString = "server=192.168.0.184;port=3306;database=gsaas;user=user;password=password; Persist Security Info=false; AutoEnlist=false;";
 
             // Configurar DbContext com MySQL
             services.AddDbContext<CPGDbContext>(options =>

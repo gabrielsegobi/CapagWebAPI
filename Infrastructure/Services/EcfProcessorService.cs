@@ -78,7 +78,7 @@ namespace Infrastructure.Services
             var ecfs = new List<EcfBase>();
 
 
-            var _connectionString = "server=192.168.0.184; port=3306; database=gsaas; user=user; password=password; AllowLoadLocalInfile=true; Persist Security Info=false;";
+            var _connectionString = "server=192.168.0.184; port=3306; database=gsaas; user=user; password=password; AllowLoadLocalInfile=true; Persist Security Info=false; AutoEnlist=false;";
 
             //string? line;
             //int lineNumber = 0;

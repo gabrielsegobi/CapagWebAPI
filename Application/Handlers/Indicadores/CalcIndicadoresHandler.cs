@@ -85,7 +85,7 @@ namespace Application.Handlers.Indicadores
                         continue;
                     }
 
-                    var valoresFormula = SaldoContabilHelper.ComMagnitude30101(valoresAnoDouble);
+                    var valoresFormula = SaldoContabilHelper.ValoresParaFormula(valoresAnoDouble, formula.Nome);
                     var expressao = ExpressionHelper.SubstituirCodigos(formula.Formula, valoresFormula);
                     var valorCalculado = ExpressionHelper.AvaliarExpressao(expressao);
 

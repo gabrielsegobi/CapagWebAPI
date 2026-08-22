@@ -102,8 +102,8 @@ namespace Application.Services.Demonstrativos
         }
 
         /// <summary>
-        /// DRE trimestral: soma T01…T04 com C = + e D = − em cada período
-        /// (inclusive <c>3.01.01</c> e <c>3.01.01.*</c>). O sinal da soma define C ou D do resultado.
+        /// DRE trimestral: soma T01…T04 com C = + e D = − em cada período.
+        /// O sinal da soma define C ou D do resultado.
         /// </summary>
         public static (decimal Normalizado, char? Indicador, decimal Magnitude) ConsolidarDreTrimestral(
             string codigo,

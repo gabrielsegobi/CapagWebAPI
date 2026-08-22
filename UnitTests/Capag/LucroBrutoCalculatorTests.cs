@@ -37,7 +37,7 @@ namespace UnitTests.Capag
                             Grupo = GrupoContabil.Despesa,
                             Valores = new ValoresAnuaisDto
                             {
-                                PorAno = { [2022] = -400m, [2023] = -450m, [2024] = -500m }
+                                PorAno = { [2022] = 400m, [2023] = 450m, [2024] = 500m }
                             },
                             Filhos =
                             {
@@ -48,7 +48,7 @@ namespace UnitTests.Capag
                                     Grupo = GrupoContabil.Despesa,
                                     Valores = new ValoresAnuaisDto
                                     {
-                                        PorAno = { [2022] = -400m, [2023] = -450m, [2024] = -500m }
+                                        PorAno = { [2022] = 400m, [2023] = 450m, [2024] = 500m }
                                     }
                                 }
                             }

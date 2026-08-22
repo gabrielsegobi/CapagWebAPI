@@ -27,19 +27,9 @@ namespace UnitTests.Helpers
             Assert.Equal(80m, SaldoContabilHelper.ValorParaFormula(80m, 'C', "3"));
             Assert.Equal(-80m, SaldoContabilHelper.ValorParaFormula(80m, 'D', "3.01.01"));
             Assert.Equal(80m, SaldoContabilHelper.ValorParaFormula(80m, 'C', "3.01.01"));
-            Assert.Equal(-12.5m, SaldoContabilHelper.ValorParaFormula(12.5m, 'D', "3.01.01.03"));
-        }
-
-        [Theory]
-        [InlineData("3.01.01", true)]
-        [InlineData("3.01.01.01", true)]
-        [InlineData("3.01.01.03", true)]
-        [InlineData("3", false)]
-        [InlineData("3.01", false)]
-        [InlineData("1.01.01", false)]
-        public void EhCodigoSemSinalDc(string codigo, bool esperado)
-        {
-            Assert.Equal(esperado, SaldoContabilHelper.EhCodigoSemSinalDc(codigo));
+            Assert.Equal(12.5m, SaldoContabilHelper.ValorParaFormula(12.5m, 'D', "3.01.01.03"));
+            Assert.Equal(12.5m, SaldoContabilHelper.ValorParaFormula(12.5m, 'C', "3.01.01.03"));
+            Assert.Equal(-40m, SaldoContabilHelper.ValorParaFormula(40m, 'D', "3.01.01.03.01"));
         }
 
         [Theory]
@@ -50,6 +40,27 @@ namespace UnitTests.Helpers
         public void EhContaAtivoBalanco(string codigo, bool esperado)
         {
             Assert.Equal(esperado, SaldoContabilHelper.EhContaAtivoBalanco(codigo));
+        }
+
+        [Theory]
+        [InlineData("3.01.01.03", true)]
+        [InlineData("3.01.01.03.01", false)]
+        [InlineData("3.01.01", false)]
+        [InlineData("3.01.01.01", false)]
+        public void EhContaCustoSemprePositiva(string codigo, bool esperado)
+        {
+            Assert.Equal(esperado, SaldoContabilHelper.EhContaCustoSemprePositiva(codigo));
+        }
+
+        [Theory]
+        [InlineData(SaldoContabilHelper.NomePmp, true)]
+        [InlineData(SaldoContabilHelper.NomeCoberturaJuros, true)]
+        [InlineData("Giro do Estoque", false)]
+        [InlineData("Margem Líquida", false)]
+        [InlineData("Ciclo Financeiro", false)]
+        public void UsaMagnitudeAbsolutaNaFormula(string nome, bool esperado)
+        {
+            Assert.Equal(esperado, SaldoContabilHelper.UsaMagnitudeAbsolutaNaFormula(nome));
         }
 
         [Fact]
@@ -70,7 +81,7 @@ namespace UnitTests.Helpers
         }
 
         [Fact]
-        public void ComMagnitude30101_SoNasContas30101()
+        public void ValoresParaFormula_PmpUsaMagnitude_DemaisMantemSinal()
         {
             var valores = new Dictionary<string, double>
             {
@@ -80,12 +91,17 @@ namespace UnitTests.Helpers
                 ["1.01.01"] = -10
             };
 
-            var result = SaldoContabilHelper.ComMagnitude30101(valores);
+            var pmp = SaldoContabilHelper.ValoresParaFormula(valores, SaldoContabilHelper.NomePmp);
+            Assert.Equal(50, pmp["3"]);
+            Assert.Equal(80, pmp["3.01.01"]);
+            Assert.Equal(12.5, pmp["3.01.01.03"]);
+            Assert.Equal(10, pmp["1.01.01"]);
 
-            Assert.Equal(-50, result["3"]);
-            Assert.Equal(80, result["3.01.01"]);
-            Assert.Equal(12.5, result["3.01.01.03"]);
-            Assert.Equal(-10, result["1.01.01"]);
+            var margem = SaldoContabilHelper.ValoresParaFormula(valores, "Margem Operacional");
+            Assert.Equal(-50, margem["3"]);
+            Assert.Equal(-80, margem["3.01.01"]);
+            Assert.Equal(-12.5, margem["3.01.01.03"]);
+            Assert.Equal(-10, margem["1.01.01"]);
         }
 
         [Fact]

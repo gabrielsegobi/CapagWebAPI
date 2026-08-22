@@ -236,7 +236,7 @@ namespace UnitTests.Demonstrativos
         }
 
         [Fact]
-        public void MontarMapaValores_30101_DebitoEntraNegativo()
+        public void MontarMapaValores_3010103_DebitoEntraPositivo()
         {
             var saldos = new[]
             {
@@ -253,7 +253,7 @@ namespace UnitTests.Demonstrativos
             var mapa = DemonstrativoConsultaService.MontarMapaValores(
                 new DemonstrativoArvoreDto(), new DemonstrativoArvoreDto(), saldos);
 
-            Assert.Equal(-6420822.64m, mapa[2022]["3.01.01.03"]);
+            Assert.Equal(6420822.64m, mapa[2022]["3.01.01.03"]);
         }
 
         [Fact]

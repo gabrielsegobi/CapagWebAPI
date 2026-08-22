@@ -1,4 +1,5 @@
 using Application.Services.SinalContabil;
+using Domain.Constants;
 using Domain.Entities;
 
 namespace Application.Helpers
@@ -7,6 +8,7 @@ namespace Application.Helpers
     {
         /// <summary>
         /// ECF: C = +, D = −. Preferir <see cref="Application.Interfaces.INormalizadorSinalService"/> via DI.
+        /// Exceção: conta de custos <c>3.01.01.03</c> (somente ela) sempre em magnitude positiva.
         /// </summary>
         public static decimal SaldoAssinado(decimal? valor, char? indicador, string? codigo = null)
         {
@@ -88,17 +90,13 @@ namespace Application.Helpers
         }
 
         /// <summary>
-        /// <c>3.01.01</c> e <c>3.01.01.*</c>: nas fórmulas de indicadores e ICP usam magnitude
-        /// (ignoram D/C). Na soma da DRE o D/C de cada período entra no cálculo.
+        /// Conta de custos <c>3.01.01.03</c> (somente ela): ignora D/C e usa sempre magnitude positiva nos cálculos.
         /// </summary>
-        public static bool EhCodigoSemSinalDc(string? codigo)
-        {
-            var n = NormalizarCodigo(codigo);
-            return n == "3.01.01" || n.StartsWith("3.01.01.", StringComparison.Ordinal);
-        }
+        public static bool EhContaCustoSemprePositiva(string? codigo) =>
+            NormalizarCodigo(codigo) == DreCapagConstants.CodigoGrupoCustos;
 
         /// <summary>
-        /// Encaminha ao normalizador: C = +, D = −.
+        /// Encaminha ao normalizador: C = +, D = − (custos <c>3.01.01.03</c> sempre positivos).
         /// </summary>
         public static decimal ValorParaFormula(DemonstrativoContabil? registro, string codigo, bool usarInicial = false)
         {
@@ -116,15 +114,30 @@ namespace Application.Helpers
             return NormalizadorSinalLocator.Instance.Normalizar(codigo, valor, indicador);
         }
 
+        public const string NomePmp = "Prazo Médio de Pagamento (PMP)";
+        public const string NomeCoberturaJuros = "Cobertura de Juros (CJ)";
+
+        /// <summary>
+        /// PMP e Cobertura de Juros usam magnitude (|valor|), ignorando D/C.
+        /// Demais indicadores/ICP usam o sinal C = + / D = −.
+        /// </summary>
+        public static bool UsaMagnitudeAbsolutaNaFormula(string? nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return false;
+
+            return nome.Equals(NomePmp, StringComparison.OrdinalIgnoreCase)
+                || nome.Equals(NomeCoberturaJuros, StringComparison.OrdinalIgnoreCase);
+        }
+
         public static Dictionary<string, double> ComMagnitudeTodas(Dictionary<string, double> valores) =>
             valores.ToDictionary(kv => kv.Key, kv => Math.Abs(kv.Value));
 
-        /// <summary>
-        /// Indicadores e ICP: <c>3.01.01</c> e filhos entram em módulo.
-        /// </summary>
-        public static Dictionary<string, double> ComMagnitude30101(Dictionary<string, double> valores) =>
-            valores.ToDictionary(
-                kv => kv.Key,
-                kv => EhCodigoSemSinalDc(kv.Key) ? Math.Abs(kv.Value) : kv.Value);
+        public static Dictionary<string, double> ValoresParaFormula(
+            Dictionary<string, double> valores,
+            string? nomeIndicador) =>
+            UsaMagnitudeAbsolutaNaFormula(nomeIndicador)
+                ? ComMagnitudeTodas(valores)
+                : valores;
     }
 }

@@ -26,8 +26,10 @@ namespace Application.Services.Capag
                 Nivel = 4
             };
 
+            // 3.01.01.03 (pai) é sempre positiva; folhas ainda podem vir com sinal D/C.
             foreach (var ano in anos)
-                linha.Valores.PorAno[ano] = valoresReceita.Obter(ano) + valoresCustos.Obter(ano);
+                linha.Valores.PorAno[ano] =
+                    valoresReceita.Obter(ano) - Math.Abs(valoresCustos.Obter(ano));
 
             linha.Posicao = PosicaoAposGrupo(linhas, DreCapagConstants.CodigoGrupoCustos);
             return linha;

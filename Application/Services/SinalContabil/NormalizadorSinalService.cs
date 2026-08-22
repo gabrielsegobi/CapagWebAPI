@@ -9,7 +9,8 @@ namespace Application.Services.SinalContabil
     /// Sinal da ECF: crédito (C) = positivo, débito (D) = negativo.
     /// Ativo do balanço (<c>1</c>/<c>1.*</c>): inverte D/C antes dessa regra.
     /// Sem indicador, permanece a magnitude.
-    /// Magnitude em <c>3.01.01</c>/<c>3.01.01.*</c> só nas fórmulas de indicadores e ICP.
+    /// Grupo de custos <c>3.01.01.03</c> (somente ela): sempre magnitude positiva (ignora D/C).
+    /// Exceções de magnitude absoluta por indicador (PMP e Cobertura de Juros) ficam no helper de fórmulas.
     /// </summary>
     public class NormalizadorSinalService : INormalizadorSinalService
     {
@@ -59,8 +60,11 @@ namespace Application.Services.SinalContabil
 
         public static decimal AplicarIndicadorEcf(string? codigo, decimal? saldoBruto, IndicadorDC? indicador)
         {
-            var dc = InverterDcSeAtivo(codigo, indicador);
             var magnitude = Math.Abs(saldoBruto ?? 0m);
+            if (SaldoContabilHelper.EhContaCustoSemprePositiva(codigo))
+                return magnitude;
+
+            var dc = InverterDcSeAtivo(codigo, indicador);
             if (dc is null)
                 return magnitude;
 

@@ -21,7 +21,7 @@ namespace UnitTests.SinalContabil
             Assert.Equal(-80m, _sut.Normalizar("3.01.01", 80m, 'D'));
             Assert.Equal(80m, _sut.Normalizar("3.01.01", 80m, 'C'));
             Assert.Equal(12.5m, _sut.Normalizar("3.01.01.03", -12.5m, 'C'));
-            Assert.Equal(-12.5m, _sut.Normalizar("3.01.01.03", 12.5m, 'D'));
+            Assert.Equal(12.5m, _sut.Normalizar("3.01.01.03", 12.5m, 'D'));
         }
 
         [Theory]
@@ -68,12 +68,13 @@ namespace UnitTests.SinalContabil
         }
 
         [Fact]
-        public void Normalizar_30101_TambemSegueDc()
+        public void Normalizar_3010103_IgnoraDcEFicaPositivo()
         {
             Assert.Equal(-80m, _sut.Normalizar("3.01.01", 80m, 'D'));
             Assert.Equal(80m, _sut.Normalizar("3.01.01", 80m, 'C'));
-            Assert.Equal(-12.5m, _sut.Normalizar("3.01.01.03", 12.5m, 'D'));
+            Assert.Equal(12.5m, _sut.Normalizar("3.01.01.03", 12.5m, 'D'));
             Assert.Equal(12.5m, _sut.Normalizar("3.01.01.03", -12.5m, 'C'));
+            Assert.Equal(-40m, _sut.Normalizar("3.01.01.03.01", 40m, 'D'));
         }
 
         [Fact]

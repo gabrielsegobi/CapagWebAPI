@@ -187,7 +187,7 @@ Anos importados (`DemonstrativosAnosHelper.ObterAnosImportacaoComAnterior`):
 
 Exemplo: tributação 2019, 2021, 2022, 2023 → janela de cálculo 2021–2023; importação 2020–2023 se 2020 existir, senão 2021–2023.
 
-Falha em tributação, DRE ou balanço aborta tudo (`TransactionScope`): nenhum demonstrativo parcial.
+Falha em tributação, DRE ou balanço aborta tudo (transação local do `DbContext`): nenhum demonstrativo parcial.
 
 ### 5.2 Construção Simples Nacional (DEFIS + PGDASD)
 

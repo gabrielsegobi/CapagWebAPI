@@ -17,6 +17,7 @@ namespace WebAPI.Controllers
 
         /// <summary>
         /// Lista empresas da carteira comercial com paginação e filtros.
+        /// DataImpedimento filtra o dia exato; DataImpedimentoAte filtra até o dia informado (inclusive).
         /// </summary>
         [HttpGet("empresas")]
         public async Task<IActionResult> GetEmpresas([FromQuery] CarteiraEmpresaFilter filter)
