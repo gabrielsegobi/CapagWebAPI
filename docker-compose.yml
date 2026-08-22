@@ -6,7 +6,7 @@ services:
       - "5174:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=server=192.168.0.184;port=3306;database=gsaas;user=user;password=password;Persist Security Info=false;AllowLoadLocalInfile=true;
+      - ConnectionStrings__DefaultConnection=server=192.168.0.184;port=3306;database=gsaas;user=user;password=password;Persist Security Info=false;AllowLoadLocalInfile=true;AutoEnlist=false;
       - Jwt__Key=jbmh5)&QKZ;£|03cC5u~7Tl£eQG8W8UA&y#Es;j8[Ti<*zHv]Bjbmh5)&QKZ;£|03cC5u~7Tl£eQG8W8UA&y#Es;j8[Ti<*zHv]B
       - Jwt__Issuer=CapagApi
       - Jwt__Audience=Audiencia
