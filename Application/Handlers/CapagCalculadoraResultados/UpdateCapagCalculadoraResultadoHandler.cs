@@ -35,14 +35,6 @@ namespace Application.Handlers.CapagCalculadoraResultados
                 ?? throw new CapagCalculadoraResultadoNotFoundException(request.Id);
 
             var modelo = request.Request.Modelo.Trim();
-            var exists = await _baseRepository.AnyAsync(e =>
-                e.Id != request.Id &&
-                e.IdEmpresa == entity.IdEmpresa &&
-                e.Modelo == modelo);
-
-            if (exists)
-                throw new CapagCalculadoraResultadoConflictException(entity.IdEmpresa, modelo);
-
             var entityToUpdate = _mapper.Map(request.Request, entity);
             entityToUpdate.Modelo = modelo;
             entityToUpdate.Classificacao = request.Request.Classificacao.Trim().ToUpperInvariant();

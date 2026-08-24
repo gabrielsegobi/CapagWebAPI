@@ -83,8 +83,6 @@ namespace Infrastructure.Configurations
             builder.Property(e => e.IdUsuario)
                 .HasColumnName("id_usuario")
                 .HasColumnType("BIGINT");
-
-            builder.HasIndex(e => new { e.IdEmpresa, e.Modelo }).IsUnique();
         }
     }
 }

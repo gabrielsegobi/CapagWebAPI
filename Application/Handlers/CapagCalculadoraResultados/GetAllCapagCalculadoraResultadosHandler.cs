@@ -71,9 +71,13 @@ namespace Application.Handlers.CapagCalculadoraResultados
                             ? q.OrderByDescending(e => e.DateUpdate)
                             : q.OrderBy(e => e.DateUpdate),
 
+                        "datecreate" => request.Filter.OrderByDescending
+                            ? q.OrderByDescending(e => e.DateCreate)
+                            : q.OrderBy(e => e.DateCreate),
+
                         _ => request.Filter.OrderByDescending
-                            ? q.OrderByDescending(e => e.Id)
-                            : q.OrderBy(e => e.Id)
+                            ? q.OrderByDescending(e => e.DateCreate)
+                            : q.OrderBy(e => e.DateCreate)
                     };
 
                     return q;

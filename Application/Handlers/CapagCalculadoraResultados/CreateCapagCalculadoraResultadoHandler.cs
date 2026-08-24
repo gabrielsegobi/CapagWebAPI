@@ -1,5 +1,4 @@
 using Application.Commands.CapagCalculadoraResultados;
-using Application.Exceptions.CapagCalculadoraResultados;
 using Application.Exceptions.Empresas;
 using AutoMapper;
 using Domain.Contracts.Responses;
@@ -39,12 +38,6 @@ namespace Application.Handlers.CapagCalculadoraResultados
                 ?? throw new EmpresaNotFoundException(request.Request.IdEmpresa);
 
             var modelo = request.Request.Modelo.Trim();
-            var exists = await _baseRepository.AnyAsync(e =>
-                e.IdEmpresa == request.Request.IdEmpresa && e.Modelo == modelo);
-
-            if (exists)
-                throw new CapagCalculadoraResultadoConflictException(request.Request.IdEmpresa, modelo);
-
             entity.Modelo = modelo;
             entity.Classificacao = request.Request.Classificacao.Trim().ToUpperInvariant();
             entity.IdUsuario = _currentUser.UserId;

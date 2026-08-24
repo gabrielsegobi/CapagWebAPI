@@ -1,4 +1,4 @@
--- Resultado resumido da calculadora CAPAG (seletor de modelos)
+-- Histórico das análises da calculadora CAPAG (seletor de modelos)
 
 CREATE TABLE IF NOT EXISTS `capag_calculadora_resultado` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -18,9 +18,9 @@ CREATE TABLE IF NOT EXISTS `capag_calculadora_resultado` (
   `id_usuario` BIGINT NULL COMMENT 'Usuário Capag que criou/atualizou',
 
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_capag_calculadora_resultado_empresa_modelo` (`id_empresa`, `modelo`),
   KEY `idx_capag_calculadora_resultado_tenant` (`id_tenant`),
   KEY `idx_capag_calculadora_resultado_empresa` (`id_empresa`),
+  KEY `idx_capag_calculadora_resultado_empresa_modelo_data` (`id_empresa`, `modelo`, `date_create`),
   KEY `idx_capag_calculadora_resultado_usuario` (`id_usuario`),
 
   CONSTRAINT `fk_capag_calculadora_resultado_tenant`
@@ -34,4 +34,4 @@ CREATE TABLE IF NOT EXISTS `capag_calculadora_resultado` (
   CONSTRAINT `chk_capag_calculadora_resultado_classificacao`
     CHECK (`classificacao` IN ('A', 'B', 'C', 'D'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-  COMMENT='Resultado resumido da calculadora CAPAG exibido no seletor de modelos';
+  COMMENT='Histórico das análises da calculadora CAPAG (um registro por cálculo)';
