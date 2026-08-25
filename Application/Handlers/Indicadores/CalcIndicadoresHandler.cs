@@ -58,9 +58,17 @@ namespace Application.Handlers.Indicadores
             var formulas = JsonSerializer.Deserialize<List<FormulaJson>>(jsonContent, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
-            });
+            }) ?? [];
 
             var resultadosPorIndicador = new Dictionary<string, List<object>>();
+            // Base (só contas) antes de compostos ({@indicador}), para a composição
+            // herdar PME/PMR/PMP já arredondados — independente da ordem no JSON.
+            var formulasBase = formulas
+                .Where(f => !ExpressionHelper.TemReferenciaIndicador(f.Formula))
+                .ToList();
+            var formulasCompostas = formulas
+                .Where(f => ExpressionHelper.TemReferenciaIndicador(f.Formula))
+                .ToList();
 
             foreach (var ano in anosCalculo)
             {
@@ -68,13 +76,16 @@ namespace Application.Handlers.Indicadores
                     ? valoresAno.ToDictionary(kv => kv.Key, kv => (double)kv.Value)
                     : new Dictionary<string, double>();
 
-                foreach (var formula in formulas)
+                var resultadosAno = new Dictionary<string, double?>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var formula in formulasBase.Concat(formulasCompostas))
                 {
                     if (!resultadosPorIndicador.ContainsKey(formula.Nome))
                         resultadosPorIndicador[formula.Nome] = new List<object>();
 
                     if (IndicadorAlertaPlHelper.DeveOmitirCalculo(formula.Nome, valoresAnoDouble))
                     {
+                        SaldoContabilHelper.RegistrarResultadoIndicador(resultadosAno, formula, null);
                         resultadosPorIndicador[formula.Nome].Add(new
                         {
                             Ano = ano,
@@ -86,16 +97,22 @@ namespace Application.Handlers.Indicadores
                     }
 
                     var valoresFormula = SaldoContabilHelper.ValoresParaFormula(valoresAnoDouble, formula.Nome);
-                    var expressao = ExpressionHelper.SubstituirCodigos(formula.Formula, valoresFormula);
+                    var expressao = ExpressionHelper.SubstituirFormula(
+                        formula.Formula,
+                        valoresFormula,
+                        resultadosAno);
                     var valorCalculado = ExpressionHelper.AvaliarExpressao(expressao);
 
                     if (double.IsNaN(valorCalculado) || double.IsInfinity(valorCalculado))
                         valorCalculado = 0;
 
+                    var valorArredondado = Math.Round(valorCalculado, 6);
+                    SaldoContabilHelper.RegistrarResultadoIndicador(resultadosAno, formula, valorArredondado);
+
                     resultadosPorIndicador[formula.Nome].Add(new
                     {
                         Ano = ano,
-                        Valor = (decimal?)Math.Round(valorCalculado, 6),
+                        Valor = (decimal?)valorArredondado,
                         Expressao = expressao,
                         Mensagem = (string?)null
                     });

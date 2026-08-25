@@ -56,23 +56,27 @@
   },
   {
     "nome": "Prazo Médio de Pagamento (PMP)",
+    "tag": "PMP",
     "desc_formula": "(Contas a Pagar Médio * 365) / (Compras Brutas)",
     "formula": "((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]})"
   },
   {
     "nome": "Prazo Médio de Estocagem (PME)",
+    "tag": "PME",
     "desc_formula": "(Giro do Estoque) / 365",
     "formula": "({3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)) / 365"
   },
   {
     "nome": "Prazo Médio de Recebimento (PMR)",
+    "tag": "PMR",
     "desc_formula": "(Contas a Receber Médio * 365) / (Receita Bruta)",
     "formula": "((({1.01.02.02[I]} + {1.01.02.02}) / 2) * 365) / {3.01.01.01.01}"
   },
   {
     "nome": "Ciclo Financeiro",
+    "tag": "CICLO",
     "desc_formula": "PME + PMR - PMP",
-    "formula": "((({3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)) / 365) + (((({1.01.02.02[I]} + {1.01.02.02}) / 2) * 365) / {3.01.01.01.01})) - (((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]}))"
+    "formula": "{@PME} + {@PMR} - {@PMP}"
   },
   {
     "nome": "Necessidade de Capital de Giro (NCG)",

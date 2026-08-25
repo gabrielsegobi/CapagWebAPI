@@ -6,27 +6,92 @@ namespace Application.Helpers
 {
     public class ExpressionHelper
     {
+        /// <summary>
+        /// Placeholder de indicador composto: <c>{@PME}</c> (tag do catálogo).
+        /// Distinto de códigos contábeis <c>{1.01.03}</c>.
+        /// </summary>
+        private static readonly Regex RefIndicadorRegex = new(
+            @"\{@([^}]+)\}",
+            RegexOptions.Compiled);
+
+        private static readonly Regex CodigoContabilRegex = new(
+            @"\{(?!@)([^}]+)\}",
+            RegexOptions.Compiled);
+
+        public static bool TemReferenciaIndicador(string? formula) =>
+            !string.IsNullOrWhiteSpace(formula) && RefIndicadorRegex.IsMatch(formula);
+
+        /// <summary>
+        /// Substitui <c>{@TAG}</c> pelos valores já calculados no exercício (chave = tag).
+        /// Tag ausente no mapa ou valor nulo (alerta) vira <c>0</c>.
+        /// </summary>
+        public static string SubstituirReferenciasIndicadores(
+            string formula,
+            IReadOnlyDictionary<string, double?> resultadosIndicadores)
+        {
+            if (string.IsNullOrWhiteSpace(formula))
+                return "0";
+
+            return RefIndicadorRegex.Replace(formula, match =>
+            {
+                var nome = match.Groups[1].Value.Trim();
+                if (TryObterResultadoIndicador(resultadosIndicadores, nome, out var valor) && valor.HasValue)
+                    return valor.Value.ToString(CultureInfo.InvariantCulture);
+
+                return "0";
+            });
+        }
+
+        private static bool TryObterResultadoIndicador(
+            IReadOnlyDictionary<string, double?> map,
+            string nome,
+            out double? valor)
+        {
+            if (map.TryGetValue(nome, out valor))
+                return true;
+
+            foreach (var kv in map)
+            {
+                if (kv.Key.Equals(nome, StringComparison.OrdinalIgnoreCase))
+                {
+                    valor = kv.Value;
+                    return true;
+                }
+            }
+
+            valor = null;
+            return false;
+        }
 
         public static string SubstituirCodigos(string formula, Dictionary<string, double> valores)
         {
             if (string.IsNullOrWhiteSpace(formula))
                 return "0";
 
-            return Regex.Replace(formula, @"\{([^}]+)\}", match =>
+            return CodigoContabilRegex.Replace(formula, match =>
             {
                 var codigoOriginal = match.Groups[1].Value.Trim();
-                double valor;
 
-                if (valores.TryGetValue(codigoOriginal, out valor))
-                    return valor.ToString(System.Globalization.CultureInfo.InvariantCulture);
-
-                // var codigoSemI = Regex.Replace(codigoOriginal, @"\[I\]", "", RegexOptions.IgnoreCase);
-                // if (valores.TryGetValue(codigoSemI, out valor))
-                //     return valor.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                if (valores.TryGetValue(codigoOriginal, out var valor))
+                    return valor.ToString(CultureInfo.InvariantCulture);
 
                 return "0";
             });
+        }
 
+        /// <summary>
+        /// Resolve referências a indicadores (se houver) e depois códigos contábeis.
+        /// </summary>
+        public static string SubstituirFormula(
+            string formula,
+            Dictionary<string, double> valoresContabeis,
+            IReadOnlyDictionary<string, double?>? resultadosIndicadores = null)
+        {
+            var expressao = formula;
+            if (resultadosIndicadores != null && TemReferenciaIndicador(expressao))
+                expressao = SubstituirReferenciasIndicadores(expressao, resultadosIndicadores);
+
+            return SubstituirCodigos(expressao, valoresContabeis);
         }
 
         private static string ResolverExpressoesComDivisaoSegura(string expressao)
@@ -154,9 +219,12 @@ namespace Application.Helpers
         }
 
 
-        public static double ProcessarFormula(string formula, Dictionary<string, double> valores)
+        public static double ProcessarFormula(
+            string formula,
+            Dictionary<string, double> valores,
+            IReadOnlyDictionary<string, double?>? resultadosIndicadores = null)
         {
-            var expressao = SubstituirCodigos(formula, valores);
+            var expressao = SubstituirFormula(formula, valores, resultadosIndicadores);
             return AvaliarExpressao(expressao);
         }
     }

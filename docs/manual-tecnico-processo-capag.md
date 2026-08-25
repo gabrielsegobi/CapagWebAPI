@@ -249,7 +249,7 @@ Indicador ECD: **`D` = débito**, **`C` = crédito**. Armazenamento: valor sempr
 `SaldoContabilHelper`:
 
 - `SaldoAssinado` / `ValorParaFormula`: **crédito (azul na tela) → positivo**, **débito → negativo**, inclusive no Ativo. O D/C do balanço já chega invertido em relação à DRE; inverter de novo deixava `1.01.01` negativo na liquidez. Exceção: `3.01.01` e `3.01.01.*` em magnitude.
-- `Magnitude`: também no **PMP**, **Ciclo Financeiro** e na **Cobertura de Juros (ICP)** (Giro/PME/PMR ainda usam sinal C/D).
+- `Magnitude`: também no **PMP** e na **Cobertura de Juros (ICP)** (Giro/PME/PMR ainda usam sinal C/D). **Ciclo Financeiro** compõe `{@PME} + {@PMR} - {@PMP}` (tags do catálogo) com os resultados já arredondados do exercício.
 
 ROE com PL (`2.03`) ≤ 0 não calcula a razão — grava `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"` e `valor` nulo. Os demais indicadores usam o PL negativo na fórmula.
 
@@ -279,7 +279,7 @@ Comportamento extra: se a janela de cálculo inclui o ano `N−1` e **não há l
 
 `SomarPeriodosNoAno = true` soma `val_cta_ref_fin`/`ini` crus (com sinal do banco). **Não** é o caminho dos indicadores.
 
-Códigos inexistentes na fórmula viram **0** (`ExpressionHelper.SubstituirCodigos`). Divisão por zero, NaN e Infinity viram **0**.
+Códigos inexistentes na fórmula viram **0** (`ExpressionHelper.SubstituirCodigos`). Placeholders `{@TAG}` (ex.: `{@PME}`) resolvem o resultado já calculado no mesmo exercício pela `tag` de `Indicadores.json` (ausente/nulo → 0). O motor calcula primeiro fórmulas só com contas e depois as compostas. Divisão por zero, NaN e Infinity viram **0**.
 
 ---
 
@@ -408,7 +408,7 @@ Arredondamento no motor: **6 casas**. Persistência `valores_anuais.valor` é `D
 | PMP | Ciclo | `((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]})` |
 | PME | Ciclo | `({3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)) / 365` |
 | PMR | Ciclo | `((({1.01.02.02[I]} + {1.01.02.02}) / 2) * 365) / {3.01.01.01.01}` |
-| Ciclo Financeiro | Ciclo | PME + PMR − PMP (fórmula expandida no JSON) |
+| Ciclo Financeiro | Ciclo | `{@PME} + {@PMR} - {@PMP}` (tags do catálogo; composição dos resultados) |
 | NCG | Ciclo | `(({1.01} - {1.01.01}) - ({2.01} - {2.01.01.07} - {2.01.01.09.09} - {2.01.01.09.10} - {2.01.01.17.13})) / {3.01.01.01}` |
 
 `{codigo}` = magnitude do fechamento do exercício. `{codigo}[I]` = magnitude da abertura.
@@ -583,7 +583,7 @@ Views:
 
 1. **Três pipelines de demonstrativo**, um recálculo comum (indicadores → ICP).
 2. **Fórmulas em JSON**, parâmetros de scoring ICP no banco (meta, pior caso, peso).
-3. **Sinais nas fórmulas**: crédito (azul) → + e débito → − em todas as contas (Ativo incluso); `3.01.01*`, PMP, Ciclo Financeiro e CJ usam Magnitude. ROE com PL ≤ 0 → `Não Analisar: Informação Comprometida`.
+3. **Sinais nas fórmulas**: crédito (azul) → + e débito → − em todas as contas (Ativo incluso); `3.01.01*`, PMP e CJ usam Magnitude. Ciclo Financeiro = PME+PMR−PMP via `{@...}`. ROE com PL ≤ 0 → `Não Analisar: Informação Comprometida`.
 4. **PL do Simples = Ativo − Passivo**, nunca plug da DRE.
 5. **CMV: DEFIS tem prioridade** sobre estoque; CMV negativo vira 0.
 6. **Janela de 3 anos contíguos até o Max**, inventando anos zerados — média inclui zero.

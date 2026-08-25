@@ -1,5 +1,6 @@
 using Application.Services.SinalContabil;
 using Domain.Constants;
+using Domain.Contracts.Json;
 using Domain.Entities;
 
 namespace Application.Helpers
@@ -115,12 +116,19 @@ namespace Application.Helpers
         }
 
         public const string NomePmp = "Prazo Médio de Pagamento (PMP)";
+        public const string NomePme = "Prazo Médio de Estocagem (PME)";
+        public const string NomePmr = "Prazo Médio de Recebimento (PMR)";
         public const string NomeCicloFinanceiro = "Ciclo Financeiro";
         public const string NomeCoberturaJuros = "Cobertura de Juros (CJ)";
 
+        public const string TagPmp = "PMP";
+        public const string TagPme = "PME";
+        public const string TagPmr = "PMR";
+        public const string TagCicloFinanceiro = "CICLO";
+
         /// <summary>
-        /// PMP, Ciclo Financeiro e Cobertura de Juros usam magnitude (|valor|), ignorando D/C.
-        /// Ciclo usa a mesma regra do PMP para o trecho PME+PMR−PMP não divergir quando há sinal misto.
+        /// PMP e Cobertura de Juros usam magnitude (|valor|), ignorando D/C.
+        /// Ciclo Financeiro compõe PME+PMR−PMP via <c>{@PME}</c> etc. (herda a regra de cada um).
         /// Demais indicadores/ICP usam o sinal C = + / D = −.
         /// </summary>
         public static bool UsaMagnitudeAbsolutaNaFormula(string? nome)
@@ -129,8 +137,22 @@ namespace Application.Helpers
                 return false;
 
             return nome.Equals(NomePmp, StringComparison.OrdinalIgnoreCase)
-                || nome.Equals(NomeCicloFinanceiro, StringComparison.OrdinalIgnoreCase)
                 || nome.Equals(NomeCoberturaJuros, StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Indexa o resultado do exercício pela <c>tag</c> (ex.: <c>PME</c>) para
+        /// placeholders <c>{@PME}</c>. Sem tag, o indicador não entra no mapa de composição.
+        /// </summary>
+        public static void RegistrarResultadoIndicador(
+            IDictionary<string, double?> resultadosAno,
+            FormulaJson formula,
+            double? valor)
+        {
+            if (string.IsNullOrWhiteSpace(formula.Tag))
+                return;
+
+            resultadosAno[formula.Tag.Trim()] = valor;
         }
 
         public static Dictionary<string, double> ComMagnitudeTodas(Dictionary<string, double> valores) =>
