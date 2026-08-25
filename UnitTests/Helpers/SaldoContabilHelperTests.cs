@@ -54,10 +54,11 @@ namespace UnitTests.Helpers
 
         [Theory]
         [InlineData(SaldoContabilHelper.NomePmp, true)]
+        [InlineData(SaldoContabilHelper.NomeCicloFinanceiro, true)]
         [InlineData(SaldoContabilHelper.NomeCoberturaJuros, true)]
         [InlineData("Giro do Estoque", false)]
         [InlineData("Margem Líquida", false)]
-        [InlineData("Ciclo Financeiro", false)]
+        [InlineData("Prazo Médio de Recebimento (PMR)", false)]
         public void UsaMagnitudeAbsolutaNaFormula(string nome, bool esperado)
         {
             Assert.Equal(esperado, SaldoContabilHelper.UsaMagnitudeAbsolutaNaFormula(nome));
@@ -81,14 +82,15 @@ namespace UnitTests.Helpers
         }
 
         [Fact]
-        public void ValoresParaFormula_PmpUsaMagnitude_DemaisMantemSinal()
+        public void ValoresParaFormula_PmpECicloUsamMagnitude_DemaisMantemSinal()
         {
             var valores = new Dictionary<string, double>
             {
                 ["3"] = -50,
                 ["3.01.01"] = -80,
                 ["3.01.01.03"] = -12.5,
-                ["1.01.01"] = -10
+                ["1.01.01"] = -10,
+                ["2.01.01.03[I]"] = -427848.06
             };
 
             var pmp = SaldoContabilHelper.ValoresParaFormula(valores, SaldoContabilHelper.NomePmp);
@@ -96,12 +98,50 @@ namespace UnitTests.Helpers
             Assert.Equal(80, pmp["3.01.01"]);
             Assert.Equal(12.5, pmp["3.01.01.03"]);
             Assert.Equal(10, pmp["1.01.01"]);
+            Assert.Equal(427848.06, pmp["2.01.01.03[I]"]);
+
+            var ciclo = SaldoContabilHelper.ValoresParaFormula(valores, SaldoContabilHelper.NomeCicloFinanceiro);
+            Assert.Equal(50, ciclo["3"]);
+            Assert.Equal(427848.06, ciclo["2.01.01.03[I]"]);
 
             var margem = SaldoContabilHelper.ValoresParaFormula(valores, "Margem Operacional");
             Assert.Equal(-50, margem["3"]);
             Assert.Equal(-80, margem["3.01.01"]);
             Assert.Equal(-12.5, margem["3.01.01.03"]);
             Assert.Equal(-10, margem["1.01.01"]);
+            Assert.Equal(-427848.06, margem["2.01.01.03[I]"]);
+        }
+
+        [Fact]
+        public void CicloFinanceiro_ComFornecedorInicialNegativo_AlinhaComPmpEmMagnitude()
+        {
+            // Caso 2022 empresa 57: estoque zerado → PME/PMR = 0; PMP com |fornecedor|.
+            const string formulaCiclo =
+                "((({3.01.01.03} / (({1.01.03[I]} + {1.01.03}) / 2)) / 365) + (((({1.01.02.02[I]} + {1.01.02.02}) / 2) * 365) / {3.01.01.01.01})) - (((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]}))";
+            const string formulaPmp =
+                "((({2.01.01.03[I]} + {2.01.01.03}) / 2) * 365) / ({1.01.03} + {3.01.01.03} - {1.01.03[I]})";
+
+            var valores = new Dictionary<string, double>
+            {
+                ["3.01.01.03"] = 6420822.64,
+                ["1.01.03"] = 0,
+                ["1.01.03[I]"] = 0,
+                ["1.01.02.02"] = 0,
+                ["1.01.02.02[I]"] = 0,
+                ["3.01.01.01.01"] = 8829980.74,
+                ["2.01.01.03"] = 1186609.02,
+                ["2.01.01.03[I]"] = -427848.06
+            };
+
+            var pmp = ExpressionHelper.ProcessarFormula(
+                formulaPmp,
+                SaldoContabilHelper.ValoresParaFormula(valores, SaldoContabilHelper.NomePmp));
+            var ciclo = ExpressionHelper.ProcessarFormula(
+                formulaCiclo,
+                SaldoContabilHelper.ValoresParaFormula(valores, SaldoContabilHelper.NomeCicloFinanceiro));
+
+            Assert.Equal(45.887954, Math.Round(pmp, 6));
+            Assert.Equal(Math.Round(-pmp, 6), Math.Round(ciclo, 6));
         }
 
         [Fact]

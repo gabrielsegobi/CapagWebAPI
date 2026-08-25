@@ -209,7 +209,7 @@ O Capag usa `GetDClByAnoAndCodigoHandler` (`Ano=true`, sem `SomarPeriodosNoAno`)
 | **BP trimestral** | Fechamento = `T04` via `ValorParaFormula`; `[I]` = mesmo do `T04` do ano anterior |
 | **BP anual** | Fechamento/`[I]` do `A00` via `ValorParaFormula` |
 
-**Regra das fórmulas:** igual ao plano de contas — **crédito (azul) → positivo**, **débito → negativo**. Não inverter o Ativo de novo (o D/C do balanço já vem invertido em relação à DRE). Exceção: `3.01.01` e filhos em magnitude. PMP/Giro/PME/Ciclo e Cobertura de Juros (ICP) usam magnitude em todos os códigos da equação. **ROE** com PL (`2.03`) ≤ 0: `valor` nulo e `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"`. Demais indicadores calculam com o PL negativo.
+**Regra das fórmulas:** igual ao plano de contas — **crédito (azul) → positivo**, **débito → negativo**. Não inverter o Ativo de novo (o D/C do balanço já vem invertido em relação à DRE). Exceção: `3.01.01` e filhos em magnitude. **PMP**, **Ciclo Financeiro** e Cobertura de Juros (ICP) usam magnitude em todos os códigos da equação. **ROE** com PL (`2.03`) ≤ 0: `valor` nulo e `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"`. Demais indicadores calculam com o PL negativo.
 
 **Exemplo — código `3.01.01` (Resultado Operacional / EBIT), sempre magnitude:**
 

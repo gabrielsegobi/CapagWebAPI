@@ -115,10 +115,12 @@ namespace Application.Helpers
         }
 
         public const string NomePmp = "Prazo Médio de Pagamento (PMP)";
+        public const string NomeCicloFinanceiro = "Ciclo Financeiro";
         public const string NomeCoberturaJuros = "Cobertura de Juros (CJ)";
 
         /// <summary>
-        /// PMP e Cobertura de Juros usam magnitude (|valor|), ignorando D/C.
+        /// PMP, Ciclo Financeiro e Cobertura de Juros usam magnitude (|valor|), ignorando D/C.
+        /// Ciclo usa a mesma regra do PMP para o trecho PME+PMR−PMP não divergir quando há sinal misto.
         /// Demais indicadores/ICP usam o sinal C = + / D = −.
         /// </summary>
         public static bool UsaMagnitudeAbsolutaNaFormula(string? nome)
@@ -127,6 +129,7 @@ namespace Application.Helpers
                 return false;
 
             return nome.Equals(NomePmp, StringComparison.OrdinalIgnoreCase)
+                || nome.Equals(NomeCicloFinanceiro, StringComparison.OrdinalIgnoreCase)
                 || nome.Equals(NomeCoberturaJuros, StringComparison.OrdinalIgnoreCase);
         }
 

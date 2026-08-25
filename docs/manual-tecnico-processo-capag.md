@@ -249,7 +249,7 @@ Indicador ECD: **`D` = débito**, **`C` = crédito**. Armazenamento: valor sempr
 `SaldoContabilHelper`:
 
 - `SaldoAssinado` / `ValorParaFormula`: **crédito (azul na tela) → positivo**, **débito → negativo**, inclusive no Ativo. O D/C do balanço já chega invertido em relação à DRE; inverter de novo deixava `1.01.01` negativo na liquidez. Exceção: `3.01.01` e `3.01.01.*` em magnitude.
-- `Magnitude`: também no **PMP** (Giro/PME/Ciclo) e na **Cobertura de Juros (ICP)**.
+- `Magnitude`: também no **PMP**, **Ciclo Financeiro** e na **Cobertura de Juros (ICP)** (Giro/PME/PMR ainda usam sinal C/D).
 
 ROE com PL (`2.03`) ≤ 0 não calcula a razão — grava `alerta`/`mensagem` = `"Não Analisar: Informação Comprometida"` e `valor` nulo. Os demais indicadores usam o PL negativo na fórmula.
 
@@ -583,7 +583,7 @@ Views:
 
 1. **Três pipelines de demonstrativo**, um recálculo comum (indicadores → ICP).
 2. **Fórmulas em JSON**, parâmetros de scoring ICP no banco (meta, pior caso, peso).
-3. **Sinais nas fórmulas**: crédito (azul) → + e débito → − em todas as contas (Ativo incluso); `3.01.01*` e PMP/CJ usam Magnitude. ROE com PL ≤ 0 → `Não Analisar: Informação Comprometida`.
+3. **Sinais nas fórmulas**: crédito (azul) → + e débito → − em todas as contas (Ativo incluso); `3.01.01*`, PMP, Ciclo Financeiro e CJ usam Magnitude. ROE com PL ≤ 0 → `Não Analisar: Informação Comprometida`.
 4. **PL do Simples = Ativo − Passivo**, nunca plug da DRE.
 5. **CMV: DEFIS tem prioridade** sobre estoque; CMV negativo vira 0.
 6. **Janela de 3 anos contíguos até o Max**, inventando anos zerados — média inclui zero.
