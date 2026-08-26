@@ -42,8 +42,9 @@ namespace WebAPI.Controllers
         }
 
         /// <summary>
-        /// Retorna a distribuição de ratings por mês no intervalo informado.
+        /// Retorna a distribuição de ratings por mês (com/sem impedimento) e totais somados.
         /// Parâmetros mesDe e mesAte no formato MM/yyyy (ex: 02/2026).
+        /// Impedimento é situação da empresa: não substitui a letra do rating.
         /// </summary>
         [HttpGet("rating")]
         public async Task<IActionResult> GetRating(

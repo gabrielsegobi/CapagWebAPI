@@ -2,11 +2,17 @@ using System.Text.Json.Serialization;
 
 namespace Domain.Contracts.Carteira
 {
-    public class CarteiraRatingMesDto
+    public class CarteiraRatingDto
     {
-        [JsonPropertyName("mes")]
-        public string Mes { get; set; } = string.Empty;
+        [JsonPropertyName("meses")]
+        public List<CarteiraRatingMesDto> Meses { get; set; } = [];
 
+        [JsonPropertyName("totais")]
+        public CarteiraRatingTotaisDto Totais { get; set; } = new();
+    }
+
+    public class CarteiraRatingTotaisDto
+    {
         [JsonPropertyName("com_impedimento")]
         public CarteiraRatingContagemDto ComImpedimento { get; set; } = new();
 

@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Queries.Carteira
 {
-    public class GetCarteiraRatingQuery : IRequest<List<CarteiraRatingMesDto>>
+    public class GetCarteiraRatingQuery : IRequest<CarteiraRatingDto>
     {
         /// <summary>Mês inicial no formato MM/yyyy (ex: 02/2026). Opcional.</summary>
         public string? MesDe { get; set; }

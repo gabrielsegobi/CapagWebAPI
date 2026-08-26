@@ -32,7 +32,7 @@ namespace UnitTests.Carteira
         }
 
         [Fact]
-        public async Task Handle_retorna_lista_vazia_quando_nao_ha_calculos()
+        public async Task Handle_retorna_estrutura_vazia_quando_nao_ha_calculos()
         {
             SetupCapag(Enumerable.Empty<CapagCalculadoraResultado>().AsQueryable());
             SetupEmpresas(Enumerable.Empty<Empresa>().AsQueryable());
@@ -40,11 +40,14 @@ namespace UnitTests.Carteira
             var handler = BuildHandler();
             var result = await handler.Handle(new GetCarteiraRatingQuery(), CancellationToken.None);
 
-            result.Should().BeEmpty();
+            result.Meses.Should().BeEmpty();
+            result.Totais.TotalAnalisado.Should().Be(0);
+            result.Totais.ComImpedimento.Total.Should().Be(0);
+            result.Totais.SemImpedimento.Total.Should().Be(0);
         }
 
         [Fact]
-        public async Task Handle_agrupa_ratings_por_mes_corretamente()
+        public async Task Handle_agrupa_ratings_por_mes_em_sem_impedimento()
         {
             var ratings = new List<CapagCalculadoraResultado>
             {
@@ -63,29 +66,39 @@ namespace UnitTests.Carteira
                 MesAte = "03/2026"
             }, CancellationToken.None);
 
-            result.Should().HaveCount(2);
+            result.Meses.Should().HaveCount(2);
 
-            var fev = result.Single(r => r.Mes == "02/2026");
-            fev.A.Should().Be(1);
-            fev.B.Should().Be(1);
+            var fev = result.Meses.Single(r => r.Mes == "02/2026");
+            fev.SemImpedimento.A.Should().Be(1);
+            fev.SemImpedimento.B.Should().Be(1);
+            fev.SemImpedimento.Total.Should().Be(2);
+            fev.ComImpedimento.Total.Should().Be(0);
             fev.TotalAnalisado.Should().Be(2);
 
-            var mar = result.Single(r => r.Mes == "03/2026");
-            mar.C.Should().Be(1);
+            var mar = result.Meses.Single(r => r.Mes == "03/2026");
+            mar.SemImpedimento.C.Should().Be(1);
             mar.TotalAnalisado.Should().Be(1);
+
+            result.Totais.SemImpedimento.A.Should().Be(1);
+            result.Totais.SemImpedimento.B.Should().Be(1);
+            result.Totais.SemImpedimento.C.Should().Be(1);
+            result.Totais.SemImpedimento.Total.Should().Be(3);
+            result.Totais.TotalAnalisado.Should().Be(3);
         }
 
         [Fact]
-        public async Task Handle_conta_empresa_impedida_em_bucket_impedimento_nao_em_letra()
+        public async Task Handle_empresa_impedida_mantem_letra_no_bucket_com_impedimento()
         {
             var ratings = new List<CapagCalculadoraResultado>
             {
-                new() { IdEmpresa = 10, Parcial = false, Classificacao = "A", DateUpdate = new DateTime(2026, 4, 1) }
+                new() { IdEmpresa = 10, Parcial = false, Classificacao = "A", DateUpdate = new DateTime(2026, 4, 1) },
+                new() { IdEmpresa = 11, Parcial = false, Classificacao = "B", DateUpdate = new DateTime(2026, 4, 2) }
             }.AsQueryable();
 
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 10, DataImpedimento = new DateTime(2026, 3, 1) }
+                new() { IdEmpresa = 10, DataImpedimento = new DateTime(2026, 3, 1) },
+                new() { IdEmpresa = 11, DataImpedimento = null }
             }.AsQueryable();
 
             SetupCapag(ratings);
@@ -98,10 +111,16 @@ namespace UnitTests.Carteira
                 MesAte = "04/2026"
             }, CancellationToken.None);
 
-            var abril = result.Single(r => r.Mes == "04/2026");
-            abril.Impedimento.Should().Be(1);
-            abril.A.Should().Be(0);
-            abril.TotalAnalisado.Should().Be(1);
+            var abril = result.Meses.Single(r => r.Mes == "04/2026");
+            abril.ComImpedimento.A.Should().Be(1);
+            abril.ComImpedimento.Total.Should().Be(1);
+            abril.SemImpedimento.B.Should().Be(1);
+            abril.SemImpedimento.Total.Should().Be(1);
+            abril.TotalAnalisado.Should().Be(2);
+
+            result.Totais.ComImpedimento.A.Should().Be(1);
+            result.Totais.SemImpedimento.B.Should().Be(1);
+            result.Totais.TotalAnalisado.Should().Be(2);
         }
 
         [Fact]
@@ -123,8 +142,9 @@ namespace UnitTests.Carteira
                 MesAte = "03/2026"
             }, CancellationToken.None);
 
-            result.Should().HaveCount(3);
-            result.Single(r => r.Mes == "02/2026").TotalAnalisado.Should().Be(0);
+            result.Meses.Should().HaveCount(3);
+            result.Meses.Single(r => r.Mes == "02/2026").TotalAnalisado.Should().Be(0);
+            result.Totais.TotalAnalisado.Should().Be(2);
         }
     }
 }

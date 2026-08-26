@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Handlers.Carteira
 {
-    public class GetCarteiraRatingHandler : IRequestHandler<GetCarteiraRatingQuery, List<CarteiraRatingMesDto>>
+    public class GetCarteiraRatingHandler : IRequestHandler<GetCarteiraRatingQuery, CarteiraRatingDto>
     {
         private readonly IBaseRepository<CapagCalculadoraResultado> _capagRepository;
         private readonly IBaseRepository<Empresa> _empresaRepository;
@@ -20,11 +20,11 @@ namespace Application.Handlers.Carteira
             _empresaRepository = empresaRepository;
         }
 
-        public async Task<List<CarteiraRatingMesDto>> Handle(
+        public async Task<CarteiraRatingDto> Handle(
             GetCarteiraRatingQuery request,
             CancellationToken cancellationToken)
         {
-            // Carrega o rating mais recente concluído por empresa
+            // Rating mais recente concluído por empresa (histórico permanece na tabela)
             var ratings = await _capagRepository
                 .Query(r => !r.Parcial)
                 .GroupBy(r => r.IdEmpresa)
@@ -37,9 +37,8 @@ namespace Application.Handlers.Carteira
                 .ToListAsync(cancellationToken);
 
             if (ratings.Count == 0)
-                return [];
+                return new CarteiraRatingDto();
 
-            // Carrega DataImpedimento das empresas envolvidas
             var ids = ratings.Select(r => r.IdEmpresa).Distinct().ToList();
             var empresas = await _empresaRepository
                 .Query(e => ids.Contains(e.IdEmpresa))
@@ -48,62 +47,55 @@ namespace Application.Handlers.Carteira
 
             var impedimentoLookup = empresas.ToDictionary(e => e.IdEmpresa, e => e.DataImpedimento);
 
-            // Determina intervalo de meses
             var datas = ratings.Select(r => new DateOnly(r.DataCalculo.Year, r.DataCalculo.Month, 1)).ToList();
-
-            var minExistente = datas.Min();
-            var maxExistente = datas.Max();
-
-            var inicio = ParseMes(request.MesDe) ?? minExistente;
-            var fim = ParseMes(request.MesAte) ?? maxExistente;
+            var inicio = ParseMes(request.MesDe) ?? datas.Min();
+            var fim = ParseMes(request.MesAte) ?? datas.Max();
 
             if (inicio > fim) (inicio, fim) = (fim, inicio);
 
-            // Agrupa ratings por mês
-            var resultado = new List<CarteiraRatingMesDto>();
+            var meses = new List<CarteiraRatingMesDto>();
             var atual = inicio;
 
             while (atual <= fim)
             {
-                var mesStr = atual.ToString("MM/yyyy");
-
-                // Para cada empresa, pega o rating cujo mês de data_calculo é o mês corrente
                 var doMes = ratings
                     .Where(r => r.DataCalculo.Year == atual.Year && r.DataCalculo.Month == atual.Month)
                     .ToList();
 
-                int a = 0, b = 0, c = 0, d = 0, imp = 0;
+                var comImpedimento = CarteiraRatingContagemDto.Empty();
+                var semImpedimento = CarteiraRatingContagemDto.Empty();
 
                 foreach (var r in doMes)
                 {
                     impedimentoLookup.TryGetValue(r.IdEmpresa, out var dataImp);
-                    if (dataImp.HasValue)
-                        imp++;
-                    else
-                        switch (r.Classificacao.ToUpperInvariant())
-                        {
-                            case "A": a++; break;
-                            case "B": b++; break;
-                            case "C": c++; break;
-                            case "D": d++; break;
-                        }
+                    var bucket = dataImp.HasValue ? comImpedimento : semImpedimento;
+                    bucket.Incrementar(r.Classificacao);
                 }
 
-                resultado.Add(new CarteiraRatingMesDto
+                meses.Add(new CarteiraRatingMesDto
                 {
-                    Mes = mesStr,
-                    A = a,
-                    B = b,
-                    C = c,
-                    D = d,
-                    Impedimento = imp,
-                    TotalAnalisado = a + b + c + d + imp
+                    Mes = atual.ToString("MM/yyyy"),
+                    ComImpedimento = comImpedimento,
+                    SemImpedimento = semImpedimento,
+                    TotalAnalisado = comImpedimento.Total + semImpedimento.Total
                 });
 
                 atual = atual.AddMonths(1);
             }
 
-            return resultado;
+            var totaisCom = CarteiraRatingContagemDto.Somar(meses.Select(m => m.ComImpedimento));
+            var totaisSem = CarteiraRatingContagemDto.Somar(meses.Select(m => m.SemImpedimento));
+
+            return new CarteiraRatingDto
+            {
+                Meses = meses,
+                Totais = new CarteiraRatingTotaisDto
+                {
+                    ComImpedimento = totaisCom,
+                    SemImpedimento = totaisSem,
+                    TotalAnalisado = totaisCom.Total + totaisSem.Total
+                }
+            };
         }
 
         private static DateOnly? ParseMes(string? valor)
