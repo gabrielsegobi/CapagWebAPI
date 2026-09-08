@@ -44,9 +44,10 @@ namespace UnitTests.Carteira
         [Fact]
         public async Task Handle_retorna_lista_paginada_com_status_bloqueio_calculado()
         {
+            var protocolo = new DateTime(2026, 3, 15);
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 1, RazaoSocial = "Alpha", Cnpj = "00000000000001", DataImpedimento = null },
+                new() { IdEmpresa = 1, RazaoSocial = "Alpha", Cnpj = "00000000000001", DataImpedimento = null, DataProtocolo = protocolo },
                 new() { IdEmpresa = 2, RazaoSocial = "Beta",  Cnpj = "00000000000002", DataImpedimento = DateTime.Today }
             }.AsQueryable();
 
@@ -59,7 +60,9 @@ namespace UnitTests.Carteira
             result.Data.Should().HaveCount(2);
             result.Paging.Total.Should().Be(2);
             result.Data.First(d => d.IdEmpresa == 1).StatusBloqueio.Should().Be("liberado");
+            result.Data.First(d => d.IdEmpresa == 1).DataProtocolo.Should().Be(protocolo);
             result.Data.First(d => d.IdEmpresa == 2).StatusBloqueio.Should().Be("bloqueado");
+            result.Data.First(d => d.IdEmpresa == 2).DataProtocolo.Should().BeNull();
         }
 
         [Fact]

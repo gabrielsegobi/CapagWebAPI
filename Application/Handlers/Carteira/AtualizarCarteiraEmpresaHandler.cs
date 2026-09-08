@@ -25,6 +25,7 @@ namespace Application.Handlers.Carteira
             empresa.Status = request.Request.Status;
             empresa.ValorContrato = request.Request.ValorContrato;
             empresa.DataImpedimento = request.Request.DataImpedimento;
+            empresa.DataProtocolo = request.Request.DataProtocolo;
             empresa.UpdatedAt = DateTimeHelper.GetDateTimeNow();
 
             _empresaRepository.Update(empresa);

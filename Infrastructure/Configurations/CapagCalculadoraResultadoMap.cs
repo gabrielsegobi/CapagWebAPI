@@ -8,7 +8,7 @@ namespace Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<CapagCalculadoraResultado> builder)
         {
-            builder.ToTable("capag_calculadora_resultado");
+            builder.ToTable("calculadora_resultado");
             builder.HasKey(e => e.Id);
 
             builder.Property(e => e.Id)

@@ -41,6 +41,8 @@ namespace Domain.Contracts.Empresas
         public string Porte { get; set; } = string.Empty;
         [JsonPropertyName("data_impedimento")]
         public DateTime? DataImpedimento { get; set; }
+        [JsonPropertyName("data_protocolo")]
+        public DateTime? DataProtocolo { get; set; }
         [JsonPropertyName("id_usuario_responsavel")]
         public long? IdUsuarioResponsavel { get; set; }
     }

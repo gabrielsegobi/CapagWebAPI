@@ -22,6 +22,9 @@ namespace Domain.Contracts.Carteira
         [JsonPropertyName("data_impedimento")]
         public DateTime? DataImpedimento { get; set; }
 
+        [JsonPropertyName("data_protocolo")]
+        public DateTime? DataProtocolo { get; set; }
+
         [JsonPropertyName("status_bloqueio")]
         public string StatusBloqueio { get; set; } = string.Empty;
 

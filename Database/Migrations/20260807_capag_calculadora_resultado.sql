@@ -1,6 +1,6 @@
 -- Histórico das análises da calculadora CAPAG (seletor de modelos)
 
-CREATE TABLE IF NOT EXISTS `capag_calculadora_resultado` (
+CREATE TABLE IF NOT EXISTS `calculadora_resultado` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `id_tenant` BIGINT UNSIGNED NOT NULL COMMENT 'Chave de isolamento.',
   `id_empresa` BIGINT UNSIGNED NOT NULL,
@@ -18,20 +18,20 @@ CREATE TABLE IF NOT EXISTS `capag_calculadora_resultado` (
   `id_usuario` BIGINT NULL COMMENT 'Usuário Capag que criou/atualizou',
 
   PRIMARY KEY (`id`),
-  KEY `idx_capag_calculadora_resultado_tenant` (`id_tenant`),
-  KEY `idx_capag_calculadora_resultado_empresa` (`id_empresa`),
-  KEY `idx_capag_calculadora_resultado_empresa_modelo_data` (`id_empresa`, `modelo`, `date_create`),
-  KEY `idx_capag_calculadora_resultado_usuario` (`id_usuario`),
+  KEY `idx_calculadora_resultado_tenant` (`id_tenant`),
+  KEY `idx_calculadora_resultado_empresa` (`id_empresa`),
+  KEY `idx_calculadora_resultado_empresa_modelo_data` (`id_empresa`, `modelo`, `date_create`),
+  KEY `idx_calculadora_resultado_usuario` (`id_usuario`),
 
-  CONSTRAINT `fk_capag_calculadora_resultado_tenant`
+  CONSTRAINT `fk_calculadora_resultado_tenant`
     FOREIGN KEY (`id_tenant`) REFERENCES `tenants` (`id_tenant`)
     ON DELETE RESTRICT ON UPDATE RESTRICT,
 
-  CONSTRAINT `fk_capag_calculadora_resultado_empresa`
+  CONSTRAINT `fk_calculadora_resultado_empresa`
     FOREIGN KEY (`id_empresa`) REFERENCES `empresas` (`id_empresa`)
     ON DELETE RESTRICT ON UPDATE CASCADE,
 
-  CONSTRAINT `chk_capag_calculadora_resultado_classificacao`
+  CONSTRAINT `chk_calculadora_resultado_classificacao`
     CHECK (`classificacao` IN ('A', 'B', 'C', 'D'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   COMMENT='Histórico das análises da calculadora CAPAG (um registro por cálculo)';

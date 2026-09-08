@@ -27,7 +27,7 @@ namespace WebAPI.Controllers
         }
 
         /// <summary>
-        /// Atualiza status comercial, valor de contrato e data de impedimento de uma empresa.
+        /// Atualiza status comercial, valor de contrato, data de impedimento e data de protocolo de uma empresa.
         /// </summary>
         [HttpPut("empresas/{id:long}")]
         [Authorize(Roles = "Admin,editor")]

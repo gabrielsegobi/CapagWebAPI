@@ -24,6 +24,8 @@ namespace Domain.Contracts.Empresas
         public string MunicipioEstado { get; set; } = string.Empty;
         [JsonPropertyName("data_abertura")]
         public DateTime? DataAbertura { get; set; }
+        [JsonPropertyName("data_protocolo")]
+        public DateTime? DataProtocolo { get; set; }
         [JsonPropertyName("capital_social")]
         public string CapitalSocial { get; set; } = string.Empty;
         [JsonPropertyName("segmento")]

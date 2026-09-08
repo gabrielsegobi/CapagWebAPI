@@ -1,6 +1,5 @@
--- Wipe amplo dos dados da empresa (cálculos + simulação/ICP anterior/débitos).
--- Preserva: cadastro da empresa, regs fiscais (reg_*) e ECF (operation/ecf_*).
--- Preferível executar com a API parada (ou sem job em andamento para a empresa).
+-- Recria sp_clear_empresa_full após rename capag_calculadora_resultado → calculadora_resultado.
+-- Também passa a limpar fco_parametro_empresa.
 
 DROP PROCEDURE IF EXISTS `gsaas`.`sp_clear_empresa_full`;
 

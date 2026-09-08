@@ -166,6 +166,7 @@ namespace Application.Handlers.Carteira
                     Status = e.Status,
                     ValorContrato = e.ValorContrato,
                     DataImpedimento = e.DataImpedimento,
+                    DataProtocolo = e.DataProtocolo,
                     StatusBloqueio = e.DataImpedimento.HasValue ? "bloqueado" : "liberado",
                     RatingCapag = rating?.Classificacao?.Trim(),
                     UltimoAnoEcf = ano == 0 ? null : ano,

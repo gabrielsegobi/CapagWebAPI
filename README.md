@@ -6,3 +6,4 @@
 - [Balanço Patrimonial — guia para o frontend](docs/integracao-frontend-balanco.md)
 - [Indicadores — guia para o frontend](docs/integracao-frontend-indicadores.md)
 - [Capag Simples Nacional — paths e contrato (apiCapag)](docs/capag-simples-nacional.md)
+- [Capag FCO — parâmetros por empresa](docs/capag-fco-parametros.md)

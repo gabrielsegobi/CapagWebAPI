@@ -33,6 +33,7 @@ namespace Infrastructure.Configurations
             builder.Property(e => e.Segmento).HasColumnName("segmento").HasColumnType("VARCHAR(100)").IsRequired();
             builder.Property(e => e.Porte).HasColumnName("porte").HasColumnType("VARCHAR(30)").IsRequired();
             builder.Property(e => e.DataImpedimento).HasColumnName("data_impedimento").HasColumnType("TIMESTAMP");
+            builder.Property(e => e.DataProtocolo).HasColumnName("data_protocolo").HasColumnType("DATE");
             builder.Property(e => e.Status).HasColumnName("status").HasColumnType("VARCHAR(30)");
             builder.Property(e => e.ValorContrato).HasColumnName("valor_contrato").HasColumnType("DECIMAL(20,2)");
             builder.Property(e => e.IdUsuarioResponsavel).HasColumnName("id_usuario_responsavel").HasColumnType("BIGINT");
