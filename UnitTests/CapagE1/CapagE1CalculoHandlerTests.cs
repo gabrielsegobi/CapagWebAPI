@@ -222,5 +222,15 @@ namespace UnitTests.CapagE1
             linha["valoresSinalInvertido"]!["2023"]!.GetValue<bool>().Should().BeTrue();
             linha["justificativa"]!.GetValue<string>().Should().Be("x");
         }
+
+        [Theory]
+        [InlineData("/api/capag-e1/calculo", "capag-e-1")]
+        [InlineData("/api/capag-e2/calculo", "capag-e-2")]
+        [InlineData("/api/capag-e2/calculo/99", "capag-e-2")]
+        [InlineData(null, "capag-e-1")]
+        public void ModeloDaRota_segue_o_path(string? path, string expected)
+        {
+            CapagE1CalculoHelper.ModeloDaRota(path).Should().Be(expected);
+        }
     }
 }

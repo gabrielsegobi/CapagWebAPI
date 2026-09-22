@@ -58,5 +58,53 @@ namespace WebAPI.Controllers
             });
             return Ok(response);
         }
+
+        [HttpPatch("{empresaId:long}/contas/{codigoConta}/acao")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> PatchAcao(
+            long empresaId,
+            string codigoConta,
+            [FromBody] PatchAcaoPrlARequest request)
+        {
+            var response = await mediator.Send(new PatchAcaoPrlACommand
+            {
+                EmpresaId = empresaId,
+                CodigoConta = Uri.UnescapeDataString(codigoConta),
+                Request = request
+            });
+            return Ok(response);
+        }
+
+        [HttpPatch("{empresaId:long}/contas/{codigoConta}/justificativa")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> PatchJustificativa(
+            long empresaId,
+            string codigoConta,
+            [FromBody] PatchJustificativaPrlARequest request)
+        {
+            var response = await mediator.Send(new PatchJustificativaPrlACommand
+            {
+                EmpresaId = empresaId,
+                CodigoConta = Uri.UnescapeDataString(codigoConta),
+                Request = request
+            });
+            return Ok(response);
+        }
+
+        [HttpPatch("{empresaId:long}/contas/{codigoConta}/saldo")]
+        [Authorize(Roles = "Admin,editor")]
+        public async Task<IActionResult> PatchSaldo(
+            long empresaId,
+            string codigoConta,
+            [FromBody] PatchSaldoPrlARequest request)
+        {
+            var response = await mediator.Send(new PatchSaldoPrlACommand
+            {
+                EmpresaId = empresaId,
+                CodigoConta = Uri.UnescapeDataString(codigoConta),
+                Request = request
+            });
+            return Ok(response);
+        }
     }
 }

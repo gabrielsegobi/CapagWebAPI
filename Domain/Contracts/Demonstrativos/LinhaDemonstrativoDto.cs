@@ -29,6 +29,15 @@ namespace Domain.Contracts.Demonstrativos
         [JsonPropertyName("excluida")]
         public bool Excluida { get; set; }
 
+        [JsonPropertyName("is_manual")]
+        public bool IsManual { get; set; }
+
+        [JsonPropertyName("justificativa")]
+        public string? Justificativa { get; set; }
+
+        [JsonPropertyName("valores_sinal_invertido")]
+        public Dictionary<int, bool> ValoresSinalInvertido { get; set; } = new();
+
         [JsonPropertyName("valores")]
         public ValoresAnuaisDto Valores { get; set; } = new();
 

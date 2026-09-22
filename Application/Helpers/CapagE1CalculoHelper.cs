@@ -28,6 +28,19 @@ namespace Application.Helpers
             return CapagCalculadoraModelos.Todos.Contains(value);
         }
 
+        /// <summary>
+        /// /api/capag-e2/calculo → capag-e-2; /api/capag-e1/calculo → capag-e-1.
+        /// Garante snapshots distintos (unique id_empresa + modelo) nas duas rotas.
+        /// </summary>
+        public static string ModeloDaRota(string? path)
+        {
+            if (!string.IsNullOrEmpty(path)
+                && path.Contains("/capag-e2/", StringComparison.OrdinalIgnoreCase))
+                return CapagCalculadoraModelos.CapagE2;
+
+            return CapagCalculadoraModelos.CapagE1;
+        }
+
         public static string SerializePayload(CapagE1CalculoPayload payload) =>
             JsonSerializer.Serialize(payload, JsonOptions);
 

@@ -16,6 +16,9 @@ namespace Application.Services.PrlA
         Task<PrlAResultadoDto> ObterAsync(long empresaId, int? ano, CancellationToken cancellationToken = default);
         Task<PatchPrlAResponse> AlterarBlocoAsync(long empresaId, string codigoConta, BlocoLiquidez bloco, string atualizadoPor, CancellationToken cancellationToken = default);
         Task<PatchPrlAResponse> AlterarDesagioAsync(long empresaId, string codigoConta, decimal percentualDesagio, string atualizadoPor, CancellationToken cancellationToken = default);
+        Task<PatchPrlAResponse> AlterarAcaoAsync(long empresaId, string codigoConta, string acao, string? justificativa, string atualizadoPor, CancellationToken cancellationToken = default);
+        Task<PatchPrlAResponse> AlterarJustificativaAsync(long empresaId, string codigoConta, string? justificativa, string atualizadoPor, CancellationToken cancellationToken = default);
+        Task<PatchPrlAResponse> AlterarSaldoAsync(long empresaId, string codigoConta, decimal? saldo, string atualizadoPor, CancellationToken cancellationToken = default);
         decimal CalcularPassivoTotalAjustado(IEnumerable<ContaPrlADto> contas);
     }
 
@@ -24,17 +27,20 @@ namespace Application.Services.PrlA
         private readonly DemonstrativoLeituraService _leitura;
         private readonly IBaseRepository<ContaBlocoOverride> _blocoRepository;
         private readonly IBaseRepository<ContaDesagioOverride> _desagioRepository;
+        private readonly IBaseRepository<ContaPrlAAjuste> _ajusteRepository;
         private readonly ICurrentUserService _currentUser;
 
         public PrlAService(
             DemonstrativoLeituraService leitura,
             IBaseRepository<ContaBlocoOverride> blocoRepository,
             IBaseRepository<ContaDesagioOverride> desagioRepository,
+            IBaseRepository<ContaPrlAAjuste> ajusteRepository,
             ICurrentUserService currentUser)
         {
             _leitura = leitura;
             _blocoRepository = blocoRepository;
             _desagioRepository = desagioRepository;
+            _ajusteRepository = ajusteRepository;
             _currentUser = currentUser;
         }
 
@@ -138,13 +144,68 @@ namespace Application.Services.PrlA
             return await MontarPatchResponse(empresaId, codigo, cancellationToken);
         }
 
+        public async Task<PatchPrlAResponse> AlterarAcaoAsync(
+            long empresaId,
+            string codigoConta,
+            string acao,
+            string? justificativa,
+            string atualizadoPor,
+            CancellationToken cancellationToken = default)
+        {
+            var ajuste = await ObterOuCriarAjuste(empresaId, codigoConta, atualizadoPor);
+            ajuste.Acao = acao.Trim().ToLowerInvariant();
+            if (justificativa != null || acao == PrlAConstants.AcaoExcluir)
+                ajuste.Justificativa = justificativa;
+            ajuste.AtualizadoEm = DateTimeHelper.GetDateTimeNow();
+            ajuste.AtualizadoPor = atualizadoPor;
+
+            await PersistirAjuste(ajuste);
+            return await MontarPatchResponse(empresaId, ajuste.CodigoConta, cancellationToken);
+        }
+
+        public async Task<PatchPrlAResponse> AlterarJustificativaAsync(
+            long empresaId,
+            string codigoConta,
+            string? justificativa,
+            string atualizadoPor,
+            CancellationToken cancellationToken = default)
+        {
+            var ajuste = await ObterOuCriarAjuste(empresaId, codigoConta, atualizadoPor);
+            ajuste.Justificativa = justificativa;
+            ajuste.AtualizadoEm = DateTimeHelper.GetDateTimeNow();
+            ajuste.AtualizadoPor = atualizadoPor;
+
+            await PersistirAjuste(ajuste);
+            return await MontarPatchResponse(empresaId, ajuste.CodigoConta, cancellationToken);
+        }
+
+        public async Task<PatchPrlAResponse> AlterarSaldoAsync(
+            long empresaId,
+            string codigoConta,
+            decimal? saldo,
+            string atualizadoPor,
+            CancellationToken cancellationToken = default)
+        {
+            var ajuste = await ObterOuCriarAjuste(empresaId, codigoConta, atualizadoPor);
+            ajuste.SaldoManual = saldo;
+            ajuste.AtualizadoEm = DateTimeHelper.GetDateTimeNow();
+            ajuste.AtualizadoPor = atualizadoPor;
+
+            await PersistirAjuste(ajuste);
+            return await MontarPatchResponse(empresaId, ajuste.CodigoConta, cancellationToken);
+        }
+
         public decimal CalcularPassivoTotalAjustado(IEnumerable<ContaPrlADto> contas)
         {
             return contas.Sum(c => c.SaldoAjustado ?? c.SaldoOriginal);
         }
 
         public static IEnumerable<ContaPrlADto> FiltrarComValor(IEnumerable<ContaPrlADto> contas) =>
-            contas.Where(c => c.SaldoNormalizado != 0);
+            contas.Where(c =>
+                c.SaldoNormalizado != 0
+                || !string.IsNullOrWhiteSpace(c.Acao)
+                || c.SaldoManual.HasValue
+                || !string.IsNullOrWhiteSpace(c.Justificativa));
 
         public static BlocoLiquidez ResolverBlocoOriginal(string codigo)
         {
@@ -158,6 +219,32 @@ namespace Application.Services.PrlA
                 return BlocoLiquidez.B;
 
             return BlocoLiquidez.C;
+        }
+
+        private async Task<ContaPrlAAjuste> ObterOuCriarAjuste(long empresaId, string codigoConta, string atualizadoPor)
+        {
+            var codigo = SaldoContabilHelper.NormalizarCodigo(codigoConta);
+            var existente = await _ajusteRepository.GetFirstOrDefaultAsync(x =>
+                x.EmpresaId == empresaId && x.CodigoConta == codigo);
+
+            return existente ?? new ContaPrlAAjuste
+            {
+                EmpresaId = empresaId,
+                IdTenant = _currentUser.TenantId ?? 0,
+                CodigoConta = codigo,
+                AtualizadoEm = DateTimeHelper.GetDateTimeNow(),
+                AtualizadoPor = atualizadoPor
+            };
+        }
+
+        private async Task PersistirAjuste(ContaPrlAAjuste ajuste)
+        {
+            if (ajuste.Id == 0)
+                await _ajusteRepository.AddAsync(ajuste);
+            else
+                _ajusteRepository.Update(ajuste);
+
+            await _ajusteRepository.SaveChangesAsync();
         }
 
         private async Task<PatchPrlAResponse> MontarPatchResponse(long empresaId, string codigo, CancellationToken cancellationToken)
@@ -192,8 +279,13 @@ namespace Application.Services.PrlA
                 .Query(x => x.EmpresaId == empresaId)
                 .ToListAsync(cancellationToken);
 
+            var ajustes = await _ajusteRepository
+                .Query(x => x.EmpresaId == empresaId)
+                .ToListAsync(cancellationToken);
+
             var blocoPorCodigo = blocos.ToDictionary(x => x.CodigoConta, StringComparer.Ordinal);
             var desagioPorCodigo = desagios.ToDictionary(x => x.CodigoConta, StringComparer.Ordinal);
+            var ajustePorCodigo = ajustes.ToDictionary(x => x.CodigoConta, StringComparer.Ordinal);
 
             var contas = new List<ContaPrlADto>();
             foreach (var saldo in balanco)
@@ -202,6 +294,7 @@ namespace Application.Services.PrlA
                 var blocoOriginal = ResolverBlocoOriginal(codigo);
                 blocoPorCodigo.TryGetValue(codigo, out var blocoOverride);
                 desagioPorCodigo.TryGetValue(codigo, out var desagioOverride);
+                ajustePorCodigo.TryGetValue(codigo, out var ajuste);
 
                 var blocoEfetivo = blocoOverride?.BlocoAjustado ?? blocoOverride?.BlocoOriginal ?? blocoOriginal;
                 var desagioManual = desagioOverride != null;
@@ -210,7 +303,11 @@ namespace Application.Services.PrlA
                     : PrlAConstants.DesagioPadrao(blocoEfetivo);
 
                 var saldoOriginal = saldo.SaldoNormalizado;
-                var saldoAjustado = Math.Round(saldoOriginal * (1m - percentual / 100m), 2, MidpointRounding.AwayFromZero);
+                var saldoAjustado = PrlAConstants.CalcularSaldoAjustado(
+                    saldoOriginal,
+                    ajuste?.SaldoManual,
+                    percentual,
+                    ajuste?.Acao);
 
                 contas.Add(new ContaPrlADto
                 {
@@ -222,7 +319,10 @@ namespace Application.Services.PrlA
                     BlocoEfetivo = blocoEfetivo,
                     PercentualDesagio = percentual,
                     DesagioManual = desagioManual,
+                    Acao = ajuste?.Acao,
+                    Justificativa = ajuste?.Justificativa,
                     SaldoOriginal = saldoOriginal,
+                    SaldoManual = ajuste?.SaldoManual,
                     SaldoAjustado = saldoAjustado,
                     SaldoNormalizado = saldoOriginal
                 });

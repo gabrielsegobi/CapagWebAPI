@@ -29,8 +29,17 @@ namespace Domain.Contracts.PrlA
         [JsonPropertyName("desagio_manual")]
         public bool DesagioManual { get; set; }
 
+        [JsonPropertyName("acao")]
+        public string? Acao { get; set; }
+
+        [JsonPropertyName("justificativa")]
+        public string? Justificativa { get; set; }
+
         [JsonPropertyName("saldo_original")]
         public decimal SaldoOriginal { get; set; }
+
+        [JsonPropertyName("saldo_manual")]
+        public decimal? SaldoManual { get; set; }
 
         [JsonPropertyName("saldo_ajustado")]
         public decimal? SaldoAjustado { get; set; }

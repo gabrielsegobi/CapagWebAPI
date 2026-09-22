@@ -16,5 +16,8 @@ namespace Domain.Contracts.Capag
 
         [JsonPropertyName("lucro_bruto")]
         public LinhaDemonstrativoDto? LucroBruto { get; set; }
+
+        [JsonPropertyName("contas_manuais")]
+        public List<ContaGreManualDto> ContasManuais { get; set; } = new();
     }
 }

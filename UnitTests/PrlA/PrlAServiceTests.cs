@@ -1,4 +1,5 @@
 using Application.Services.PrlA;
+using Domain.Constants;
 using Domain.Contracts.PrlA;
 using Domain.Enums;
 
@@ -23,12 +24,12 @@ namespace UnitTests.PrlA
                 }
             };
 
-            var totalAntes = new PrlAService(null!, null!, null!, null!).CalcularPassivoTotalAjustado(contas);
+            var totalAntes = new PrlAService(null!, null!, null!, null!, null!).CalcularPassivoTotalAjustado(contas);
             Assert.Equal(saldoOriginal, totalAntes);
 
             contas[0].SaldoAjustado = Math.Round(saldoOriginal * 0.9m, 2, MidpointRounding.AwayFromZero);
 
-            var totalDepois = new PrlAService(null!, null!, null!, null!).CalcularPassivoTotalAjustado(contas);
+            var totalDepois = new PrlAService(null!, null!, null!, null!, null!).CalcularPassivoTotalAjustado(contas);
 
             Assert.NotEqual(saldoOriginal, totalDepois);
             Assert.Equal(contas[0].SaldoAjustado, totalDepois);
@@ -48,6 +49,40 @@ namespace UnitTests.PrlA
             var filtradas = PrlAService.FiltrarComValor(contas).Select(c => c.Codigo).ToList();
 
             Assert.Equal(new[] { "1.01.01", "1.02" }, filtradas);
+        }
+
+        [Fact]
+        public void FiltrarComValor_MantemLinhaZeradaComAcaoOuSaldoManual()
+        {
+            var contas = new[]
+            {
+                new ContaPrlADto { Codigo = "1.01.01", SaldoNormalizado = 0m, Acao = PrlAConstants.AcaoExcluir },
+                new ContaPrlADto { Codigo = "1.01.02", SaldoNormalizado = 0m, SaldoManual = 10m },
+                new ContaPrlADto { Codigo = "1.01.03", SaldoNormalizado = 0m }
+            };
+
+            var filtradas = PrlAService.FiltrarComValor(contas).Select(c => c.Codigo).ToList();
+
+            Assert.Equal(new[] { "1.01.01", "1.01.02" }, filtradas);
+        }
+
+        [Theory]
+        [InlineData(100, null, 20, null, 80)]
+        [InlineData(100, null, 20, PrlAConstants.AcaoIncluir, 100)]
+        [InlineData(100, null, 20, PrlAConstants.AcaoIncluirComDesagio, 80)]
+        [InlineData(100, null, 20, PrlAConstants.AcaoExcluir, 0)]
+        [InlineData(100, 50, 20, PrlAConstants.AcaoIncluirComDesagio, 40)]
+        [InlineData(100, 50, 20, PrlAConstants.AcaoIncluir, 50)]
+        [InlineData(100, 50, 20, PrlAConstants.AcaoExcluir, 0)]
+        public void CalcularSaldoAjustado_RespeitaAcaoESaldoManual(
+            int original,
+            int? manual,
+            int desagio,
+            string? acao,
+            int esperado)
+        {
+            var resultado = PrlAConstants.CalcularSaldoAjustado(original, manual, desagio, acao);
+            Assert.Equal(esperado, resultado);
         }
 
         [Fact]
