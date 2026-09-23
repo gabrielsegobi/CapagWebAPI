@@ -1,6 +1,7 @@
 ﻿using Application.Commands.SimulacoesCalc;
 using Application.Exceptions.SimulacoesCalc;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Contracts.Responses;
 using Domain.Entities;
 using Infrastructure.Interface;
@@ -22,6 +23,8 @@ namespace Application.Handlers.SimulacoesCalc
 
         public async Task<UpdateApiResponse> Handle(UpdateSimulacaoCalcCommand request, CancellationToken cancellationToken)
         {
+            request.Request.TipoSimulacao = TipoSimulacaoConstants.Normalize(request.Request.TipoSimulacao);
+
             var calc = await _baseRepository.GetByIdAsync(request.Id)
                    ?? throw new SimulacaoCalcNotFoundException(request.Id);
 

@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Domain.Constants;
 using Domain.Contracts.SimulacoesCalc;
 
 namespace TestSupport.Fakes.SimulacoesCalc
@@ -7,7 +8,7 @@ namespace TestSupport.Fakes.SimulacoesCalc
     {
         public UpdateSimulacaoCalcRequestFaker()
         {
-            RuleFor(x => x.TipoSimulacao, f => f.PickRandom("PREVIDENCIARIO", "DEMAIS"));
+            RuleFor(x => x.TipoSimulacao, f => f.PickRandom(TipoSimulacaoConstants.Todos));
             RuleFor(x => x.LimitadorPCT, f => f.Random.Decimal(0, 30));
             RuleFor(x => x.DescMaxPct, f => f.Random.Decimal(0, 30));
             RuleFor(x => x.HasPrejuizo, f => f.Random.Bool());

@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Domain.Constants;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,7 +15,7 @@ namespace Infrastructure.Configurations
             builder.Property(s => s.IdSimulacaoCalc) .HasColumnName("id_simulacao_calc").HasColumnType("BIGINT UNSIGNED").UseMySqlIdentityColumn();
             builder.Property(s => s.IdTenant).HasColumnName("id_tenant") .HasColumnType("BIGINT UNSIGNED") .IsRequired();
             builder.Property(s => s.IdEmpresa).HasColumnName("id_empresa") .HasColumnType("BIGINT UNSIGNED") .IsRequired();
-            builder.Property(s => s.TipoSimulacao).HasColumnName("tipo_simulacao").HasColumnType("ENUM('PREVIDENCIARIO', 'OUTRO')").IsRequired();
+            builder.Property(s => s.TipoSimulacao).HasColumnName("tipo_simulacao").HasColumnType(TipoSimulacaoConstants.MySqlColumnType).HasMaxLength(32).IsRequired();
             builder.Property(s => s.LimitadorPCT).HasColumnName("limitador_pct").HasColumnType("DECIMAL(5,2)").IsRequired();
             builder.Property(s => s.DescMaxPct).HasColumnName("desc_max_pct").HasColumnType("DECIMAL(5,2)");
             builder.Property(s => s.HasPrejuizo).HasColumnName("has_prejuizo").HasColumnType("TINYINT(1)").IsRequired();

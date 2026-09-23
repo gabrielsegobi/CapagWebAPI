@@ -1,5 +1,6 @@
 ﻿using Application.Queries.SimulacoesCalc;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Contracts.Responses;
 using Domain.Contracts.SimulacoesCalc;
 using Domain.Contracts.ValorCalcVariaveis;
@@ -52,7 +53,7 @@ namespace Application.Handlers.SimulacoesCalc
 
                     if (!string.IsNullOrWhiteSpace(request.Filter.TipoSimulacao))
                     {
-                        var tipoSimulacao = request.Filter.TipoSimulacao.Trim().ToUpper();
+                        var tipoSimulacao = TipoSimulacaoConstants.Normalize(request.Filter.TipoSimulacao);
                         q = q.Where(e => e.TipoSimulacao == tipoSimulacao);
                     }
 

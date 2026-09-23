@@ -1,6 +1,7 @@
 ﻿using Application.Commands.SimulacoesCalc;
 using Application.Exceptions.Empresas;
 using AutoMapper;
+using Domain.Constants;
 using Domain.Contracts.Responses;
 using Domain.Entities;
 using Infrastructure.Interface;
@@ -24,6 +25,8 @@ namespace Application.Handlers.SimulacoesCalc
 
         public async Task<CreateApiResponse> Handle(CreateSimulacaoCalcCommand request, CancellationToken cancellationToken)
         {
+            request.Request.TipoSimulacao = TipoSimulacaoConstants.Normalize(request.Request.TipoSimulacao);
+
             var calc = _mapper.Map<SimulacaoCalc>(request.Request)
                 ?? throw new InvalidDataException("Invalid data");
 
