@@ -53,74 +53,81 @@ namespace Application.Handlers.CapagSimples
             var now = DateTimeHelper.GetDateTimeNow();
             var idUsuario = _currentUser.UserId;
 
-            await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
-            try
+            SimplesDeclarationResponse? response = null;
+            var strategy = _db.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                var declaration = await _declarationRepository
-                    .Query(d => d.IdEmpresa == command.IdEmpresa, asNoTracking: false)
-                    .Include(d => d.ExerciseYears)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (declaration == null)
+                await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
+                try
                 {
-                    declaration = new SimplesDeclaration
-                    {
-                        IdEmpresa = command.IdEmpresa,
-                        IdTenant = tenantId,
-                        IdUsuario = idUsuario,
-                        DeclarationKind = kind,
-                        DateCreate = now,
-                        DateUpdate = now
-                    };
-                    await _declarationRepository.AddAsync(declaration);
-                    await _declarationRepository.SaveChangesAsync();
-                }
-                else
-                {
-                    declaration.DeclarationKind = kind;
-                    declaration.DateUpdate = now;
-                    declaration.IdUsuario = idUsuario;
-                    _declarationRepository.Update(declaration);
+                    var declaration = await _declarationRepository
+                        .Query(d => d.IdEmpresa == command.IdEmpresa, asNoTracking: false)
+                        .Include(d => d.ExerciseYears)
+                        .FirstOrDefaultAsync(cancellationToken);
 
-                    if (declaration.ExerciseYears.Count > 0)
+                    if (declaration == null)
                     {
-                        _yearRepository.DeleteRange(declaration.ExerciseYears);
-                        declaration.ExerciseYears.Clear();
+                        declaration = new SimplesDeclaration
+                        {
+                            IdEmpresa = command.IdEmpresa,
+                            IdTenant = tenantId,
+                            IdUsuario = idUsuario,
+                            DeclarationKind = kind,
+                            DateCreate = now,
+                            DateUpdate = now
+                        };
+                        await _declarationRepository.AddAsync(declaration);
+                        await _declarationRepository.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        declaration.DeclarationKind = kind;
+                        declaration.DateUpdate = now;
+                        declaration.IdUsuario = idUsuario;
+                        _declarationRepository.Update(declaration);
+
+                        if (declaration.ExerciseYears.Count > 0)
+                        {
+                            _yearRepository.DeleteRange(declaration.ExerciseYears);
+                            declaration.ExerciseYears.Clear();
+                        }
+
+                        await _declarationRepository.SaveChangesAsync();
                     }
 
-                    await _declarationRepository.SaveChangesAsync();
-                }
-
-                if (years.Count > 0)
-                {
-                    var yearEntities = years.Select(y => new SimplesExerciseYear
+                    if (years.Count > 0)
                     {
-                        IdSimplesDeclaration = declaration.Id,
-                        ExerciseYear = y,
-                        DateCreate = now
-                    }).ToList();
+                        var yearEntities = years.Select(y => new SimplesExerciseYear
+                        {
+                            IdSimplesDeclaration = declaration.Id,
+                            ExerciseYear = y,
+                            DateCreate = now
+                        }).ToList();
 
-                    await _yearRepository.AddRangeAsync(yearEntities);
-                    await _yearRepository.SaveChangesAsync();
-                    declaration.ExerciseYears = yearEntities;
+                        await _yearRepository.AddRangeAsync(yearEntities);
+                        await _yearRepository.SaveChangesAsync();
+                        declaration.ExerciseYears = yearEntities;
+                    }
+
+                    await tx.CommitAsync(cancellationToken);
+
+                    response = new SimplesDeclarationResponse
+                    {
+                        HasDeclaration = true,
+                        DeclarationKind = declaration.DeclarationKind,
+                        ExerciseYears = years,
+                        CreatedAt = declaration.DateCreate,
+                        UpdatedAt = declaration.DateUpdate
+                    };
                 }
-
-                await tx.CommitAsync(cancellationToken);
-
-                return new SimplesDeclarationResponse
+                catch
                 {
-                    HasDeclaration = true,
-                    DeclarationKind = declaration.DeclarationKind,
-                    ExerciseYears = years,
-                    CreatedAt = declaration.DateCreate,
-                    UpdatedAt = declaration.DateUpdate
-                };
-            }
-            catch
-            {
-                await tx.RollbackAsync(cancellationToken);
-                throw;
-            }
+                    await tx.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            });
+
+            return response!;
         }
     }
 }

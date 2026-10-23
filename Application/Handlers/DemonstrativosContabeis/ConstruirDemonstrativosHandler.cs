@@ -180,6 +180,12 @@ namespace Application.Handlers.DemonstrativosContabeis
 
 
 
+                var strategy = _db.Database.CreateExecutionStrategy();
+
+                await strategy.ExecuteAsync(async () =>
+
+                {
+
                 await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
 
                 try
@@ -397,6 +403,8 @@ namespace Application.Handlers.DemonstrativosContabeis
                     response.Sucesso = false;
 
                 }
+
+                });
 
             }
 

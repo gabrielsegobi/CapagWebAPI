@@ -2,6 +2,7 @@
 using EFCore.BulkExtensions;
 using Infrastructure.Context;
 using Infrastructure.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -21,45 +22,48 @@ namespace Infrastructure.Repositories
             if (buffer.Count == 0)
                 return;
 
-            using var tx = await _context.Database.BeginTransactionAsync(cancellationToken);
-
-
-            foreach (var (_, list) in buffer)
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                if (list.Count == 0)
-                    continue;
+                await using var tx = await _context.Database.BeginTransactionAsync(cancellationToken);
 
-                var bulkConfig = new BulkConfig
+                foreach (var (_, list) in buffer)
                 {
-                    BatchSize = 5000,                 // MySQL aguenta bem 5k–10k
-                    PreserveInsertOrder = true,       // mantém pai → filho
-                    TrackingEntities = false,         // 🔥 grande ganho de performance
-                    SetOutputIdentity = false,        // 🔥 só ligue se REALMENTE precisar do ID gerado
-                    UseTempDB = false,                // correto para MySQL
-                    CalculateStats = false,
-                    EnableStreaming = true            // 🔥 reduz uso de memória
-                };
+                    if (list.Count == 0)
+                        continue;
 
-                try
-                {
-                    await _context.BulkInsertAsync(list, bulkConfig);
+                    var bulkConfig = new BulkConfig
+                    {
+                        BatchSize = 5000,                 // MySQL aguenta bem 5k–10k
+                        PreserveInsertOrder = true,       // mantém pai → filho
+                        TrackingEntities = false,         // 🔥 grande ganho de performance
+                        SetOutputIdentity = false,        // 🔥 só ligue se REALMENTE precisar do ID gerado
+                        UseTempDB = false,                // correto para MySQL
+                        CalculateStats = false,
+                        EnableStreaming = true            // 🔥 reduz uso de memória
+                    };
+
+                    try
+                    {
+                        await _context.BulkInsertAsync(list, bulkConfig);
+                    }
+                    catch (MySqlConnector.MySqlException ex)
+                    {
+                        if (ex.InnerException != null)
+                            Console.WriteLine($"InnerException: {ex.InnerException.Message}");
+
+                        // Se quiser detalhes ainda mais completos
+                        Console.WriteLine($"Erro completo: {ex}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("🚨 Erro genérico no Bulk Insert:");
+                        Console.WriteLine(ex);
+                    }
                 }
-                catch (MySqlConnector.MySqlException ex)
-                {
-                    if (ex.InnerException != null)
-                        Console.WriteLine($"InnerException: {ex.InnerException.Message}");
 
-                    // Se quiser detalhes ainda mais completos
-                    Console.WriteLine($"Erro completo: {ex}");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("🚨 Erro genérico no Bulk Insert:");
-                    Console.WriteLine(ex);
-                }
-            }
-
-            await tx.CommitAsync(cancellationToken);
+                await tx.CommitAsync(cancellationToken);
+            });
         }
     }
 }

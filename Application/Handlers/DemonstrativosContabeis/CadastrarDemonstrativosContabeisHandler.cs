@@ -69,70 +69,81 @@ namespace Application.Handlers.DemonstrativosContabeis
                 Sucesso = false
             };
 
-            await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
-
+            var strategy = _db.Database.CreateExecutionStrategy();
             try
             {
-                var now = DateTimeHelper.GetDateTimeNow();
-
-                if (command.Sobrescrever)
+                await strategy.ExecuteAsync(async () =>
                 {
-                    var chavesSobrescrita = command.Contas
-                        .Select(c => (c.Ano, PerApur: c.PerApur.Trim(), TipoTrib: c.TipoTrib.Trim()))
-                        .Distinct()
-                        .ToList();
+                    await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
 
-                    var existentes = await _demonstrativoRepository
-                        .Query(dc => dc.IdTenant == idTenant &&
-                                     dc.IdEmpresa == idEmpresa &&
-                                     dc.DeletedAt == null,
-                            asNoTracking: false)
-                        .ToListAsync(cancellationToken);
-
-                    var paraDeletar = existentes
-                        .Where(dc => chavesSobrescrita.Any(k =>
-                            dc.Ano == k.Ano &&
-                            dc.PerApur == k.PerApur &&
-                            dc.TipoTrib == k.TipoTrib))
-                        .ToList();
-
-                    foreach (var item in paraDeletar)
+                    try
                     {
-                        item.DeletedAt = now;
-                        item.UpdatedAt = now;
-                    }
+                        var now = DateTimeHelper.GetDateTimeNow();
 
-                    if (paraDeletar.Count > 0)
-                    {
-                        _demonstrativoRepository.UpdateRange(paraDeletar);
+                        if (command.Sobrescrever)
+                        {
+                            var chavesSobrescrita = command.Contas
+                                .Select(c => (c.Ano, PerApur: c.PerApur.Trim(), TipoTrib: c.TipoTrib.Trim()))
+                                .Distinct()
+                                .ToList();
+
+                            var existentes = await _demonstrativoRepository
+                                .Query(dc => dc.IdTenant == idTenant &&
+                                             dc.IdEmpresa == idEmpresa &&
+                                             dc.DeletedAt == null,
+                                    asNoTracking: false)
+                                .ToListAsync(cancellationToken);
+
+                            var paraDeletar = existentes
+                                .Where(dc => chavesSobrescrita.Any(k =>
+                                    dc.Ano == k.Ano &&
+                                    dc.PerApur == k.PerApur &&
+                                    dc.TipoTrib == k.TipoTrib))
+                                .ToList();
+
+                            foreach (var item in paraDeletar)
+                            {
+                                item.DeletedAt = now;
+                                item.UpdatedAt = now;
+                            }
+
+                            if (paraDeletar.Count > 0)
+                            {
+                                _demonstrativoRepository.UpdateRange(paraDeletar);
+                                await _demonstrativoRepository.SaveChangesAsync();
+                            }
+
+                            response.TotalDeletados = paraDeletar.Count;
+                        }
+
+                        await EnriquecerValCtaRefIniAsync(command.Contas, idTenant, idEmpresa, cancellationToken);
+
+                        // Descarta registros sem dados úteis: ambos val_cta_ref_ini e val_cta_ref_fin zerados/nulos.
+                        var contasValidas = command.Contas
+                            .Where(c => !AmbosZerados(c.ValCtaRefIni, c.ValCtaRefFin))
+                            .ToList();
+
+                        var entidades = contasValidas
+                            .Select(item => MapToEntity(item, idTenant, now))
+                            .ToList();
+
+                        await _demonstrativoRepository.AddRangeAsync(entidades);
                         await _demonstrativoRepository.SaveChangesAsync();
+
+                        await tx.CommitAsync(cancellationToken);
+
+                        response.TotalInseridos = entidades.Count;
+                        response.Sucesso = true;
                     }
-
-                    response.TotalDeletados = paraDeletar.Count;
-                }
-
-                await EnriquecerValCtaRefIniAsync(command.Contas, idTenant, idEmpresa, cancellationToken);
-
-                // Descarta registros sem dados úteis: ambos val_cta_ref_ini e val_cta_ref_fin zerados/nulos.
-                var contasValidas = command.Contas
-                    .Where(c => !AmbosZerados(c.ValCtaRefIni, c.ValCtaRefFin))
-                    .ToList();
-
-                var entidades = contasValidas
-                    .Select(item => MapToEntity(item, idTenant, now))
-                    .ToList();
-
-                await _demonstrativoRepository.AddRangeAsync(entidades);
-                await _demonstrativoRepository.SaveChangesAsync();
-
-                await tx.CommitAsync(cancellationToken);
-
-                response.TotalInseridos = entidades.Count;
-                response.Sucesso = true;
+                    catch
+                    {
+                        await tx.RollbackAsync(cancellationToken);
+                        throw;
+                    }
+                });
             }
             catch (Exception ex)
             {
-                await tx.RollbackAsync(cancellationToken);
                 response.Erro = ex.Message;
                 return response;
             }

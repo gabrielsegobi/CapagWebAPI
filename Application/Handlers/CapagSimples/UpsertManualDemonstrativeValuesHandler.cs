@@ -47,47 +47,51 @@ namespace Application.Handlers.CapagSimples
             var now = DateTimeHelper.GetDateTimeNow();
             var idUsuario = _currentUser.UserId;
 
-            await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
-            try
+            var strategy = _db.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
             {
-                var existentes = await _valueRepository
-                    .Query(
-                        v => v.IdEmpresa == command.IdEmpresa && v.DemonstrativeKind == kind,
-                        asNoTracking: false)
-                    .ToListAsync(cancellationToken);
-
-                if (existentes.Count > 0)
+                await using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
+                try
                 {
-                    _valueRepository.DeleteRange(existentes);
-                    await _valueRepository.SaveChangesAsync();
-                }
+                    var existentes = await _valueRepository
+                        .Query(
+                            v => v.IdEmpresa == command.IdEmpresa && v.DemonstrativeKind == kind,
+                            asNoTracking: false)
+                        .ToListAsync(cancellationToken);
 
-                if (rows.Count > 0)
-                {
-                    var entities = rows.Select(r => new ManualDemonstrativeValue
+                    if (existentes.Count > 0)
                     {
-                        IdEmpresa = command.IdEmpresa,
-                        IdTenant = tenantId,
-                        IdUsuario = idUsuario,
-                        DemonstrativeKind = kind,
-                        AccountCode = r.AccountCode,
-                        ExerciseYear = r.Year,
-                        Amount = r.Value,
-                        DateCreate = now,
-                        DateUpdate = now
-                    }).ToList();
+                        _valueRepository.DeleteRange(existentes);
+                        await _valueRepository.SaveChangesAsync();
+                    }
 
-                    await _valueRepository.AddRangeAsync(entities);
-                    await _valueRepository.SaveChangesAsync();
+                    if (rows.Count > 0)
+                    {
+                        var entities = rows.Select(r => new ManualDemonstrativeValue
+                        {
+                            IdEmpresa = command.IdEmpresa,
+                            IdTenant = tenantId,
+                            IdUsuario = idUsuario,
+                            DemonstrativeKind = kind,
+                            AccountCode = r.AccountCode,
+                            ExerciseYear = r.Year,
+                            Amount = r.Value,
+                            DateCreate = now,
+                            DateUpdate = now
+                        }).ToList();
+
+                        await _valueRepository.AddRangeAsync(entities);
+                        await _valueRepository.SaveChangesAsync();
+                    }
+
+                    await tx.CommitAsync(cancellationToken);
                 }
-
-                await tx.CommitAsync(cancellationToken);
-            }
-            catch
-            {
-                await tx.RollbackAsync(cancellationToken);
-                throw;
-            }
+                catch
+                {
+                    await tx.RollbackAsync(cancellationToken);
+                    throw;
+                }
+            });
 
             // Retorna o estado do kind atualizado (e omite o outro).
             var response = new ManualDemonstrativeValuesResponse();

@@ -90,39 +90,46 @@ namespace Application.Handlers.DemonstrativosContabeis
 
                 try
                 {
-                    await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
-                    try
+                    // Com EnableRetryOnFailure, transações manuais precisam rodar via CreateExecutionStrategy.
+                    var strategy = _db.Database.CreateExecutionStrategy();
+                    await strategy.ExecuteAsync(async () =>
                     {
-                        // ExecuteDelete bypassa change tracker e AuditInterceptor (idempotente e leve).
-                        await _db.Set<DemonstrativoContabil>()
-                            .Where(d => d.IdTenant == empresa.IdTenant && d.IdEmpresa == empresa.IdEmpresa)
-                            .ExecuteDeleteAsync(cancellationToken);
+                        _db.ChangeTracker.Clear();
 
-                        await _db.Set<RegimeTributario>()
-                            .Where(r => r.IdTenant == empresa.IdTenant && r.IdEmpresa == empresa.IdEmpresa)
-                            .ExecuteDeleteAsync(cancellationToken);
-
-                        // Lotes menores: menos parâmetros por comando e menor risco de packet/transação.
-                        await InserirEmLotesAsync(demonstrativos, batchSize: 50, cancellationToken);
-
-                        await _tributarioRepository.AddRangeAsync(_mapper.Map<List<RegimeTributario>>(dadosTributacao));
-                        await _tributarioRepository.SaveChangesAsync();
-
-                        await transaction.CommitAsync(cancellationToken);
-                    }
-                    catch
-                    {
+                        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
                         try
                         {
-                            await transaction.RollbackAsync(cancellationToken);
+                            // ExecuteDelete bypassa change tracker e AuditInterceptor (idempotente e leve).
+                            await _db.Set<DemonstrativoContabil>()
+                                .Where(d => d.IdTenant == empresa.IdTenant && d.IdEmpresa == empresa.IdEmpresa)
+                                .ExecuteDeleteAsync(cancellationToken);
+
+                            await _db.Set<RegimeTributario>()
+                                .Where(r => r.IdTenant == empresa.IdTenant && r.IdEmpresa == empresa.IdEmpresa)
+                                .ExecuteDeleteAsync(cancellationToken);
+
+                            // Lotes menores: menos parâmetros por comando e menor risco de packet/transação.
+                            await InserirEmLotesAsync(demonstrativos, batchSize: 50, cancellationToken);
+
+                            await _tributarioRepository.AddRangeAsync(_mapper.Map<List<RegimeTributario>>(dadosTributacao));
+                            await _tributarioRepository.SaveChangesAsync();
+
+                            await transaction.CommitAsync(cancellationToken);
                         }
                         catch
                         {
-                            // Transação já abortada pelo MySQL — ignorar segundo erro no rollback.
-                        }
+                            try
+                            {
+                                await transaction.RollbackAsync(cancellationToken);
+                            }
+                            catch
+                            {
+                                // Transação já abortada pelo MySQL — ignorar segundo erro no rollback.
+                            }
 
-                        throw;
-                    }
+                            throw;
+                        }
+                    });
                 }
                 finally
                 {
