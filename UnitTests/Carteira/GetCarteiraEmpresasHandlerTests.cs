@@ -15,12 +15,42 @@ namespace UnitTests.Carteira
         private readonly Mock<IBaseRepository<CapagCalculadoraResultado>> _capagRepoMock = new();
         private readonly Mock<IBaseRepository<DemonstrativoContabil>> _demonstrativoRepoMock = new();
         private readonly Mock<IBaseRepository<Usuario>> _usuarioRepoMock = new();
+        private readonly Mock<IDemoEmpresaAccessService> _demoAccessMock = new();
 
-        private GetCarteiraEmpresasHandler BuildHandler() => new(
-            _empresaRepoMock.Object,
-            _capagRepoMock.Object,
-            _demonstrativoRepoMock.Object,
-            _usuarioRepoMock.Object);
+        private GetCarteiraEmpresasHandler BuildHandler()
+        {
+            _demoAccessMock
+                .Setup(d => d.FilterEmpresas(It.IsAny<IQueryable<Empresa>>()))
+                .Returns((IQueryable<Empresa> q) => q);
+
+            return new(
+                _empresaRepoMock.Object,
+                _capagRepoMock.Object,
+                _demonstrativoRepoMock.Object,
+                _usuarioRepoMock.Object,
+                _demoAccessMock.Object);
+        }
+
+        private static Empresa Empresa(
+            long id,
+            string razaoSocial,
+            string cnpj,
+            DateTime? dataImpedimento = null,
+            DateTime? dataProtocolo = null,
+            DateTime? deletedAt = null)
+        {
+            var empresa = new Empresa
+            {
+                IdEmpresa = id,
+                RazaoSocial = razaoSocial,
+                DataImpedimento = dataImpedimento,
+                DataProtocolo = dataProtocolo,
+                DeletedAt = deletedAt
+            };
+            typeof(Empresa).GetProperty(nameof(Domain.Entities.Empresa.Cnpj))!
+                .SetValue(empresa, cnpj);
+            return empresa;
+        }
 
         private static void SetupQuery<T>(Mock<IBaseRepository<T>> mock, IQueryable<T> data) where T : class
         {
@@ -47,8 +77,8 @@ namespace UnitTests.Carteira
             var protocolo = new DateTime(2026, 3, 15);
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 1, RazaoSocial = "Alpha", Cnpj = "00000000000001", DataImpedimento = null, DataProtocolo = protocolo },
-                new() { IdEmpresa = 2, RazaoSocial = "Beta",  Cnpj = "00000000000002", DataImpedimento = DateTime.Today }
+                Empresa(1, "Alpha", "00000000000001", dataProtocolo: protocolo),
+                Empresa(2, "Beta", "00000000000002", dataImpedimento: DateTime.Today)
             }.AsQueryable();
 
             SetupDefaults(empresas);
@@ -70,9 +100,9 @@ namespace UnitTests.Carteira
         {
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 1, RazaoSocial = "Antes", Cnpj = "00000000000001", DataImpedimento = new DateTime(2026, 5, 1) },
-                new() { IdEmpresa = 2, RazaoSocial = "Depois", Cnpj = "00000000000002", DataImpedimento = new DateTime(2026, 8, 1) },
-                new() { IdEmpresa = 3, RazaoSocial = "Sem",    Cnpj = "00000000000003", DataImpedimento = null }
+                Empresa(1, "Antes", "00000000000001", dataImpedimento: new DateTime(2026, 5, 1)),
+                Empresa(2, "Depois", "00000000000002", dataImpedimento: new DateTime(2026, 8, 1)),
+                Empresa(3, "Sem", "00000000000003")
             }.AsQueryable();
 
             SetupDefaults(empresas);
@@ -90,9 +120,9 @@ namespace UnitTests.Carteira
         {
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 1, RazaoSocial = "Antes",  Cnpj = "00000000000001", DataImpedimento = new DateTime(2026, 6, 29, 23, 59, 0) },
-                new() { IdEmpresa = 2, RazaoSocial = "NoDia",  Cnpj = "00000000000002", DataImpedimento = new DateTime(2026, 6, 30, 14, 30, 0) },
-                new() { IdEmpresa = 3, RazaoSocial = "Depois", Cnpj = "00000000000003", DataImpedimento = new DateTime(2026, 7, 1, 0, 0, 0) }
+                Empresa(1, "Antes", "00000000000001", dataImpedimento: new DateTime(2026, 6, 29, 23, 59, 0)),
+                Empresa(2, "NoDia", "00000000000002", dataImpedimento: new DateTime(2026, 6, 30, 14, 30, 0)),
+                Empresa(3, "Depois", "00000000000003", dataImpedimento: new DateTime(2026, 7, 1, 0, 0, 0))
             }.AsQueryable();
 
             SetupDefaults(empresas);
@@ -108,7 +138,7 @@ namespace UnitTests.Carteira
         [Fact]
         public async Task Handle_inclui_rating_capag_do_calculo_mais_recente_concluido()
         {
-            var empresa = new Empresa { IdEmpresa = 10, RazaoSocial = "Corp", Cnpj = "11111111111111" };
+            var empresa = Empresa(10, "Corp", "11111111111111");
 
             var ratings = new List<CapagCalculadoraResultado>
             {
@@ -129,8 +159,8 @@ namespace UnitTests.Carteira
         {
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 1, RazaoSocial = "Livre",     Cnpj = "00000000000001" },
-                new() { IdEmpresa = 2, RazaoSocial = "Bloqueada", Cnpj = "00000000000002", DataImpedimento = DateTime.Today }
+                Empresa(1, "Livre", "00000000000001"),
+                Empresa(2, "Bloqueada", "00000000000002", dataImpedimento: DateTime.Today)
             }.AsQueryable();
 
             SetupDefaults(empresas);
@@ -147,12 +177,7 @@ namespace UnitTests.Carteira
         public async Task Handle_filtro_rating_pagina_sobre_o_conjunto_filtrado()
         {
             var empresas = Enumerable.Range(1, 15)
-                .Select(i => new Empresa
-                {
-                    IdEmpresa = i,
-                    RazaoSocial = $"Empresa {i:00}",
-                    Cnpj = i.ToString("00000000000000")
-                })
+                .Select(i => Empresa(i, $"Empresa {i:00}", i.ToString("00000000000000")))
                 .AsQueryable();
 
             var ratings = new List<CapagCalculadoraResultado>
@@ -178,8 +203,8 @@ namespace UnitTests.Carteira
         {
             var empresas = new List<Empresa>
             {
-                new() { IdEmpresa = 1, RazaoSocial = "Ativa", Cnpj = "00000000000001" },
-                new() { IdEmpresa = 2, RazaoSocial = "Excluida", Cnpj = "00000000000002", DeletedAt = DateTime.UtcNow }
+                Empresa(1, "Ativa", "00000000000001"),
+                Empresa(2, "Excluida", "00000000000002", deletedAt: DateTime.UtcNow)
             }.AsQueryable();
 
             SetupDefaults(empresas);

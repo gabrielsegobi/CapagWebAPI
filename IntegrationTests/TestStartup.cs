@@ -76,6 +76,12 @@ namespace IntegrationTests
 
         public bool IsAuthenticated => throw new NotImplementedException();
 
+        public bool IsDemo => false;
+
+        public string? GmasterUserId => null;
+
+        public IReadOnlySet<string> DemoCnpjRoots { get; } = new HashSet<string>();
+
         long? ICurrentUserService.UserId => UserId;
 
         public IDictionary<string, string> GetAllClaims()
@@ -96,6 +102,10 @@ namespace IntegrationTests
         public void SetTenantId(long? tenantId)
         {
             throw new NotImplementedException();
+        }
+
+        public void SetDemoContext(bool isDemo, string? gmasterUserId, IEnumerable<string>? demoCnpjRoots)
+        {
         }
     }
 }

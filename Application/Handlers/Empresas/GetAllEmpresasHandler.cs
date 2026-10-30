@@ -12,16 +12,21 @@ namespace Application.Handlers.Empresas
     {
         private readonly IBaseRepository<Empresa> _baseRepository;
         private readonly IMapper _mapper;
+        private readonly IDemoEmpresaAccessService _demoAccess;
 
-        public GetAllEmpresasHandler(IBaseRepository<Empresa> baseRepository, IMapper mapper)
+        public GetAllEmpresasHandler(
+            IBaseRepository<Empresa> baseRepository,
+            IMapper mapper,
+            IDemoEmpresaAccessService demoAccess)
         {
             _baseRepository = baseRepository;
             _mapper = mapper;
+            _demoAccess = demoAccess;
         }
 
         public async Task<PagedApiResponse<EmpresaDto>> Handle(GetAllEmpresasQuery request, CancellationToken cancellationToken)
         {
-            var query = _baseRepository.Query();
+            var query = _demoAccess.FilterEmpresas(_baseRepository.Query());
 
             var pagedResult = await query.ReadPage<Empresa, EmpresaDto>(
                 request.Filter,

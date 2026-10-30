@@ -4,6 +4,7 @@ using Application.Behaviors;
 using Application.Commands.Usuarios;
 using Application.Factories;
 using Application.Mapping;
+using Application.Services.Demo;
 using Application.Strategies;
 using Application.teste;
 using Domain.Contracts.Views;
@@ -54,7 +55,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "cApAG API",
         Version = "v1",
-        Description = "Documentação da API cApAG. Para endpoints autenticados, informe o JWT e o header X-Tenant-Id."
+        Description = "Documentação da API cApAG. Para endpoints autenticados, informe o JWT e o header X-Tenant-Id. Usuários demo do Gmaster devem enviar X-Gmaster-Is-Demo e X-Gmaster-Demo-Cnpjs."
     });
 
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -73,6 +74,22 @@ builder.Services.AddSwaggerGen(c =>
         Type = SecuritySchemeType.ApiKey,
         In = ParameterLocation.Header,
         Description = "ID do tenant (obrigatório nas rotas autenticadas)"
+    });
+
+    c.AddSecurityDefinition("GmasterIsDemo", new OpenApiSecurityScheme
+    {
+        Name = "X-Gmaster-Is-Demo",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "true/1 quando o usuário Gmaster é de demonstração"
+    });
+
+    c.AddSecurityDefinition("GmasterDemoCnpjs", new OpenApiSecurityScheme
+    {
+        Name = "X-Gmaster-Demo-Cnpjs",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "Lista de CNPJs (ou raízes 8 dígitos) permitidos para usuário demo, separados por vírgula"
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -171,6 +188,7 @@ builder.Services.AddScoped<IIntegracaoDemonstrativosService, IntegracaoDemonstra
 builder.Services.AddHttpClient<IApiDadosService, ApiDadosService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IDemoEmpresaAccessService, DemoEmpresaAccessService>();
 builder.Services.AddScoped<AuditInterceptor>();
 builder.Services.AddScoped<IEcfFactory, EcfFactory>();
 builder.Services.AddScoped<IEcfBuilderStrategy, E_0000Builder>();
@@ -272,6 +290,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseMiddleware<TenantPermissionMiddleware>();
+app.UseMiddleware<GmasterDemoContextMiddleware>();
+app.UseMiddleware<DemoEmpresaAccessMiddleware>();
 app.UseMiddleware<AuthorizationMiddleware>();
 app.UseAuthorization();
 

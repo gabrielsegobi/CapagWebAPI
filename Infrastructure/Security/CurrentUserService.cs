@@ -7,6 +7,8 @@ namespace Infrastructure.Security
     public class CurrentUserService : ICurrentUserService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private static readonly IReadOnlySet<string> EmptyDemoRoots =
+            new HashSet<string>(StringComparer.Ordinal);
 
         public CurrentUserService(IHttpContextAccessor httpContextAccessor)
         {
@@ -14,6 +16,9 @@ namespace Infrastructure.Security
         }
         private long? _tenantId;
         private string? _role;
+        private bool _isDemo;
+        private string? _gmasterUserId;
+        private IReadOnlySet<string> _demoCnpjRoots = EmptyDemoRoots;
 
         public bool IsAuthenticated =>
             _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
@@ -23,6 +28,9 @@ namespace Infrastructure.Security
         public string? Email => GetClaimValue(ClaimTypes.Email);
         public string? Role => _role;
         public long? TenantId => _tenantId;
+        public bool IsDemo => _isDemo;
+        public string? GmasterUserId => _gmasterUserId;
+        public IReadOnlySet<string> DemoCnpjRoots => _demoCnpjRoots;
 
         //public long? TenantId
         //{
@@ -92,6 +100,31 @@ namespace Infrastructure.Security
                 return;
 
             identity.AddClaim(new Claim(ClaimTypes.Role, role));
+        }
+
+        public void SetDemoContext(bool isDemo, string? gmasterUserId, IEnumerable<string>? demoCnpjRoots)
+        {
+            _isDemo = isDemo;
+            _gmasterUserId = string.IsNullOrWhiteSpace(gmasterUserId) ? null : gmasterUserId.Trim();
+
+            if (!isDemo || demoCnpjRoots == null)
+            {
+                _demoCnpjRoots = EmptyDemoRoots;
+                return;
+            }
+
+            var roots = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var value in demoCnpjRoots)
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    continue;
+
+                var digits = new string(value.Where(char.IsDigit).ToArray());
+                if (digits.Length >= 8)
+                    roots.Add(digits[..8]);
+            }
+
+            _demoCnpjRoots = roots;
         }
     }
 

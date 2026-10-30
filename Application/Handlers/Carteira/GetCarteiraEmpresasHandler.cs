@@ -14,17 +14,20 @@ namespace Application.Handlers.Carteira
         private readonly IBaseRepository<CapagCalculadoraResultado> _capagRepository;
         private readonly IBaseRepository<DemonstrativoContabil> _demonstrativoRepository;
         private readonly IBaseRepository<Usuario> _usuarioRepository;
+        private readonly IDemoEmpresaAccessService _demoAccess;
 
         public GetCarteiraEmpresasHandler(
             IBaseRepository<Empresa> empresaRepository,
             IBaseRepository<CapagCalculadoraResultado> capagRepository,
             IBaseRepository<DemonstrativoContabil> demonstrativoRepository,
-            IBaseRepository<Usuario> usuarioRepository)
+            IBaseRepository<Usuario> usuarioRepository,
+            IDemoEmpresaAccessService demoAccess)
         {
             _empresaRepository = empresaRepository;
             _capagRepository = capagRepository;
             _demonstrativoRepository = demonstrativoRepository;
             _usuarioRepository = usuarioRepository;
+            _demoAccess = demoAccess;
         }
 
         public async Task<PagedApiResponse<CarteiraEmpresaDto>> Handle(
@@ -69,7 +72,7 @@ namespace Application.Handlers.Carteira
             var anoLookup = anoPorEmpresa.ToDictionary(x => x.IdEmpresa, x => x.UltimoAno);
             var usuarioLookup = usuarios.ToDictionary(u => u.IdUsuario, u => u.Nome);
 
-            var query = _empresaRepository.Query(e => e.DeletedAt == null);
+            var query = _demoAccess.FilterEmpresas(_empresaRepository.Query(e => e.DeletedAt == null));
 
             if (!string.IsNullOrWhiteSpace(filter.NomeEmpresa))
                 query = query.Where(e => e.RazaoSocial.Contains(filter.NomeEmpresa.Trim()));

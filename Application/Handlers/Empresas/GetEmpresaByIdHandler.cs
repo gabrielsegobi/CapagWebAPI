@@ -21,21 +21,26 @@ public class GetEmpresaByIdHandler : IRequestHandler<GetEmpresaByIdQuery, GetApi
     private readonly IMapper _mapper;
     private readonly IBackgroundTaskQueue _taskQueue;
     private readonly IMediator _mediator;
+    private readonly IDemoEmpresaAccessService _demoAccess;
 
     public GetEmpresaByIdHandler(
         IBaseRepository<Empresa> baseRepository,
         IMapper mapper,
         IBackgroundTaskQueue taskQueue,
-        IMediator mediator)
+        IMediator mediator,
+        IDemoEmpresaAccessService demoAccess)
     {
         _baseRepository = baseRepository;
         _mapper = mapper;
         _taskQueue = taskQueue;
         _mediator = mediator;
+        _demoAccess = demoAccess;
     }
 
     public async Task<GetApiResponse> Handle(GetEmpresaByIdQuery request, CancellationToken cancellationToken)
     {
+        await _demoAccess.EnsureCanAccessEmpresaAsync(request.Id, cancellationToken);
+
         var empresa = await _baseRepository.GetByIdAsync(request.Id);
 
 
