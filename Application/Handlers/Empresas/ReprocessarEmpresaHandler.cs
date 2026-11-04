@@ -3,6 +3,7 @@ using Application.Commands.Empresas;
 using Application.Commands.ProcessLog;
 using Application.Exceptions.Empresas;
 using Application.Filters;
+using Application.Helpers;
 using Application.Queries.ProcessLog;
 using Application.teste;
 using Domain.Contracts.ProcessLog;
@@ -20,6 +21,12 @@ namespace Application.Handlers.Empresas
 {
     public class ReprocessarEmpresaHandler : IRequestHandler<ReprocessarEmpresaCommand, UpdateApiResponse>
     {
+        /// <summary>
+        /// Proteção contra clique duplo na janela entre enfileirar o job e o GET_LOCK do worker.
+        /// Após esse TTL, processlog "iniciado" sem lock ativo não bloqueia (destravamento pós-falha/crash).
+        /// </summary>
+        private static readonly TimeSpan TtlProtecaoDuploClique = TimeSpan.FromSeconds(45);
+
         private readonly IBaseRepository<Empresa> _empresaRepository;
         private readonly CPGDbContext _db;
         private readonly IMediator _mediator;
@@ -46,22 +53,8 @@ namespace Application.Handlers.Empresas
             var idEmpresa = empresa.IdEmpresa;
             var idTenant = empresa.IdTenant;
 
-            var processLogs = await _mediator.Send(new GetAllProcessLogQuery(new ProcessLogFilter
-            {
-                IdEmpresa = idEmpresa,
-                PageSize = 50,
-                OrderByDescending = true
-            }), cancellationToken);
-
-            var ultimoStatus = processLogs.Data?
-                .OrderByDescending(pl => pl.CreatedAt)
-                .Select(pl => pl.Acao)
-                .FirstOrDefault(acao =>
-                    acao is "Processamento iniciado"
-                        or "Processamento terminado"
-                        or "Erro ao processar Empresa");
-
-            if (ultimoStatus == "Processamento iniciado" && !empresa.DadosProcessados)
+            // Só bloqueia se o job estiver realmente ativo agora (named lock do pipeline).
+            if (await EmpresaProcessamentoLock.EstaEmUsoAsync(_db.Database, idEmpresa, cancellationToken))
             {
                 return new UpdateApiResponse
                 {
@@ -69,6 +62,17 @@ namespace Application.Handlers.Empresas
                 };
             }
 
+            // Clique duplo: "Processamento iniciado" muito recente e sem erro/término posterior.
+            // NÃO bloqueia eterno após SEM_DRE / ERRO / TIMEOUT / crash (TTL expira ou status não é iniciado).
+            if (await TemInicioRecenteSemConclusaoAsync(idEmpresa, cancellationToken))
+            {
+                return new UpdateApiResponse
+                {
+                    Message = "Já existe um reprocessamento em andamento para esta empresa."
+                };
+            }
+
+            // Sempre limpa antes de reiniciar (equivalente ao desbloqueio manual + start do job).
             await ExecutarClearRecalcAsync(idTenant, idEmpresa, cancellationToken);
 
             // Proc altera dados_processados fora do change tracker
@@ -94,6 +98,7 @@ namespace Application.Handlers.Empresas
                     var mediator = sp.GetRequiredService<IMediator>();
                     var repo = sp.GetRequiredService<IBaseRepository<Empresa>>();
 
+                    // CreateDemonstrativoContabilHandler adquire GET_LOCK e libera no dispose (sucesso ou erro).
                     await mediator.Send(new CreateDemonstrativoContabilCommand { IdEmpresa = idEmpresa }, token);
 
                     var empresaProcessada = await repo.GetByIdAsync(idEmpresa);
@@ -117,6 +122,7 @@ namespace Application.Handlers.Empresas
                 }
                 catch (Exception ex)
                 {
+                    // Lock do pipeline já foi liberado no dispose do CreateDemonstrativoContabilHandler.
                     var mediator = sp.GetRequiredService<IMediator>();
                     var partes = new List<string>();
                     for (var atual = ex; atual != null; atual = atual.InnerException)
@@ -141,6 +147,29 @@ namespace Application.Handlers.Empresas
             {
                 Message = "Dados da empresa limpos. Recálculo iniciado em segundo plano."
             };
+        }
+
+        private async Task<bool> TemInicioRecenteSemConclusaoAsync(long idEmpresa, CancellationToken cancellationToken)
+        {
+            var processLogs = await _mediator.Send(new GetAllProcessLogQuery(new ProcessLogFilter
+            {
+                IdEmpresa = idEmpresa,
+                PageSize = 50,
+                OrderByDescending = true
+            }), cancellationToken);
+
+            var ultimoRelevante = processLogs.Data?
+                .OrderByDescending(pl => pl.CreatedAt)
+                .FirstOrDefault(pl =>
+                    pl.Acao is "Processamento iniciado"
+                        or "Processamento terminado"
+                        or "Erro ao processar Empresa");
+
+            if (ultimoRelevante?.Acao != "Processamento iniciado")
+                return false;
+
+            var agora = DateTimeHelper.GetDateTimeNow();
+            return agora - ultimoRelevante.CreatedAt <= TtlProtecaoDuploClique;
         }
 
         private async Task ExecutarClearRecalcAsync(long idTenant, long idEmpresa, CancellationToken cancellationToken)

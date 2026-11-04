@@ -14,6 +14,45 @@ namespace Application.Helpers
         public static string Nome(long idEmpresa) => $"capag_proc_empresa_{idEmpresa}";
 
         /// <summary>
+        /// True se outro job segura o named lock agora (processamento realmente ativo).
+        /// </summary>
+        public static async Task<bool> EstaEmUsoAsync(
+            DatabaseFacade database,
+            long idEmpresa,
+            CancellationToken cancellationToken)
+        {
+            var openedHere = false;
+            var connection = database.GetDbConnection();
+            if (connection.State != ConnectionState.Open)
+            {
+                await database.OpenConnectionAsync(cancellationToken);
+                openedHere = true;
+            }
+
+            try
+            {
+                await using var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT IS_USED_LOCK(@nome)";
+
+                var pNome = cmd.CreateParameter();
+                pNome.ParameterName = "@nome";
+                pNome.Value = Nome(idEmpresa);
+                cmd.Parameters.Add(pNome);
+
+                var result = await cmd.ExecuteScalarAsync(cancellationToken);
+                return result is not null and not DBNull;
+            }
+            finally
+            {
+                if (openedHere)
+                {
+                    try { await database.CloseConnectionAsync(); }
+                    catch { /* ignore */ }
+                }
+            }
+        }
+
+        /// <summary>
         /// Abre a conexão do DbContext, adquire o lock e mantém a conexão aberta até Dispose.
         /// timeoutSeconds = 0 → falha imediata se outro job já segura o lock.
         /// </summary>

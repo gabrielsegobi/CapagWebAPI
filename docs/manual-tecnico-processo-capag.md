@@ -555,7 +555,7 @@ CRUD autenticado; não entra no recálculo de indicadores/ICP.
 | `POST /api/empresas/{id}/reprocessar` | `sp_clear_empresa_recalc` + job GMaster | Demonstrativos, indicadores, valores anuais, ICP, regimes, resultados_periodo, process_log; zera `dados_processados` | Cadastro, simulação, ICP anterior, débitos, regs fiscais, ECF, Simples, calculadora |
 | Wipe operacional | `sp_clear_empresa_full` | Recalc + simulação + ICP anterior + débitos + Simples + códigos registro + calculadora + FCO parâmetros | Cadastro, regs fiscais, ECF |
 
-Reprocessar devolve **202 Accepted**. Preferível sem job em andamento para a mesma empresa.
+Reprocessar devolve **202 Accepted**. Sempre executa `sp_clear_empresa_recalc` e reinicia o job, exceto se o named lock do pipeline estiver ativo agora (ou “Processamento iniciado” nos últimos 45s — proteção a clique duplo). Após SEM_DRE/ERRO/TIMEOUT o POST desbloqueia e reprocessa; não fica em “já em andamento” eterno.
 
 ---
 
